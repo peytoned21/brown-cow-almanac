@@ -14,7 +14,11 @@ The history site for Brown Cow 3.0, an ESPN fantasy football league founded in 2
 | `pipeline/build.py` | Turns `raw/` into `data.json`: standings, records, Elo, luck, odds and everything else |
 | `audit/audit.py` | Independently recomputes about 3,800 numbers and fails if any disagree |
 | `pipeline/summary.py` | Writes the short summary shown on each refresh run |
-| `.github/workflows/refresh.yml` | The weekly refresh |
+| `pipeline/live.py` → `live.json` | Live scores, projected finals, live win chances and live playoff odds on game days |
+| `pipeline/cards.py`, `cards/card.html` → `og/`, `s/`, `m/` | Link-preview images, plus share pages for every season and manager so pasted links show their own card |
+| `pipeline/groupme.py` | Posts the weekly recap to the league GroupMe |
+| `.github/workflows/refresh.yml` | The weekly refresh (Tuesday mornings) |
+| `.github/workflows/live.yml` | Live scores every 15 minutes during NFL game windows |
 
 Every Tuesday morning from September through January, GitHub Actions:
 
@@ -33,6 +37,8 @@ Pages then republishes the site within a minute or two. If anything fails, nothi
 2. Open DevTools → Application → Cookies → `https://www.espn.com`.
 3. Copy the values of `espn_s2` and `SWID`.
 4. In this repo, go to Settings → Secrets and variables → Actions → New repository secret. Add `ESPN_S2` with the first value and `ESPN_SWID` with the second.
+
+**GroupMe bot.** Sign in at dev.groupme.com, go to Bots → Create Bot, and pick the league group. Name it (say, "Brown Cow Almanac") and use `https://peytoned21.github.io/brown-cow-almanac/art/cow-head.jpg` as the avatar. Leave the callback URL blank. Copy the Bot ID into a repository secret named `GROUPME_BOT_ID`. Scheduled Tuesday refreshes post automatically. Manual runs post only when "Post the recap to the league GroupMe" is ticked.
 
 **Run a refresh by hand:** Actions → Weekly refresh → Run workflow. Tick "force" to rebuild even when ESPN hasn't changed.
 

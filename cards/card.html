@@ -1,0 +1,78 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<!-- Renders one 1200x630 link-preview card from ../data.json. Used by pipeline/cards.py; not linked from the site. -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bowlby+One&family=Big+Shoulders+Display:wght@600;800;900&family=Libre+Franklin:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=block">
+<style>
+:root { --paper: #f3ecdc; --sheet: #fffaf0; --ink: #1d1a17; --muted: #5f5a52; --rule: #e1d6bf; --brass: #c4622b; --room: #1f3f73; --room-ink: #f6efdd; --room-muted: #b9c6de; --gold: #f0c46e; --turf: #2e7d62; --loss: #b2392c;
+  --poster: "Bowlby One", "Arial Black", sans-serif; --display: "Big Shoulders Display", "Arial Narrow", sans-serif; --body: "Libre Franklin", Arial, sans-serif; --mono: "IBM Plex Mono", monospace; }
+* { box-sizing: border-box; }
+html, body { margin: 0; width: 1200px; height: 630px; overflow: hidden; background: var(--paper); color: var(--ink); font-family: var(--body); }
+.card { display: grid; grid-template-columns: 430px 1fr; width: 1200px; height: 630px; }
+.art { background: var(--room); padding: 34px; display: grid; place-items: center; }
+.art .frame { background: #6f4422; padding: 14px; box-shadow: 0 10px 30px rgba(0,0,0,.35); }
+.art .mat { background: #f7f1e3; padding: 12px; }
+.art img { display: block; width: 300px; height: 300px; object-fit: cover; }
+.art .brand { margin-top: 22px; text-align: center; font-family: var(--poster); font-size: 34px; color: var(--brass); letter-spacing: .5px; line-height: 1; }
+.art .brand b { color: var(--room-ink); font-weight: 400; }
+.main { padding: 44px 52px 40px; display: grid; grid-template-rows: auto auto 1fr auto; gap: 8px; }
+.eyebrow { font-family: var(--mono); font-size: 18px; letter-spacing: .14em; text-transform: uppercase; color: var(--brass); font-weight: 600; }
+h1 { margin: 0; font-family: var(--display); font-weight: 900; font-size: 74px; line-height: .95; text-transform: uppercase; }
+h1 small { display: block; font-size: 31px; color: var(--muted); font-weight: 800; margin-top: 6px; }
+.rows { align-self: center; display: grid; gap: 10px; }
+.row { display: grid; grid-template-columns: 44px 1fr auto; gap: 14px; align-items: center; font-size: 27px; }
+.row .rk { font-family: var(--display); font-weight: 900; font-size: 34px; color: var(--brass); }
+.row .nm b { font-weight: 700; }
+.row .nm span { color: var(--muted); font-size: 21px; margin-left: 10px; }
+.row .v { font-family: var(--mono); font-weight: 600; font-size: 26px; }
+.stats { align-self: center; display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.stat { background: var(--sheet); border: 1px solid var(--rule); border-radius: 8px; padding: 16px 18px; }
+.stat b { display: block; font-family: var(--display); font-weight: 900; font-size: 52px; line-height: 1; white-space: nowrap; }
+.stat span { font-family: var(--mono); font-size: 15px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.stars { color: #c79a2a; }
+.foot { border-top: 3px solid var(--ink); padding-top: 12px; font-size: 23px; color: var(--muted); }
+.foot b { color: var(--ink); }
+</style></head>
+<body><div class="card"><div class="art"><div><div class="frame"><div class="mat"><img src="../art/brown-cow.jpg" alt=""></div></div><div class="brand">BROWN COW <b>ALMANAC</b></div></div></div><div class="main" id="main"></div></div>
+<script>
+(async function () {
+  const D = await (await fetch('../data.json')).json();
+  const c = new URLSearchParams(location.search).get('c') || 'home';
+  const esc = (s) => String(s).replace(/[&<>"]/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
+  const wl = (w, l, t) => `${w}–${l}${t ? '–' + t : ''}`;
+  const MK = {}; D.managers.forEach((m) => { MK[m.key] = m; });
+  const el = document.getElementById('main');
+  const live = (y) => {
+    const P = D.power[D.power.length - 1], pv = D.live && D.live.preview, g = pv && pv.games.find((x) => x.gotw);
+    return `<div class="eyebrow">${y} season · power rankings</div><h1>Week ${D.meta.cur.week}<small>Who's for real</small></h1>
+      <div class="rows">${P.rows.slice(0, 5).map((r) => `<div class="row"><span class="rk">${r.rank}</span><span class="nm"><b>${esc(r.team)}</b><span>${esc(MK[r.key].short)}</span></span><span class="v">${wl(r.w, r.l)}</span></div>`).join('')}</div>
+      <div class="foot">${g ? `Game of the Week ${pv.wk}: <b>${esc(MK[g.hk].short)}</b> vs <b>${esc(MK[g.ak].short)}</b>` : 'Odds, records and 15 years of history'}</div>`;
+  };
+  let html = '';
+  if (c === 'home') {
+    if (D.meta.cur && D.power.length) html = live(D.meta.cur.y);
+    else {
+      const s = D.seasons[D.seasons.length - 1], ch = s.rows.find((r) => r.rank === 1);
+      html = `<div class="eyebrow">Brown Cow 3.0 · since ${D.meta.founded}</div><h1>The record book<small>${D.meta.nDone} champions, ${D.managers.length} managers</small></h1><div class="rows"><div class="row"><span class="rk">★</span><span class="nm"><b>${esc(ch.team)}</b><span>${esc(ch.mgr)}</span></span><span class="v">${s.y}</span></div></div><div class="foot">Every season, record and rivalry</div>`;
+    }
+  } else if (c.startsWith('s-')) {
+    const y = +c.slice(2), s = D.seasons.find((x) => x.y === y);
+    if (!s.done) html = live(y);
+    else {
+      const ch = s.rows.find((r) => r.rank === 1), sk = D.sacko.find((x) => x.y === y);
+      const top = [...s.rows].sort((a, b) => a.rank - b.rank).slice(0, 4);
+      html = `<div class="eyebrow">${y} season</div><h1>${esc(MK[ch.key].short)}<small>${esc(ch.team)} · champion${s.final ? ` · ${s.final.ws.toFixed(1)}–${s.final.ls.toFixed(1)}` : ''}</small></h1>
+        <div class="rows">${top.map((r) => `<div class="row"><span class="rk">${r.rank}</span><span class="nm"><b>${esc(r.team)}</b><span>${esc(MK[r.key].short)}</span></span><span class="v">${wl(r.w, r.l, r.t)}</span></div>`).join('')}</div>
+        <div class="foot">${esc(s.headline || '')}${sk ? ` · Sacko: <b>${esc(MK[sk.key].short)}</b>` : ''}</div>`;
+    }
+  } else if (c.startsWith('m-')) {
+    const m = MK[c.slice(2)];
+    html = `<div class="eyebrow">Manager · ${m.seasons.length} seasons</div><h1>${esc(m.name.split(' & ').length > 1 ? m.short : m.name)}<small>${esc(m.team)}${m.titles.length ? ` <span class="stars">${'★'.repeat(m.titles.length)}</span>` : ''}</small></h1>
+      <div class="stats"><div class="stat"><b>${m.titles.length}</b><span>${m.titles.length === 1 ? 'Title' : 'Titles'}</span></div><div class="stat"><b>${wl(m.w, m.l, m.t)}</b><span>Record</span></div><div class="stat"><b>${m.po.length}</b><span>Playoff trips</span></div></div>
+      <div class="foot">${m.titles.length ? `Champion ${m.titles.join(', ')}` : m.ru.length ? `Runner-up ${m.ru.join(', ')}` : `Best finish: ${Math.min(...m.finishes)}${['th', 'st', 'nd', 'rd'][Math.min(...m.finishes)] || 'th'}`} · Elo <b>${m.elo}</b></div>`;
+  }
+  el.innerHTML = html;
+  await document.fonts.ready;
+  await Promise.all([...document.images].map((i) => i.complete ? 0 : new Promise((r) => { i.onload = i.onerror = r; })));
+  document.title = 'ready';
+})();
+</script></body></html>

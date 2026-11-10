@@ -11,6 +11,10 @@ on:
         description: 'Rebuild and commit even if ESPN data has not changed'
         type: boolean
         default: false
+      post_groupme:
+        description: 'Post the recap to the league GroupMe'
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -69,11 +73,25 @@ jobs:
         if: steps.changed.outputs.yes == 'true'
         run: python3 pipeline/summary.py data.json >> "$GITHUB_STEP_SUMMARY"
 
+      - name: Link preview cards
+        if: steps.changed.outputs.yes == 'true'
+        continue-on-error: true   # a card problem never holds back the data
+        run: |
+          pip install -q playwright
+          python3 -m playwright install --with-deps chromium > /dev/null
+          python3 pipeline/cards.py
+
       - name: Commit
         if: steps.changed.outputs.yes == 'true'
         run: |
           git config user.name "brown-cow-bot"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add raw data.json
+          git add raw data.json og s m index.html
           git commit -m "Weekly refresh: $(python3 -c "import json; d=json.load(open('data.json')); c=d['meta'].get('cur'); print(f\"{c['y']} through week {c['week']}\" if c else 'final')")"
           git push
+
+      - name: Post the recap to GroupMe
+        if: steps.changed.outputs.yes == 'true' && (github.event_name == 'schedule' || inputs.post_groupme)
+        env:
+          GROUPME_BOT_ID: ${{ secrets.GROUPME_BOT_ID }}
+        run: python3 pipeline/groupme.py data.json

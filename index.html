@@ -1,4 +1,4 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="robots" content="noindex,nofollow"><link rel="icon" href="art/cow-head.jpg"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><!--og--><meta property="og:type" content="website"><meta property="og:site_name" content="Brown Cow Almanac"><meta property="og:title" content="Brown Cow Almanac"><meta property="og:description" content="2026 power rankings after Week 8: 1. The Loose Stools (8–0), 2. Got New Legs (6–2), 3. Bad JuJu (5–3). Game of the Week: Mike vs Nathan."><meta property="og:image" content="https://peytoned21.github.io/brown-cow-almanac/og/home.png?v=2026-8"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:url" content="https://peytoned21.github.io/brown-cow-almanac/"><meta name="twitter:card" content="summary_large_image"><meta name="description" content="2026 power rankings after Week 8: 1. The Loose Stools (8–0), 2. Got New Legs (6–2), 3. Bad JuJu (5–3). Game of the Week: Mike vs Nathan."><!--/og--><meta name="robots" content="noindex,nofollow"><link rel="icon" href="art/cow-head.jpg"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Brown Cow Almanac</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -419,6 +419,30 @@ td.tm-cell .chip { margin-top: 3px; }
 .mx-promo b { font-family: var(--display); font-weight: 900; font-size: 22px; text-transform: uppercase; }
 .mx-promo .mx-go { grid-row: 1 / span 2; grid-column: 3; font-weight: 700; color: var(--brass); }
 .mx-dock { display: none; }
+.share-btn { margin-left: auto; font: inherit; font-size: 12.5px; border: 1px solid var(--rule); background: var(--sheet); color: var(--ink); border-radius: 999px; padding: 3px 11px; cursor: pointer; }
+.share-btn:hover { border-color: var(--brass); color: var(--brass); }
+.crumbs { align-items: center; }
+
+.live-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #d23b2a; margin-right: 6px; vertical-align: 1px; animation: lvp 1.6s ease-in-out infinite; }
+.live-dot.off { background: var(--muted); animation: none; }
+@keyframes lvp { 50% { opacity: .35; } }
+@media (prefers-reduced-motion: reduce) { .live-dot { animation: none; } }
+.lv-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 420px), 1fr)); gap: 12px; margin-bottom: 14px; }
+.lv { padding: 12px 14px; display: grid; gap: 8px; }
+.lv.live { box-shadow: inset 3px 0 0 #d23b2a; }
+.lv-top { display: flex; gap: 10px; align-items: center; min-height: 20px; }
+.lv-chip { font-family: var(--mono); font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; padding: 2px 7px; border-radius: 4px; background: var(--sheet-2); color: var(--muted); }
+.lv-chip.on { background: #d23b2a; color: #fff; }
+.lv-row { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto 3.4em; gap: 10px; align-items: center; }
+.lv-tm { display: grid; min-width: 0; }
+.lv-tm a { font-weight: 700; }
+.lv-sc { font-family: var(--display); font-weight: 900; font-size: 26px; line-height: 1; }
+.lv-row:not(.lead) .lv-sc { opacity: .62; }
+.lv-pj { font-size: 12px; color: var(--muted); text-align: right; display: grid; }
+.lv-pj i { font-style: normal; font-size: 10px; text-transform: uppercase; letter-spacing: .06em; }
+.lv-w { text-align: right; font-weight: 700; }
+.lv.final .lv-pj { visibility: hidden; }
+
 .jump { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 4px 0 18px; }
 .jump .eyebrow { margin-right: 4px; white-space: nowrap; }
 .jump button { font: inherit; font-size: 13px; border: 1px solid var(--rule); background: var(--sheet); color: var(--ink); border-radius: 999px; padding: 5px 12px; cursor: pointer; }
@@ -559,6 +583,52 @@ footer { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block:
   const STATUS = { div: ['champ', 'Clinched division'], po: ['po', 'Clinched playoffs'], out: ['last', 'Eliminated'], nodiv: ['', 'Out of division race'] };
   const statusChip = (st) => st && STATUS[st] ? `<span class="chip ${STATUS[st][0]}">${STATUS[st][1]}</span>` : '';
   const oddsBy = () => Object.fromEntries(D.odds.map((o) => [o.key, o]));
+
+
+  // share links: on the real site, /s/2024/ and /m/<key>/ show their own preview card in a group chat
+  const SITE = 'https://peytoned21.github.io/brown-cow-almanac/';
+  function shareBtn(path) { return location.hostname.endsWith('github.io') ? `<button type="button" class="share-btn" data-share="${SITE}${path}">Copy link</button>` : ''; }
+  document.addEventListener('click', async (e) => {
+    const b = e.target.closest('[data-share]'); if (!b) return;
+    const u = b.dataset.share;
+    try { if (navigator.share && matchMedia('(pointer: coarse)').matches) { await navigator.share({ url: u }); return; } } catch (er) { return; }
+    try { await navigator.clipboard.writeText(u); b.textContent = 'Copied'; } catch (er) { b.textContent = u; }
+    setTimeout(() => { b.textContent = 'Copy link'; }, 2000);
+  });
+  // ------------------------------------------------------------- live game day
+  let LIVE = null;
+  function liveOk(L) { return L && D.meta.cur && L.y === D.meta.cur.y && L.wk === D.meta.cur.week + 1 && L.started; }
+  function matchupsHtml(full) { return `<div id="live-slot">${liveOk(LIVE) ? liveHtml(full) : previewHtml(full)}</div>`; }
+  function liveHtml(full) {
+    const L = LIVE, M = D.live.machine, T = {}; M.teams.forEach((t) => { T[t.tid] = t; });
+    const rec = (t) => `${T[t].w}–${T[t].l}`;
+    const upd = new Date(L.updated); const when = isNaN(upd) ? '' : upd.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+    const ord_ = { live: 0, pre: 1, final: 2 };
+    const games = [...L.games].sort((x, y) => ord_[x.status] - ord_[y.status] || Math.abs(x.hwin - 0.5) - Math.abs(y.hwin - 0.5));
+    const chip = (st) => st === 'live' ? '<span class="lv-chip on">Live</span>' : st === 'final' ? '<span class="lv-chip">Final</span>' : '<span class="lv-chip">Not started</span>';
+    const row = (tid, sc, pj, left, win, lead) => { const k = T[tid].key; return `<div class="lv-row${lead ? ' lead' : ''}">${badge(k)}<span class="lv-tm"><a class="mgr" href="#m-${k}">${esc(mgr(k).short)}</a><span class="sub">${esc(T[tid].team)} · ${rec(tid)}${left ? ` · ${left} to play` : ''}</span></span><span class="lv-sc num">${f1(sc)}</span><span class="lv-pj num">${f1(pj)}<i>proj</i></span><span class="lv-w num">${pct(win)}</span></div>`; };
+    const card = (g) => { const hk = T[g.h].key, ak = T[g.a].key; const moved = Math.round((g.hwin - g.hwin0) * 100); const fav = g.hwin >= 0.5 ? g.h : g.a;
+      return `<article class="sheet lv ${g.status}"><div class="lv-top">${chip(g.status)}${g.status !== 'pre' && Math.abs(moved) >= 5 ? `<span class="sub">${esc(mgr(T[moved > 0 ? g.h : g.a].key).short)} up ${Math.abs(moved)} points since kickoff</span>` : ''}</div>
+        ${row(g.h, g.hs, g.hp, g.hleft, g.hwin, g.status === 'final' ? g.hs > g.as_ : fav === g.h)}${row(g.a, g.as_, g.ap, g.aleft, 1 - g.hwin, g.status === 'final' ? g.as_ > g.hs : fav === g.a)}
+        <div class="pv-bar" role="img" aria-label="Win chance ${Math.round(g.hwin * 100)} to ${Math.round((1 - g.hwin) * 100)}"><i style="width:${g.hwin * 100}%;background:${COLORS[hk]}"></i><i style="width:${(1 - g.hwin) * 100}%;background:${COLORS[ak]}"></i></div></article>`; };
+    const od = [...L.odds].map((o) => ({ ...o, d: o.po - o.po0, k: T[o.tid].key })).sort((x, y) => Math.abs(y.d) - Math.abs(x.d) || y.po - x.po);
+    const odShow = full === false ? od.filter((o) => Math.abs(o.d) >= 0.01).slice(0, 5) : od;
+    const delta = (d) => { const v = Math.round(d * 100); return v === 0 ? '<span class="muted">—</span>' : `<span class="${v > 0 ? 'pos' : 'neg'}">${v > 0 ? '▲' : '▼'}${Math.abs(v)}</span>`; };
+    const tbl = odShow.length ? `<div class="sheet tbl"><table><caption>Playoff odds right now <span class="muted">· if every game finished the way it's trending</span></caption><thead><tr><th>Team</th><th class="r">At kickoff</th><th class="r">Now</th><th class="r">Change</th><th class="r hide-sm">Title</th></tr></thead><tbody>${odShow.map((o) => `<tr><td class="tm-cell"><a class="mgr" href="#m-${o.k}">${esc(T[o.tid].team)}</a><span class="sub">${esc(T[o.tid].mgr)}</span></td><td class="r num">${pct(o.po0)}</td><td class="r num"><b>${pct(o.po)}</b></td><td class="r num">${delta(o.d)}</td><td class="r num hide-sm">${pct(o.title)}</td></tr>`).join('')}</tbody></table></div>` : '';
+    return `<section id="live"><div class="sec-head"><div class="eyebrow"><span class="live-dot${L.final ? ' off' : ''}"></span>${L.final ? 'All games final' : 'Live'}${when ? ` · updated ${when}` : ''} · ESPN is checked every 15 minutes on game days</div><h2>Week ${L.wk}, live</h2></div>
+      <div class="lv-grid">${games.map(card).join('')}</div>${tbl}
+      <p class="note">Projected finals add what each starter is still expected to score to what he already has. Win chances shrink the uncertainty as games are played. Playoff odds re-run the rest of the season with this week's games at their live win chances. Official results post Tuesday morning.</p></section>`;
+  }
+  async function pollLive() {
+    try {
+      const r = await fetch('live.json?t=' + Date.now(), { cache: 'no-store' });
+      if (!r.ok) return;
+      const L = await r.json();
+      const was = LIVE ? LIVE.updated : null; LIVE = L;
+      const slot = document.getElementById('live-slot');
+      if (slot && liveOk(L) && L.updated !== was) { const full = slot.dataset.full !== 'false'; slot.innerHTML = liveHtml(full); }
+    } catch (e) { /* no live file, or offline */ }
+  }
   function previewHtml(full) {
     const L = D.live; if (!L || !L.preview || !L.preview.games.length) return '';
     const P = L.preview, g0 = P.games[0], O = oddsBy();
@@ -1011,7 +1081,7 @@ footer { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block:
     let html = '';
     if (cur) {
       const lastKey = `${cur.y}-${cur.played}`;
-      html += previewHtml(false);
+      html += matchupsHtml(false).replace('<div id="live-slot">', '<div id="live-slot" data-full="false">');
       if (D.live && D.live.machine && D.live.machine.games.length) html += `<a class="sheet mx-promo" href="#machine"><span class="eyebrow">Tool</span><b>Playoff machine</b><span class="sub">Pick every game left in ${D.live.machine.y} and watch the seeds, odds and bracket change.</span><span class="mx-go">Open →</span></a>`;
       html += `<section><div class="sec-head"><div class="eyebrow">${cur.y} season · through Week ${cur.played}</div><h2>This season</h2><a href="#s-${cur.y}" class="eyebrow">Everything on ${cur.y} →</a></div>
         <div class="sheet tbl">${powerTable(true, 5)}<div class="more-row"><a href="#s-${cur.y}">All 12 teams, odds, finishes and schedule luck →</a></div></div>
@@ -1094,7 +1164,7 @@ footer { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block:
     const tile = (k_, v, s) => `<div class="sheet tile"><span class="k">${k_}</span><span class="v num${String(v).length > 6 ? ' sm' : ''}">${v}</span><span class="s">${s || ''}</span></div>`;
     const span = `${m.seasons[0]}–${m.seasons[m.seasons.length - 1]}`;
     const html = `
-      <section class="page-title"><div class="crumbs"><a href="#managers">Managers</a><span>/</span><span>${esc(m.name)}</span></div>
+      <section class="page-title"><div class="crumbs"><a href="#managers">Managers</a><span>/</span><span>${esc(m.name)}</span>${shareBtn('m/' + m.key + '/')}</div>
         <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap">${badge(k, 1)}<div style="display:grid;gap:6px;min-width:0"><h2>${esc(m.name)}</h2><div class="facts"><span>${esc(m.team)}</span><span class="muted">${m.seasons.length} seasons · ${span}</span>${m.titles.map((y) => `<a class="chip champ" href="#s-${y}">★ ${y}</a>`).join('')}</div></div></div></section>
       <section><div class="tiles">
         ${tile('All-time rank', '#' + legacyRanks(LW_DEFAULT, false)[k], `${legacy(k, LW_DEFAULT, false)} legacy points · <a href="#managers">ranking</a>`)}
@@ -1243,9 +1313,9 @@ footer { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block:
     const oddsSec = !s.done && D.odds.length ? `<section><div class="sec-head"><div class="eyebrow">10,000 simulations</div><h2>Odds</h2></div><div class="sheet tbl"><table><thead><tr><th>Team</th><th class="r">W–L</th><th class="r hide-sm">Proj. wins</th><th class="r hide-sm" title="Remaining schedule, 1 = hardest">Sched.</th><th class="hide-sm">Division</th><th class="hide-sm">Bye</th><th>Playoffs</th><th class="hide-sm">Final</th><th>Title</th><th class="r hide-sm">Sacko</th></tr></thead><tbody>${D.odds.map((o) => `<tr><td class="tm-cell"><a class="mgr" href="#m-${o.key}">${esc(o.team)}</a><span class="sub">${esc(o.mgr)}</span>${statusChip(o.status)}</td><td class="r num">${o.w}–${o.l}</td><td class="r num hide-sm">${f1(o.projW)}</td><td class="r num hide-sm">${o.sosRank ? '#' + o.sosRank : '—'}</td><td class="hide-sm">${pbar(o.div)}</td><td class="hide-sm">${pbar(o.bye)}</td><td>${pbar(o.po)}</td><td class="hide-sm">${pbar(o.final)}</td><td>${pbar(o.title)}</td><td class="r num hide-sm">${o.sacko != null ? pct(o.sacko) : '—'}</td></tr>`).join('')}</tbody></table></div><p class="note">Each remaining game is simulated from both teams' average score so far, pulled toward the league average because ${s.played} weeks is a small sample, with a light nudge from last season. Next week uses ESPN projections. Division winners take seeds 1–4 and two wildcards follow, by record; ties go to head-to-head when the tied teams have all played each other equally, otherwise points. The Sacko is simulated through the losers' ladder. Sched. ranks each team's remaining opponents by average score (#1 is the hardest). Clinched and eliminated badges appear only when no remaining result can change them.</p></section>
       <section><div class="sec-head"><h2>Odds over time</h2></div>${oddsChartBlock('oc-season')}</section>${finishHtml()}` : '';
     const P = {};
-    P.T = `      <section class="page-title"><div class="crumbs"><a href="#seasons">Seasons</a><span>/</span><span>${s.y}</span></div><h2>${s.y}</h2><p class="headline">${esc(s.headline)}</p><div class="facts muted"><span>${fmt}</span>${s.trades ? `<span>${s.trades} trade${s.trades === 1 ? '' : 's'}</span>` : ''}</div></section>`;
+    P.T = `      <section class="page-title"><div class="crumbs"><a href="#seasons">Seasons</a><span>/</span><span>${s.y}</span>${shareBtn('s/' + s.y + '/')}</div><h2>${s.y}</h2><p class="headline">${esc(s.headline)}</p><div class="facts muted"><span>${fmt}</span>${s.trades ? `<span>${s.trades} trade${s.trades === 1 ? '' : 's'}</span>` : ''}</div></section>`;
     P.ST = `      <section><div class="sec-head"><h2>${s.done ? 'Final standings' : 'Standings'}</h2></div><div class="sheet tbl"><table><thead><tr><th class="r">${s.done ? 'Finish' : '#'}</th><th>Team</th><th class="r">W–L</th><th class="r">PF</th><th class="r">PA</th><th></th></tr></thead><tbody>${s.rows.map((r, i) => `<tr><td class="r num">${s.done ? r.rank : i + 1}</td><td class="tm-cell"><a class="mgr" href="#m-${r.key}">${esc(r.team)}</a><span class="sub">${esc(r.mgr)}</span></td><td class="r num">${wl(r.w, r.l, r.t)}</td><td class="r num">${f1(r.pf)}</td><td class="r num">${f1(r.pa)}</td><td>${statusChips(r, s)}</td></tr>`).join('')}</tbody></table></div></section>`;
-    P.PV = `      ${!s.done ? previewHtml(true) : ''}`;
+    P.PV = `      ${!s.done ? matchupsHtml(true) : ''}`;
     P.OD = `      ${oddsSec}`;
     P.AW = `      ${awardsHtml(s.y, !s.done)}`;
     P.DV = `      ${s.divs.length ? `<section><div class="sec-head"><h2>Divisions</h2></div><div class="divs">${s.divs.map(divBox).join('')}</div></section>` : ''}`;
@@ -1579,6 +1649,7 @@ footer { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block:
     D.managers.forEach((m, i) => { MK[m.key] = m; COLORS[m.key] = `var(--c${i % 12})`; });
     KEYS = D.managers.map((m) => m.key);
     buildParts();
+    if (D.meta.cur) { await pollLive(); setInterval(() => { if (!document.hidden) pollLive(); }, 120000); }
     shell();
     route();
     window.addEventListener('hashchange', () => { route(); window.scrollTo(0, 0); });
