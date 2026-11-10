@@ -1,0 +1,79 @@
+name: Weekly refresh
+
+# Pulls the current season from ESPN, rebuilds the almanac, runs the stats check,
+# and commits only if every check passes. GitHub Pages then republishes docs/.
+on:
+  schedule:
+    - cron: '49 13 * 9-12,1 2'   # Tuesdays, Sept–Jan (8:49 ET in winter, 9:49 ET in summer time)
+  workflow_dispatch:
+    inputs:
+      force:
+        description: 'Rebuild and commit even if ESPN data has not changed'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      - name: Work out the season
+        id: season
+        run: |
+          y=$(date -u +%Y); m=$(date -u +%-m)
+          if [ "$m" -lt 8 ]; then y=$((y-1)); fi
+          echo "year=$y" >> "$GITHUB_OUTPUT"
+          if [ -f "raw/$y.json" ] && python3 -c "import json,sys; sys.exit(0 if json.load(open('raw/$y.json'))['done'] else 1)"; then
+            echo "done=true" >> "$GITHUB_OUTPUT"; echo "$y is already final; nothing to fetch."
+          else
+            echo "done=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Fetch from ESPN
+        if: steps.season.outputs.done == 'false'
+        env:
+          ESPN_S2: ${{ secrets.ESPN_S2 }}
+          ESPN_SWID: ${{ secrets.ESPN_SWID }}
+        run: python3 pipeline/fetch_season.py ${{ steps.season.outputs.year }} raw/${{ steps.season.outputs.year }}.json
+
+      - name: Anything new?
+        id: changed
+        run: |
+          if [ -n "$(git status --porcelain raw)" ] || [ "${{ inputs.force }}" = "true" ]; then echo "yes=true" >> "$GITHUB_OUTPUT"; else echo "yes=false" >> "$GITHUB_OUTPUT"; echo "ESPN data unchanged; skipping rebuild."; fi
+
+      - name: Build
+        if: steps.changed.outputs.yes == 'true'
+        run: python3 pipeline/build.py raw docs/data.json
+
+      - name: Stats check (holds the update back if anything fails)
+        if: steps.changed.outputs.yes == 'true'
+        run: python3 audit/audit.py raw docs/data.json | tail -25
+
+      - name: Summary
+        if: steps.changed.outputs.yes == 'true'
+        run: python3 pipeline/summary.py docs/data.json >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Commit
+        if: steps.changed.outputs.yes == 'true'
+        run: |
+          git config user.name "brown-cow-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add raw docs/data.json
+          git commit -m "Weekly refresh: $(python3 -c "import json; d=json.load(open('docs/data.json')); c=d['meta'].get('cur'); print(f\"{c['y']} through week {c['week']}\" if c else 'final')")"
+          git push
