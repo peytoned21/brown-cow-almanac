@@ -157,7 +157,7 @@ def snapshot(cfg, D, wk_data, events, boxes, scoring, now):
     o_live = simulate(M, wk, fixed, h2h, seed=wk); o_pre = simulate(M, wk, base, h2h, seed=wk)
     odds = [dict(tid=t, po=o_live[t]['po'], po0=o_pre[t]['po'], title=o_live[t]['title'], title0=o_pre[t]['title'],
                  div=o_live[t]['div'], bye=o_live[t]['bye']) for t in o_live]
-    return dict(y=y, wk=wk, updated=datetime.datetime.fromtimestamp(now, datetime.timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'),
+    return dict(league=cfg['site']['slug'], y=y, wk=wk, updated=datetime.datetime.fromtimestamp(now, datetime.timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'),
                 started=any(g['status'] != 'pre' for g in games), final=all(g['status'] == 'final' for g in games),
                 sd=sd, games=games, odds=odds, scoring=scoring, lineups={str(k): v for k, v in lineups.items()},
                 events={k: dict(teams=v['teams'], frac=v['frac'], state=v['state']) for k, v in events.items()})

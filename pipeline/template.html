@@ -520,6 +520,9 @@ tr.is-me { box-shadow: none !important; }
 .lv-pj i { font-style: normal; font-size: 10px; text-transform: uppercase; letter-spacing: .06em; }
 .lv-w { text-align: right; font-weight: 700; }
 .lv.final .lv-pj { visibility: hidden; }
+.lv-pj-s { display: none; }
+@media (max-width: 480px) { .wp figcaption span:nth-child(2) { display: none; } }
+@media (max-width: 480px) { .lv-row { grid-template-columns: auto minmax(0, 1fr) auto 3em; gap: 8px; } .lv-pj { display: none; } .lv-pj-s { display: inline; } .lv.final .lv-pj-s { display: none; } .lv-sc { font-size: 24px; } .lv .mono-badge { width: 36px; height: 36px; font-size: 15px; } }
 
 .jump { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 4px 0 18px; }
 .jump .eyebrow { margin-right: 4px; white-space: nowrap; }
@@ -783,7 +786,7 @@ footer { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block:
   }
   // ------------------------------------------------------------- live game day
   let LIVE = null;
-  function liveOk(L) { return L && D.meta.cur && L.y === D.meta.cur.y && L.wk === D.meta.cur.week + 1 && L.started; }
+  function liveOk(L) { return L && D.meta.cur && (!L.league || L.league === LG.slug) && L.y === D.meta.cur.y && L.wk === D.meta.cur.week + 1 && L.started && L.games.every((g) => D.live && D.live.machine && D.live.machine.teams.some((t) => t.tid === g.h)); }
   function matchupsHtml(full) { return `<div id="live-slot">${liveOk(LIVE) ? liveHtml(full) : previewHtml(full)}</div>`; }
   function liveHtml(full) {
     const L = liveView(), M = D.live.machine, T = {}; M.teams.forEach((t) => { T[t.tid] = t; });
@@ -793,7 +796,7 @@ footer { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block:
     const mine = (g) => (meTid() === g.h || meTid() === g.a ? 0 : 1);
     const games = [...L.games].sort((x, y) => mine(x) - mine(y) || ord_[x.status] - ord_[y.status] || Math.abs(x.hwin - 0.5) - Math.abs(y.hwin - 0.5));
     const chip = (st) => st === 'live' ? '<span class="lv-chip on">Live</span>' : st === 'final' ? '<span class="lv-chip">Final</span>' : '<span class="lv-chip">Not started</span>';
-    const row = (tid, sc, pj, left, win, lead) => { const k = T[tid].key; return `<div class="lv-row${lead ? ' lead' : ''}">${badge(k)}<span class="lv-tm"><a class="mgr" href="#m-${k}">${esc(mgr(k).short)}</a><span class="sub">${esc(T[tid].team)} · ${rec(tid)}${left ? ` · ${left} to play` : ''}</span></span><span class="lv-sc num">${f1(sc)}</span><span class="lv-pj num">${f1(pj)}<i>proj</i></span><span class="lv-w num">${pct(win)}</span></div>`; };
+    const row = (tid, sc, pj, left, win, lead) => { const k = T[tid].key; return `<div class="lv-row${lead ? ' lead' : ''}">${badge(k)}<span class="lv-tm"><a class="mgr" href="#m-${k}">${esc(mgr(k).short)}</a><span class="sub">${esc(T[tid].team)} · ${rec(tid)}${left ? ` · ${left} to play` : ''}<span class="lv-pj-s"> · proj ${f1(pj)}</span></span></span><span class="lv-sc num">${f1(sc)}</span><span class="lv-pj num">${f1(pj)}<i>proj</i></span><span class="lv-w num">${pct(win)}</span></div>`; };
     const card = (g) => { const hk = T[g.h].key, ak = T[g.a].key; const moved = Math.round((g.hwin - g.hwin0) * 100); const fav = g.hwin >= 0.5 ? g.h : g.a;
       return `<article class="sheet lv ${g.status}"><div class="lv-top">${chip(g.status)}${g.status !== 'pre' && Math.abs(moved) >= 5 ? `<span class="sub">${esc(mgr(T[moved > 0 ? g.h : g.a].key).short)} up ${Math.abs(moved)} points since kickoff</span>` : ''}</div>
         ${row(g.h, g.hs, g.hp, g.hleft, g.hwin, g.status === 'final' ? g.hs > g.as_ : fav === g.h)}${row(g.a, g.as_, g.ap, g.aleft, 1 - g.hwin, g.status === 'final' ? g.as_ > g.hs : fav === g.a)}
