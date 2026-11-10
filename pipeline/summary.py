@@ -1,7 +1,7 @@
 """Print a short markdown summary of the latest refresh (for the Actions run page)."""
 import json, sys
 
-D = json.load(open(sys.argv[1] if len(sys.argv) > 1 else 'docs/data.json'))
+D = json.load(open(sys.argv[1] if len(sys.argv) > 1 else 'data.json'))
 cur = D['meta'].get('cur')
 if not cur:
     print('## Brown Cow Almanac\n\nThe season is final.')

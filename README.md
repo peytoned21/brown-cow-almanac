@@ -8,10 +8,10 @@ The history site for Brown Cow 3.0, an ESPN fantasy football league founded in 2
 
 | Folder | What's in it |
 |---|---|
-| `docs/` | The site GitHub Pages serves: `index.html`, the built `data.json`, and the artwork |
+| `index.html`, `data.json`, `art/` | The site, served by GitHub Pages from the repo root. `data.json` is built, not edited by hand |
 | `raw/` | One file per season, as pulled from ESPN |
 | `pipeline/fetch_season.py` | Pulls one season from ESPN into `raw/` |
-| `pipeline/build.py` | Turns `raw/` into `docs/data.json`: standings, records, Elo, luck, odds and everything else |
+| `pipeline/build.py` | Turns `raw/` into `data.json`: standings, records, Elo, luck, odds and everything else |
 | `audit/audit.py` | Independently recomputes about 3,800 numbers and fails if any disagree |
 | `pipeline/summary.py` | Writes the short summary shown on each refresh run |
 | `.github/workflows/refresh.yml` | The weekly refresh |
@@ -41,9 +41,9 @@ Pages then republishes the site within a minute or two. If anything fails, nothi
 ```
 pip install -r requirements.txt
 ESPN_S2=... ESPN_SWID=... python3 pipeline/fetch_season.py 2026
-python3 pipeline/build.py raw docs/data.json
-python3 audit/audit.py raw docs/data.json
-cd docs && python3 -m http.server
+python3 pipeline/build.py raw data.json
+python3 audit/audit.py raw data.json
+python3 -m http.server
 ```
 
 `pipeline/fetch_season.js` is the original browser version of the fetcher. It runs in a signed-in espn.com tab and is kept as a fallback.

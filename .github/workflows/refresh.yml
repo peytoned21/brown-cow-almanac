@@ -1,7 +1,7 @@
 name: Weekly refresh
 
 # Pulls the current season from ESPN, rebuilds the almanac, runs the stats check,
-# and commits only if every check passes. GitHub Pages then republishes docs/.
+# and commits only if every check passes. GitHub Pages then republishes the site.
 on:
   schedule:
     - cron: '49 13 * 9-12,1 2'   # Tuesdays, Sept–Jan (8:49 ET in winter, 9:49 ET in summer time)
@@ -59,21 +59,21 @@ jobs:
 
       - name: Build
         if: steps.changed.outputs.yes == 'true'
-        run: python3 pipeline/build.py raw docs/data.json
+        run: python3 pipeline/build.py raw data.json
 
       - name: Stats check (holds the update back if anything fails)
         if: steps.changed.outputs.yes == 'true'
-        run: python3 audit/audit.py raw docs/data.json | tail -25
+        run: python3 audit/audit.py raw data.json | tail -25
 
       - name: Summary
         if: steps.changed.outputs.yes == 'true'
-        run: python3 pipeline/summary.py docs/data.json >> "$GITHUB_STEP_SUMMARY"
+        run: python3 pipeline/summary.py data.json >> "$GITHUB_STEP_SUMMARY"
 
       - name: Commit
         if: steps.changed.outputs.yes == 'true'
         run: |
           git config user.name "brown-cow-bot"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add raw docs/data.json
-          git commit -m "Weekly refresh: $(python3 -c "import json; d=json.load(open('docs/data.json')); c=d['meta'].get('cur'); print(f\"{c['y']} through week {c['week']}\" if c else 'final')")"
+          git add raw data.json
+          git commit -m "Weekly refresh: $(python3 -c "import json; d=json.load(open('data.json')); c=d['meta'].get('cur'); print(f\"{c['y']} through week {c['week']}\" if c else 'final')")"
           git push
