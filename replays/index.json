@@ -1,0 +1,40 @@
+[
+ {
+  "y": 2026,
+  "wk": 9,
+  "file": "2026-w09.json",
+  "games": [
+   [
+    "jones",
+    "edwards"
+   ],
+   [
+    "taliaferro",
+    "copp"
+   ],
+   [
+    "yang",
+    "dejarnette"
+   ],
+   [
+    "maxey",
+    "barry"
+   ],
+   [
+    "brown",
+    "olsen"
+   ],
+   [
+    "foxhall",
+    "mccarthy"
+   ]
+  ],
+  "comeback": {
+   "winner": "edwards",
+   "loser": "jones",
+   "low": 0.355,
+   "at": 29904626,
+   "when": "Mon 9:26pm"
+  }
+ }
+]
