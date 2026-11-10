@@ -88,6 +88,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add raw data.json og s m index.html
           git commit -m "Weekly refresh: $(python3 -c "import json; d=json.load(open('data.json')); c=d['meta'].get('cur'); print(f\"{c['y']} through week {c['week']}\" if c else 'final')")"
+          git pull -q --rebase -X theirs
           git push
 
       - name: Post the recap to GroupMe
