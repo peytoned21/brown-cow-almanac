@@ -1,30 +1,29 @@
-"""Build data.json for the Brown Cow Almanac from raw/<year>.json season exports.
+"""Build data.json for a league almanac from raw/<year>.json season exports.
 
-Usage: python3 build.py RAW_DIR OUT_FILE
+Usage: python3 build.py RAW_DIR OUT_FILE [LEAGUE_CONFIG]
+LEAGUE_CONFIG defaults to league.json next to this script. Everything league-specific (seats, year cutoffs,
+one-off cards, branding) lives there; this file is shared by every league.
 """
 import json, os, sys, statistics as st, collections, math, datetime, re
 
 RAW = sys.argv[1] if len(sys.argv) > 1 else 'raw'
 OUT = sys.argv[2] if len(sys.argv) > 2 else 'data.json'
+CFG = json.load(open(sys.argv[3] if len(sys.argv) > 3 else os.path.join(os.path.dirname(os.path.abspath(__file__)), 'league.json')))
+CUT = CFG.get('cutoffs', {})
+SEEDS_FROM = CUT.get('seedsFrom', 0)        # seeds shown / upsets counted from this season
+PPR_FROM = CUT.get('pprFrom', 0)            # low-score records start here
+EARLY_WEEKS = CUT.get('earlyWeeks', 6)      # "early" = Weeks 1..EARLY_WEEKS
+LADDER = bool(CFG.get('losersLadder'))      # simulate last place through the 12-team losers' ladder
+BRIDESMAID = (CFG.get('oneOffs') or {}).get('bridesmaid')
+TITLE_NOUN = CFG.get('titleNoun') or CFG.get('name', 'league')
+PW = CFG.get('pointsWildcard') or {}        # {"from": year, "spots": n}: the last n playoff spots go to the top scorers outside the top records
+def pw_for(y): return PW.get('spots', 0) if PW and y >= PW.get('from', 9999) else 0
 
 # ---------------------------------------------------------------- franchises
-FR = [  # key, full label, short label, owner names that identify the seat
-    ('jones', 'Chris Jones & Miguel Arias', 'Chris & Miguel', ['christopher jones', 'miguel arias']),
-    ('mccarthy', 'Connor McCarthy & Kunal Patel', 'Connor & Kunal', ['connor mccarthy', 'kunal patel']),
-    ('maxey', 'Andrew Maxey & Nick Thompson', 'Andrew & Nick', ['andrew maxey', 'nick thompson']),
-    ('edwards', 'Peyton Edwards', 'Peyton', ['peyton edwards']),
-    ('dejarnette', 'Nathan DeJarnette', 'Nathan', ['nathan dejarnette']),
-    ('brown', 'Mack Brown', 'Mack', ['mack brown']),
-    ('barry', 'Michael Barry', 'Michael', ['michael barry']),
-    ('yang', 'Mike Yang', 'Mike', ['mike yang']),
-    ('copp', 'Kevin Copp', 'Kevin', ['kevin copp']),
-    ('olsen', 'Dustin Olsen', 'Dustin', ['dustin olsen']),
-    ('taliaferro', 'John Taliaferro', 'John', ['john taliaferro']),
-    ('foxhall', 'Trey Foxhall', 'Trey', ['edward foxhall', 'trey foxhall']),
-]
+FR = [tuple(f) for f in CFG['franchises']]  # key, full label, short label, owner names that identify the seat
 LABEL = {k: l for k, l, s, n in FR}
 SHORT = {k: s for k, l, s, n in FR}
-NICE = {'christopher jones': 'Chris Jones', 'dustin olsen': 'Dustin Olsen', 'edward foxhall': 'Trey Foxhall'}
+NICE = dict(CFG.get('niceNames') or {})
 
 def fkey(owners):
     low = [o.lower() for o in owners]
@@ -62,7 +61,7 @@ def rank_teams(tids, W, PF, H, G):
         while grp:
             if len(grp) == 1: out += grp; break
             cnts = {G.get(frozenset((a, b)), 0) for a, b in itertools.combinations(grp, 2)}
-            if len(cnts) == 1 and 0 not in cnts:
+            if SEED_H2H and len(cnts) == 1 and 0 not in cnts:
                 def key(t):
                     ww = sum(H.get((t, o), 0) for o in grp if o != t); ll = sum(H.get((o, t), 0) for o in grp if o != t)
                     return (-(ww / (ww + ll) if ww + ll else .5), -PF[t])
@@ -71,9 +70,16 @@ def rank_teams(tids, W, PF, H, G):
             first = min(grp, key=key); out.append(first); grp.remove(first)
     return out
 
-def seed_teams(tids, divof, W, PF, H, G, po):
+def seed_teams(tids, divof, W, PF, H, G, po, pw=0):
     divs = collections.defaultdict(list)
     for t in tids: divs[divof[t]].append(t)
+    if pw:  # top (po - pw) records, then the pw highest scorers among everyone else
+        assert len(divs) <= 1, 'points wildcard with divisions is not modelled'
+        order = rank_teams(tids, W, PF, H, G)
+        top = order[:po - pw]; rest = [t for t in order if t not in top]
+        wcs = sorted(rest, key=lambda t: -PF[t])[:pw]
+        order = top + wcs + [t for t in rest if t not in wcs]
+        return order[:po], set(), order
     if len(divs) > 1:
         dw = [rank_teams(ts, W, PF, H, G)[0] for ts in divs.values()]
         order = rank_teams(dw, W, PF, H, G)
@@ -94,6 +100,8 @@ seasons.sort(key=lambda s: s['y'])
 TIER = {'NONE': 0, 'WINNERS_BRACKET': 1}
 CUR = [s for s in seasons if not s['done']]
 CUR = CUR[-1] if CUR else None
+# ESPN's tiebreak for equal records: head-to-head (H2H_RECORD) or straight to points (TOTAL_POINTS_SCORED)
+SEED_H2H = (CUR or seasons[-1])['settings'].get('seeding') != 'TOTAL_POINTS_SCORED'
 
 for s in seasons:
     s['tm'] = {t['id']: t for t in s['teams']}
@@ -271,8 +279,13 @@ for s in done:
     po = s['settings']['po']
     for t in teams:
         recs = [wins(t, b) for b in teams]
+        kpw = pw_for(s['y'])
         def makes(w):
-            return sum(1 for o in teams if o != t and (actual[o], s['tm'][o]['pf']) > (w, s['tm'][t]['pf'])) < po
+            if not kpw:
+                return sum(1 for o in teams if o != t and (actual[o], s['tm'][o]['pf']) > (w, s['tm'][t]['pf'])) < po
+            if sum(1 for o in teams if o != t and (actual[o], s['tm'][o]['pf']) > (w, s['tm'][t]['pf'])) < po - kpw: return True
+            ranked = sorted([o for o in teams if o != t], key=lambda o: (-actual[o], -s['tm'][o]['pf']))
+            return sum(1 for o in ranked[po - kpw:] if s['tm'][o]['pf'] > s['tm'][t]['pf']) < kpw  # points don't depend on the schedule
         made = 1 if t in s['poTeams'] else 0
         # own schedule uses what actually happened (ESPN's tiebreakers), the other 11 use wins then points
         pm = st.mean((made if b == t else (1 if makes(w) else 0)) for b, w in zip(teams, recs))
@@ -403,6 +416,11 @@ for s in seasons:
     y = s['y']; P = s['players']
     picks = sorted(s['draft'], key=lambda p: p[0])
     if not picks: continue
+    # In an auction the pick number is only nomination order: rank by price instead, and call each block of
+    # league-size price ranks a "round" (round 1 = the N most expensive buys), so steals and busts mean the same thing.
+    auc = s['settings'].get('draftType') == 'AUCTION'
+    if auc: picks = sorted(picks, key=lambda p: (-p[5], p[0]))
+    nT = len(s['teams'])
     vals = [(P.get(str(p[3])) or names.get(p[3]) or ['?', '', 0, 0]) for p in picks]
     pts = [v[3] or 0 for v in vals]
     n = len(picks)
@@ -410,7 +428,8 @@ for s in seasons:
     for i, (p, v) in enumerate(zip(picks, vals)):
         lo, hi = max(0, i - 8), min(n, i + 9)
         exp = st.mean(pts[lo:hi])
-        rows.append(dict(y=y, pick=p[0], rd=p[1], tid=p[2], key=s['fk'].get(p[2]), mgr=s['sl'].get(p[2], '?'), player=v[0], pos=v[1], pts=pts[i], exp=round(exp, 1), val=round(pts[i] - exp, 1), keeper=p[4]))
+        rows.append(dict(y=y, pick=p[0], rd=(i // nT + 1) if auc else p[1], tid=p[2], key=s['fk'].get(p[2]), mgr=s['sl'].get(p[2], '?'), player=v[0], pos=v[1], pts=pts[i], exp=round(exp, 1), val=round(pts[i] - exp, 1), keeper=p[4],
+                         **({'bid': p[5], 'prank': i + 1} if auc else {})))
     # position finish rank
     by_pos = collections.defaultdict(list)
     for pid, pos, pp in s.get('ranked', []): by_pos[pos].append(pid)
@@ -426,6 +445,92 @@ for s in seasons:
             z = (v - mu) / sd
             grade = 'A' if z >= 1 else 'B' if z >= 0.3 else 'C' if z > -0.3 else 'D' if z > -1 else 'F'
             draft_team.append(dict(y=y, key=s['fk'][tid], mgr=s['sl'][tid], val=round(v, 1), z=round(z, 2), grade=grade, rank=s['tm'][tid]['rank']))
+
+# ---------------------------------------------------------------- auction market (auction-draft seasons only)
+# Fair price in hindsight: rate every drafted player by points above replacement at his position (filling every
+# starting slot league-wide, flex slots included), then hand out that year's actual prices in that order -- the most
+# valuable player "should" have cost the highest price paid, and so on. Surplus = fair price - price paid.
+FLEX_ELIG = {'7': {'QB', 'RB', 'WR', 'TE'}, '23': {'RB', 'WR', 'TE'}, '3': {'RB', 'WR'}, '5': {'WR', 'TE'}}
+SLOT_POS = {'0': 'QB', '2': 'RB', '4': 'WR', '6': 'TE', '16': 'D/ST', '17': 'K'}
+AUC_POS = ['QB', 'RB', 'WR', 'TE', 'K', 'D/ST']
+auction = None
+auc_seasons = [s for s in seasons if s['settings'].get('draftType') == 'AUCTION' and s['draft']]
+if auc_seasons:
+    auction = dict(years=[], managers={}, bargains=[], overpays=[])
+    a_rows = []          # every auction purchase, with fair price
+    for s in auc_seasons:
+        y = s['y']; nT = len(s['teams']); slots = s['settings']['slots']
+        pool = sorted([r for r in s.get('ranked', []) if r[1] in AUC_POS], key=lambda r: -r[2])
+        taken = set(); by_pos = collections.defaultdict(list)
+        for pid, pos, pts in pool: by_pos[pos].append((pts, pid))
+        for sid, pos in SLOT_POS.items():
+            for pts, pid in by_pos[pos][:int(slots.get(sid, 0)) * nT]: taken.add(pid)
+        for sid, elig in FLEX_ELIG.items():
+            need = int(slots.get(sid, 0)) * nT
+            for pid, pos, pts in pool:
+                if need <= 0: break
+                if pos in elig and pid not in taken: taken.add(pid); need -= 1
+        repl = {pos: next((pts for pts, pid in by_pos[pos] if pid not in taken), 0) for pos in AUC_POS}
+        rows = [r_ for r_ in draft_rows if r_['y'] == y]
+        for r_ in rows: r_['vor'] = round(r_['pts'] - repl.get(r_['pos'], 0), 1)
+        prices = sorted((r_['bid'] for r_ in rows), reverse=True)
+        for r_, fair in zip(sorted(rows, key=lambda r_: (-r_['vor'], -r_['pts'], r_['prank'])), prices):
+            r_['fair'] = fair; r_['surp'] = fair - r_['bid']
+        a_rows += rows
+        # price index: the n-th highest price paid at a position
+        nth = lambda pos, n: (sorted((r_['bid'] for r_ in rows if r_['pos'] == pos), reverse=True) + [0] * n)[n - 1]
+        index = dict(top=prices[0], QB1=nth('QB', 1), QB5=nth('QB', 5), RB1=nth('RB', 1), RB5=nth('RB', 5), RB10=nth('RB', 10),
+                     WR1=nth('WR', 1), WR5=nth('WR', 5), WR10=nth('WR', 10), TE1=nth('TE', 1), ones=sum(1 for p in prices if p == 1))
+        spent_all = sum(prices) or 1
+        pos_eff = []
+        for pos in AUC_POS:
+            pr = [r_ for r_ in rows if r_['pos'] == pos]
+            if not pr: continue
+            sp_ = sum(r_['bid'] for r_ in pr); pt_ = sum(r_['pts'] for r_ in pr); vo_ = sum(max(0, r_['vor']) for r_ in pr)
+            pos_eff.append(dict(pos=pos, n=len(pr), spent=sp_, share=round(sp_ / spent_all, 3), pts=round(pt_, 1), ppd=round(pt_ / max(1, sp_), 2),
+                                vpd=round(vo_ / max(1, sp_), 2), surp=sum(r_['surp'] for r_ in pr)))
+        teams_ = []
+        for t in s['teams']:
+            mine = [r_ for r_ in rows if r_['tid'] == t['id']]
+            if not mine: continue
+            sp_ = sum(r_['bid'] for r_ in mine); bids = sorted((r_['bid'] for r_ in mine), reverse=True)
+            teams_.append(dict(tid=t['id'], key=s['fk'][t['id']], mgr=s['sl'][t['id']], team=t['name'], spent=sp_, fair=sum(r_['fair'] for r_ in mine),
+                               surp=sum(r_['surp'] for r_ in mine), pts=round(sum(r_['pts'] for r_ in mine), 1),
+                               ppd=round(sum(r_['pts'] for r_ in mine) / max(1, sp_), 2), top2=round(sum(bids[:2]) / max(1, sp_), 3),
+                               rank=t['rank'] if s['done'] else None, w=t['w'], l=t['l']))
+        teams_.sort(key=lambda x: -x['surp'])
+        auction['years'].append(dict(y=y, done=s['done'], index=index, pos=pos_eff, teams=teams_, repl={k: round(v, 1) for k, v in repl.items()}))
+    # careers
+    done_rows = [r_ for r_ in a_rows if any(x['y'] == r_['y'] and x['done'] for x in auc_seasons)]
+    slim = lambda r_: dict(y=r_['y'], key=r_['key'], mgr=r_['mgr'], player=r_['player'], pos=r_['pos'], bid=r_['bid'], fair=r_['fair'], surp=r_['surp'], pts=r_['pts'], keeper=r_['keeper'])
+    for k in keys:
+        mine = [r_ for r_ in a_rows if r_['key'] == k]
+        if not mine: continue
+        mdone = [r_ for r_ in mine if r_ in done_rows]
+        yrs = sorted({r_['y'] for r_ in mine})
+        tops = [ty['top2'] for yy in auction['years'] for ty in yy['teams'] if ty['key'] == k]
+        sp_ = sum(r_['bid'] for r_ in mdone) or 1
+        pos_sh = {pos: round(sum(r_['bid'] for r_ in mine if r_['pos'] == pos) / max(1, sum(r_['bid'] for r_ in mine)), 3) for pos in AUC_POS}
+        guys = collections.defaultdict(list)
+        for r_ in mine: guys[(r_['player'], r_['pos'])].append([r_['y'], r_['bid']])
+        guys = sorted([dict(player=p, pos=q, buys=sorted(b)) for (p, q), b in guys.items() if len(b) >= 3], key=lambda g: (-len(g['buys']), -sum(x[1] for x in g['buys'])))[:6]
+        auction['managers'][k] = dict(
+            years=len(yrs), spent=sum(r_['bid'] for r_ in mdone), pts=round(sum(r_['pts'] for r_ in mdone), 1),
+            ppd=round(sum(r_['pts'] for r_ in mdone) / sp_, 2), surp=sum(r_['surp'] for r_ in mdone),
+            top2=round(st.mean(tops), 3) if tops else None, pos=pos_sh,
+            biggest=slim(max(mine, key=lambda r_: (r_['bid'], -r_['y']))),
+            best=slim(max(mdone, key=lambda r_: r_['surp'])) if mdone else None,
+            worst=slim(min(mdone, key=lambda r_: r_['surp'])) if mdone else None, guys=guys)
+    # style label from the league's own spread of top-two shares (thirds)
+    shares = sorted(m['top2'] for m in auction['managers'].values() if m['top2'] is not None)
+    if shares:
+        lo, hi = shares[len(shares) // 3], shares[(2 * len(shares)) // 3]
+        for m in auction['managers'].values():
+            if m['top2'] is None: continue
+            m['style'] = 'More top-heavy than most' if m['top2'] >= hi else 'More spread out than most' if m['top2'] < lo else 'Typical for the league'
+    auction['bargains'] = [slim(r_) for r_ in sorted(done_rows, key=lambda r_: -r_['surp'])[:10]]
+    auction['overpays'] = [slim(r_) for r_ in sorted(done_rows, key=lambda r_: r_['surp'])[:10]]
+    auction['budget'] = max(sum(r_['bid'] for r_ in a_rows if r_['y'] == yy and r_['tid'] == tt) for yy, tt in {(r_['y'], r_['tid']) for r_ in a_rows})
 
 # ---------------------------------------------------------------- per-season extras: bracket, race, champ roster, sacko, headline
 upsets = []; sacko = []; season_out = []
@@ -454,7 +559,7 @@ for s in seasons:
             ws, ls = (seed[g['h']], seed[g['a']]) if hw else (seed[g['a']], seed[g['h']])
             if ws > ls:
                 wt, lt = (g['h'], g['a']) if hw else (g['a'], g['h'])
-                if s['y'] >= 2019: upsets.append(dict(y=y, mp=mp, final=(mp == max(x['mp'] for x in wb)), wseed=ws, lseed=ls, w=s['sl'][wt], l=s['sl'][lt], wkey=s['fk'][wt], lkey=s['fk'][lt], ws=max(g['hs'], g['as_']) / g['div'], ls=min(g['hs'], g['as_']) / g['div']))
+                if s['y'] >= SEEDS_FROM: upsets.append(dict(y=y, mp=mp, final=(mp == max(x['mp'] for x in wb)), wseed=ws, lseed=ls, w=s['sl'][wt], l=s['sl'][lt], wkey=s['fk'][wt], lkey=s['fk'][lt], ws=max(g['hs'], g['as_']) / g['div'], ls=min(g['hs'], g['as_']) / g['div']))
         rg.sort(key=lambda m: min(m['hseed'], m['aseed']))
         rounds.append(rg)
     byes = []
@@ -516,17 +621,17 @@ for s in seasons:
         n = title_count[ck]
         nth = {1: 'first', 2: 'second', 3: 'third', 4: 'fourth', 5: 'fifth'}.get(n, ordinal(n))
         cs = sshort(s['tm'][champ['id']]['owners'])
-        bits = [f"{cs} {'win' if '&' in cs else 'wins'} {'the first Brown Cow title' if y == seasons[0]['y'] else nth + ' title'}"]
-        if seed.get(champ['id'], 0) >= 4 and s['y'] >= 2019: bits[0] += f" from the No. {seed[champ['id']]} seed"
+        bits = [f"{cs} {'win' if '&' in cs else 'wins'} {'the first ' + TITLE_NOUN + ' title' if y == seasons[0]['y'] else nth + ' title'}"]
+        if seed.get(champ['id'], 0) >= 4 and s['y'] >= SEEDS_FROM: bits[0] += f" from the No. {seed[champ['id']]} seed"
         best = max(s['teams'], key=lambda t: (t['w'] - t['l'], t['pf']))
         if best['id'] != champ['id'] and best['w'] - best['l'] >= 8:
             bs_ = sshort(best['owners'])
             bits.append(f"{bs_} {'go' if '&' in bs_ else 'goes'} {best['w']}–{best['l']} and {'finish' if '&' in bs_ else 'finishes'} {ordinal(best['rank'])}")
         elif final and final['lm']:
             lk = next(s['fk'][t['id']] for t in s['teams'] if t['name'] == final['l'])
-            if lk == 'copp' and y in M['copp']['ru']:
-                c = sum(1 for yy in M['copp']['ru'] if yy <= y)
-                if c >= 3: bits.append(f"Kevin's {ordinal(c)} runner-up finish")
+            if BRIDESMAID and lk == BRIDESMAID and y in M[BRIDESMAID]['ru']:
+                c = sum(1 for yy in M[BRIDESMAID]['ru'] if yy <= y)
+                if c >= 3: bits.append(f"{SHORT[BRIDESMAID]}'s {ordinal(c)} runner-up finish")
         headline = '; '.join(bits)
     elif not s['done']:
         headline = f"In progress through Week {s['played']}"
@@ -578,7 +683,7 @@ for s in seasons:
         headline=headline, rows=rows, rounds=rounds, byes=byes, race={str(k): v for k, v in race.items()}, final=final,
         champRoster=champ_roster, champMvp=champ_mvp, divs=divs, weeks=weeks_best,
         games=[[g['mp'], g['h'], g['hs'], g['a'], g['as_'], g['tier']] for g in s['g'] if g['tier'] != 2],
-        draft=[dict(pick=r_['pick'], rd=r_['rd'], tid=r_['tid'], key=r_['key'], mgr=r_['mgr'], player=r_['player'], pos=r_['pos'], pts=r_['pts'], posRank=r_['posRank'], val=r_['val'], keeper=r_['keeper']) for r_ in draft_rows if r_['y'] == y],
+        draft=[dict(**({'bid': r_['bid'], 'prank': r_['prank'], 'fair': r_.get('fair'), 'surp': r_.get('surp')} if 'bid' in r_ else {}), pick=r_['pick'], rd=r_['rd'], tid=r_['tid'], key=r_['key'], mgr=r_['mgr'], player=r_['player'], pos=r_['pos'], pts=r_['pts'], posRank=r_['posRank'], val=r_['val'], keeper=r_['keeper']) for r_ in draft_rows if r_['y'] == y],
         draftGrades=[d for d in draft_team if d['y'] == y],
         trades=trade_counts.get(y, 0), hasLineups=bool(s['weeks']), hasBench=bool(s['tx']),
     ))
@@ -635,17 +740,18 @@ eras_dark = best_per(sorted(eras, key=lambda e: e['allpct']))[:5]
 # ---------------------------------------------------------------- timeline of rule changes
 timeline = []
 prev = None
+NUMW = {2: 'Two', 3: 'Three', 4: 'Four', 5: 'Five', 6: 'Six'}
 for s in seasons:
     stt = s['settings']; y = s['y']; ev = []
     if prev is None:
-        ev.append(f"League founded on ESPN with {len(s['teams'])} teams, {'PPR' if stt['ppr'] else 'standard'} scoring and a {stt['po']}-team playoff.")
+        ev.append(f"League founded on ESPN with {len(s['teams'])} teams, {'half-point PPR' if stt['ppr'] == 0.5 else 'PPR' if stt['ppr'] else 'standard'} scoring and a {stt['po']}-team playoff.")
     else:
         p, pt = prev['settings'], len(prev['teams'])
-        if len(s['teams']) != pt: ev.append(f"Expands from {pt} to {len(s['teams'])} teams.")
+        if len(s['teams']) != pt: ev.append(f"{'Expands' if len(s['teams']) > pt else 'Contracts'} from {pt} to {len(s['teams'])} teams.")
         if stt['ppr'] != p['ppr']: ev.append('Switches to full PPR.' if stt['ppr'] == 1 else f"Scoring changes to {stt['ppr']} per reception.")
         if stt['po'] != p['po']: ev.append(f"Playoff field goes from {p['po']} to {stt['po']} teams.")
         if (stt.get('poLen') or 1) != (p.get('poLen') or 1): ev.append('Playoff rounds become two-week matchups.' if (stt.get('poLen') or 1) > 1 else 'Playoff rounds go back to one week each.')
-        if len(stt['divisions']) > 1 and len(p['divisions']) <= 1: ev.append(f"Four divisions introduced: {', '.join(d[1] for d in stt['divisions'])}. Division winners take the top seeds.")
+        if len(stt['divisions']) > 1 and len(p['divisions']) <= 1: ev.append(f"{NUMW.get(len(stt['divisions']), str(len(stt['divisions'])))} divisions introduced: {', '.join(d[1] for d in stt['divisions'])}. Division winners take the top seeds.")
         if stt['reg'] != p['reg']: ev.append(f"Regular season goes from {p['reg']} to {stt['reg']} weeks.")
         if (stt.get('keepers') or 0) != (p.get('keepers') or 0): ev.append(f"Keepers introduced: {stt['keepers']} per team." if stt.get('keepers') else 'Keepers dropped.')
         if stt.get('vetoVotes') != p.get('vetoVotes') and stt.get('vetoVotes') is not None and p.get('vetoVotes') is not None: ev.append(f"Trade veto threshold changes from {p['vetoVotes']} to {stt['vetoVotes']} votes.")
@@ -672,7 +778,7 @@ for s in seasons:
             elif res < 0: close[ka][0] += 1; close[kh][1] += 1; cs[g['a']][0] += 1; cs[g['h']][1] += 1
             else: close[kh][2] += 1; close[ka][2] += 1
         if g['tier'] == 0 and res != 0:
-            half = 0 if g['mp'] <= 6 else 1
+            half = 0 if g['mp'] <= EARLY_WEEKS else 1
             split[kh][half][0 if res > 0 else 1] += 1
             split[ka][half][0 if res < 0 else 1] += 1
     for tid, (w, l) in cs.items():
@@ -823,7 +929,7 @@ if CUR:
         for t in tids:
             pt = pk.get(s['fk'][t])
             if pt is None: continue
-            v = [sum(1 for o, ov in ss.items() if o != pt and ov < ss[pt]) / (len(ss) - 1) for ss in pw.values() if pt in ss]
+            v = [(sum(1 for o, ov in ss.items() if o != pt and ov < ss[pt]) + 0.5 * sum(1 for o, ov in ss.items() if o != pt and ov == ss[pt])) / (len(ss) - 1) for ss in pw.values() if pt in ss]
             prior_ap[t] = st.mean(v); prior_rel[t] = st.mean([ss[pt] for ss in pw.values() if pt in ss]) / pl - 1
     PRIOR_WEEKS = 4; CARRY = 0.2; AP_K = 13.4; AP_C = 0.29
     for wk in range(1, played + 1):
@@ -834,7 +940,7 @@ if CUR:
             for g in reg_g:
                 if g['mp'] == w_: ss[g['h']] = g['hs']; ss[g['a']] = g['as_']
             for t, v in ss.items():
-                ap[t] += sum(1 for o, ov in ss.items() if o != t and ov < v) / (len(ss) - 1); n[t] += 1; sc[t].append(v)
+                ap[t] += (sum(1 for o, ov in ss.items() if o != t and ov < v) + 0.5 * sum(1 for o, ov in ss.items() if o != t and ov == v)) / (len(ss) - 1); n[t] += 1; sc[t].append(v)
         for g in reg_g:
             if g['hs'] > g['as_']: W[g['h']] += 1
             elif g['as_'] > g['hs']: W[g['a']] += 1
@@ -898,12 +1004,12 @@ if CUR:
                 else: W[a] += 1; win, lose = a, h
                 H[(win, lose)] += 1
                 if mp == nxt: res[win] = 'w'; res[lose] = 'l'
-            seeds, dw, full_ = seed_teams(tids, divof, W, PF, H, G0, po)
+            seeds, dw, full_ = seed_teams(tids, divof, W, PF, H, G0, po, pw_for(y))
             for i_, t in enumerate(full_): cnt[t]['p%d' % (i_ + 1)] += 1
             for t in dw: cnt[t]['div'] += 1
             for t in tids: wins_sum[t] += W[t]
             for t in seeds: cnt[t]['po'] += 1
-            for t in seeds[:2]: cnt[t]['bye'] += 1
+            for t in seeds[:(2 if po == 6 else 0)]: cnt[t]['bye'] += 1
             gm = lambda a, b: a if rng.gauss(mu[a], sd) > rng.gauss(mu[b], sd) else b
             if po == 6:
                 q1 = gm(seeds[2], seeds[5]); q2 = gm(seeds[3], seeds[4]); s1 = gm(seeds[0], q2); s2 = gm(seeds[1], q1)
@@ -911,7 +1017,7 @@ if CUR:
                 s1 = gm(seeds[0], seeds[3]); s2 = gm(seeds[1], seeds[2])
             cnt[s1]['final'] += 1; cnt[s2]['final'] += 1
             champ = gm(s1, s2); cnt[champ]['title'] += 1
-            if len(full_) == 12 and po == 6:
+            if LADDER and len(full_) == 12 and po == 6:
                 # losers' ladder (same every year since at least 2020): wk1 7v8, 9v10, 11v12; wk2 W1vW2, L1vW3, L2vL3;
                 # the Sacko game is the loser of L1vW3 against the loser of L2vL3
                 L_ = full_[6:]
@@ -944,7 +1050,7 @@ if CUR:
         odds.append(dict(tid=t, key=s['fk'][t], mgr=s['sl'][t], team=s['tm'][t]['name'], w=W0[t], l=played - W0[t],
                          projW=round(wins_sum[t] / N, 1), po=round(cnt[t]['po'] / N, 3), div=round(cnt[t]['div'] / N, 3),
                          bye=round(cnt[t]['bye'] / N, 3), final=round(cnt[t]['final'] / N, 3), title=round(cnt[t]['title'] / N, 3), ppg=round(mu[t], 1),
-                         place=[round(cnt[t]['p%d' % i_] / N, 4) for i_ in range(1, len(tids) + 1)], sacko=round(cnt[t]['sacko'] / N, 3)))
+                         place=[round(cnt[t]['p%d' % i_] / N, 4) for i_ in range(1, len(tids) + 1)], sacko=round(cnt[t]['sacko'] / N, 3) if LADDER else None))
     odds.sort(key=lambda x: (-x['title'], -x['po']))
 
     # matchup previews with playoff stakes
@@ -1004,6 +1110,9 @@ if CUR:
                     if d_ == mydiv: continue
                     c_ = sum(1 for x in ts if W0[x] > Mt); ahead += max(0, c_ - 1)
                 status[t] = 'out' if ahead >= wc else 'nodiv'
+        elif pw_for(y):
+            # in by record alone; nobody is ruled out, since the points spot stays open until the last week
+            if sum(1 for o in tids if o != t and mx[o] >= Wt) < po - pw_for(y): status[t] = 'po'
         else:
             if sum(1 for o in tids if o != t and mx[o] >= Wt) < po: status[t] = 'po'
             elif sum(1 for o in tids if o != t and W0[o] > Mt) >= po: status[t] = 'out'
@@ -1026,6 +1135,7 @@ if CUR:
         done=[[g['h'], g['a'], g['hs'], g['as_']] for g in s['g'] if g['tier'] == 0],
         games=[[mp, h, a, round(p_home(mp, h, a), 3)] for mp, h, a in future],
         espnSeeds=[t['id'] for t in sorted(s['teams'], key=lambda t: t['seed'] or 99)],
+        **({'pw': pw_for(y)} if pw_for(y) else {}),
     )
     clinch = dict(preview=preview, oddsHist=dict(oddsHist), remWeeks=reg - played, sd=round(sd, 1), machine=machine)
 
@@ -1090,13 +1200,13 @@ def top(lst, f, n=6, rev=True): return sorted(lst, key=f, reverse=rev)[:n]
 done_rows = [dict(r, y=s['y']) for s in season_out if s['done'] for r in s['rows']]
 records = dict(
     high=top(weekly, lambda x: x['pts']),
-    low=top([w for w in weekly if w['pts'] > 0 and w['y'] >= 2013], lambda x: x['pts'], rev=False),
+    low=top([w for w in weekly if w['pts'] > 0 and w['y'] >= PPR_FROM], lambda x: x['pts'], rev=False),
     blowout=top(games_flat, lambda g: abs(g['hs'] - g['as_'])),
     close=top([g for g in games_flat if g['hs'] != g['as_']], lambda g: abs(g['hs'] - g['as_']), rev=False),
     combined=top(games_flat, lambda g: g['hs'] + g['as_']),
     lossHi=top([w for w in weekly if not w['won'] and w['pts'] < w['opts']], lambda x: x['pts']),
-    winLo=top([w for w in weekly if w['won'] and w['y'] >= 2013], lambda x: x['pts'], rev=False),
-    ppg=top([r for r in done_rows if r['y'] >= 2013], lambda r: r['pf'] / max(1, r['w'] + r['l'] + r['t'])),
+    winLo=top([w for w in weekly if w['won'] and w['y'] >= PPR_FROM], lambda x: x['pts'], rev=False),
+    ppg=top([r for r in done_rows if r['y'] >= PPR_FROM], lambda r: r['pf'] / max(1, r['w'] + r['l'] + r['t'])),
     bestRec=top(done_rows, lambda r: (r['w'] / max(1, r['w'] + r['l']), r['pf'])),
     worstRec=top(done_rows, lambda r: (r['w'] / max(1, r['w'] + r['l']), r['pf']), rev=False),
     winStreak=top([x for x in streaks if x['kind'] == 'W'], lambda x: x['n']),
@@ -1130,7 +1240,7 @@ out = dict(
               topSeedTitles=top_seed_titles),
     managers=managers, h2h=H, seasons=season_out, records=records, rivalries=riv[:12], lopsided=lopsided,
     upsets=sorted(upsets, key=lambda u: -(u['wseed'] - u['lseed'])), sacko=sacko, trades=trades, tradeCounts=trade_counts,
-    timeline=timeline, divNames=div_names,
+    timeline=timeline, divNames=div_names, **({'auction': auction} if auction else {}),
     curLuck=sorted([x for x in season_luck if not x['done']], key=lambda x: -x['luck']),
     recaps=recaps, power=power, odds=odds, live=clinch, awards=awards, favTitles=[fav_titles, fav_seasons],
     closeSeasons=dict(best=sorted([x for x in close_season if x['done']], key=lambda x: (-(x['w'] - x['l']), -x['w']))[:6],

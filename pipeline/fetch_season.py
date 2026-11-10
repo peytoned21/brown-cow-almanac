@@ -4,7 +4,8 @@ Python port of fetch_season.js (which runs in a signed-in browser tab), so the
 weekly refresh can run on GitHub Actions. A private league needs two ESPN
 cookies, read from the environment: ESPN_S2 and ESPN_SWID.
 
-Usage: python3 pipeline/fetch_season.py YEAR [OUT_PATH] [LEAGUE_ID]
+Usage: python3 pipeline/fetch_season.py LEAGUE_CONFIG YEAR [OUT_PATH]
+(the league ID and the year before which ESPN only serves league history come from the config's "espn" block)
 """
 import json, os, sys, time
 import urllib.request, urllib.error
@@ -30,9 +31,9 @@ def make_get(cookie):
     return get
 
 
-def fetch(y, lid=125611, cookie=''):
+def fetch(y, lid=125611, cookie='', hist_before=2020):
     get = make_get(cookie)
-    hist = y < 2020
+    hist = y < hist_before
 
     def url(views, extra=''):
         if hist:
@@ -121,7 +122,7 @@ def fetch(y, lid=125611, cookie=''):
         if rows:
             out['weeks'][str(mp)] = rows
 
-    # Transactions (2020+)
+    # Transactions (season endpoint only)
     if not hist:
         seen = set()
         for sp in range(0, 19):
@@ -185,14 +186,15 @@ def fetch(y, lid=125611, cookie=''):
 
 
 if __name__ == '__main__':
-    y = int(sys.argv[1])
-    path = sys.argv[2] if len(sys.argv) > 2 else f'raw/{y}.json'
-    lid = int(sys.argv[3]) if len(sys.argv) > 3 else 125611
+    cfg = json.load(open(sys.argv[1])); y = int(sys.argv[2])
+    root = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), cfg['site']['dir'])
+    path = sys.argv[3] if len(sys.argv) > 3 else os.path.join(root, 'raw', f'{y}.json')
+    lid = cfg['espn']['leagueId']; hb = cfg['espn'].get('histBefore', 2020)
     s2, swid = os.environ.get('ESPN_S2', '').strip(), os.environ.get('ESPN_SWID', '').strip()
     if not s2 or not swid:
         sys.exit('Set ESPN_S2 and ESPN_SWID (the espn_s2 and SWID cookies from espn.com).')
     if not swid.startswith('{'):
         swid = '{' + swid.strip('{}') + '}'
-    data = fetch(y, lid, f'espn_s2={s2}; SWID={swid}')
+    data = fetch(y, lid, f'espn_s2={s2}; SWID={swid}', hb)
     json.dump(data, open(path, 'w'), separators=(',', ':'))
     print(f'wrote {path}: {len(data["teams"])} teams, {len(data["games"])} games, {len(data["weeks"])} weeks of lineups, done={data["done"]}')

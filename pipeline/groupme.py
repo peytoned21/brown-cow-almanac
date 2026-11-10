@@ -1,11 +1,15 @@
 """Post the weekly recap to the league GroupMe through a GroupMe bot.
 
-Needs GROUPME_BOT_ID (from dev.groupme.com/bots). With --dry, prints the message instead of posting.
-Usage: python3 pipeline/groupme.py [DATA_JSON] [--dry]
+Reads the bot ID from the environment variable the league config names (site.groupmeSecret), e.g. GROUPME_BOT_ID.
+With --dry, prints the message instead of posting.
+Usage: python3 pipeline/groupme.py LEAGUE_CONFIG [--dry]
 """
 import json, os, sys, urllib.request
 
-SITE = 'https://peytoned21.github.io/brown-cow-almanac/'
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+CFG = json.load(open(sys.argv[1]))
+SITE = CFG['site']['url']
+ICON = '🐄' if CFG['site']['slug'] == 'brown-cow' else '🏈'
 LIMIT = 1000   # GroupMe's cap on one message
 
 
@@ -14,9 +18,9 @@ def message(D):
     MK = {m['key']: m for m in D['managers']}
     if not cur:
         s = D['seasons'][-1]; ch = next(r for r in s['rows'] if r['rank'] == 1)
-        return f"🐄 {s['y']} is in the books: {MK[ch['key']]['short']} ({ch['team']}) are champions.\n{SITE}"
+        return f"{ICON} {s['y']} is in the books: {MK[ch['key']]['short']} ({ch['team']}) are champions.\n{SITE}"
     y, wk = cur['y'], cur['week']
-    parts = [f"🐄 Brown Cow Almanac · Week {wk} recap"]
+    parts = [f"{ICON} {CFG['page']['title']} · Week {wk} recap"]
     recs = [v for v in D['recaps'].values() if v['y'] == y and v['wk'] == wk]
     if recs:
         parts.append('\n'.join('• ' + line for line in recs[0]['lines']))
@@ -44,12 +48,11 @@ def message(D):
 
 
 if __name__ == '__main__':
-    args = [a for a in sys.argv[1:] if not a.startswith('--')]
-    D = json.load(open(args[0] if args else 'data.json'))
+    D = json.load(open(os.path.join(ROOT, CFG['site']['dir'], 'data.json')))
     msg = message(D)
-    bot = os.environ.get('GROUPME_BOT_ID', '').strip()
+    bot = os.environ.get(CFG['site']['groupmeSecret'], '').strip()
     if '--dry' in sys.argv or not bot:
-        print(msg if bot or '--dry' in sys.argv else 'GROUPME_BOT_ID is not set; not posting.\n\n' + msg)
+        print(msg if bot or '--dry' in sys.argv else f"{CFG['site']['groupmeSecret']} is not set; not posting.\n\n" + msg)
         sys.exit()
     req = urllib.request.Request('https://api.groupme.com/v3/bots/post', data=json.dumps({'bot_id': bot, 'text': msg}).encode(),
                                  headers={'Content-Type': 'application/json'})

@@ -5,12 +5,17 @@
 - m/<key>/         the same for each manager
 - index.html       the home page's preview tags are rewritten between the og markers
 
-Usage: python3 pipeline/cards.py      (run from the repo root after build.py; needs playwright + chromium)
+Usage: python3 pipeline/cards.py LEAGUE_CONFIG      (after build.py and page.py; needs playwright + chromium)
 """
-import functools, html, http.server, json, os, socketserver, sys, threading
+import functools, html, http.server, json, os, socketserver, sys, threading, urllib.parse
 
-SITE = 'https://peytoned21.github.io/brown-cow-almanac/'
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+CFG = json.load(open(sys.argv[1]))
+SITE = CFG['site']['url']
+ROOT = os.path.join(REPO, CFG['site']['dir'])
+TITLE = CFG['page']['title']; NOUN = CFG.get('titleNoun', CFG['name'])
+ART = (CFG['page'].get('art') or {}).get('painting') or CFG['site']['icon'] + '-512.png'
+ACCENT = '#a8700c' if '--brass: #a8700c' in CFG['page'].get('css', '') else '#c4622b'
 D = json.load(open(os.path.join(ROOT, 'data.json')))
 MK = {m['key']: m for m in D['managers']}
 cur = D['meta'].get('cur')
@@ -23,7 +28,7 @@ def wl(w, l, t=0):
 
 def tags(title, desc, img, url):
     e = html.escape
-    return (f'<meta property="og:type" content="website"><meta property="og:site_name" content="Brown Cow Almanac">'
+    return (f'<meta property="og:type" content="website"><meta property="og:site_name" content="{html.escape(TITLE)}">'
             f'<meta property="og:title" content="{e(title)}"><meta property="og:description" content="{e(desc)}">'
             f'<meta property="og:image" content="{SITE}{img}?v={ver}"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">'
             f'<meta property="og:url" content="{SITE}{url}"><meta name="twitter:card" content="summary_large_image">'
@@ -35,7 +40,7 @@ def stub(path, title, desc, card, hash_):
     e = html.escape
     page = (f'<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
             f'<title>{e(title)}</title><meta name="robots" content="noindex,nofollow">{tags(title, desc, f"og/{card}.png", path + "/")}'
-            f'<link rel="icon" href="../../art/cow-head.jpg"><meta http-equiv="refresh" content="0; url=../../#{hash_}">'
+            f'<link rel="icon" href="../../{CFG["site"]["icon"]}-192.png"><meta http-equiv="refresh" content="0; url=../../#{hash_}">'
             f'<script>location.replace("../../#{hash_}")</script></head>'
             f'<body style="font-family:sans-serif;padding:24px"><a href="../../#{hash_}">{e(title)}</a></body></html>')
     open(os.path.join(ROOT, path, 'index.html'), 'w').write(page)
@@ -51,24 +56,24 @@ if cur and D.get('power'):
     if g: home_desc += f". Game of the Week: {MK[g['hk']]['short']} vs {MK[g['ak']]['short']}."
 else:
     home_desc = f"{D['meta']['nDone']} champions, {len(D['managers'])} managers and every record since {D['meta']['founded']}."
-cards['home'] = ('Brown Cow Almanac', home_desc)
+cards['home'] = (TITLE, home_desc)
 for s in D['seasons']:
     y = s['y']
     if s['done']:
         ch = next(r for r in s['rows'] if r['rank'] == 1)
-        cards[f's-{y}'] = (f"{y} · Brown Cow Almanac", f"{MK[ch['key']]['short']} won it with {ch['team']}. {s.get('headline') or ''}".strip())
+        cards[f's-{y}'] = (f"{y} · {TITLE}", f"{MK[ch['key']]['short']} won it with {ch['team']}. {s.get('headline') or ''}".strip())
     else:
-        cards[f's-{y}'] = (f"{y} · Brown Cow Almanac", home_desc)
+        cards[f's-{y}'] = (f"{y} · {TITLE}", home_desc)
 for m in D['managers']:
     t = len(m['titles'])
     desc = f"{t} title{'s' if t != 1 else ''}{' (' + ', '.join(map(str, m['titles'])) + ')' if t else ''} · {wl(m['w'], m['l'], m['t'])} · {len(m['po'])} playoff trips · {m['team']}"
-    cards[f"m-{m['key']}"] = (f"{m['name']} · Brown Cow Almanac", desc)
+    cards[f"m-{m['key']}"] = (f"{m['name']} · {TITLE}", desc)
 
 
 # ---------------------------------------------------------------- render
 def render(ids):
     from playwright.sync_api import sync_playwright
-    handler = functools.partial(http.server.SimpleHTTPRequestHandler, directory=ROOT)
+    handler = functools.partial(http.server.SimpleHTTPRequestHandler, directory=REPO)
     handler.log_message = lambda *a, **k: None
     srv = socketserver.TCPServer(('127.0.0.1', 0), handler); port = srv.server_address[1]
     threading.Thread(target=srv.serve_forever, daemon=True).start()
@@ -78,7 +83,8 @@ def render(ids):
         b = p.chromium.launch(**({'executable_path': exe} if exe else {}))
         pg = b.new_page(viewport={'width': 1200, 'height': 630})
         for cid in ids:
-            pg.goto(f'http://127.0.0.1:{port}/cards/card.html?c={cid}')
+            q = urllib.parse.urlencode(dict(c=cid, dir=CFG['site']['dir'], art=ART, brand=NOUN, room=CFG['site']['theme'], accent=ACCENT, paper=CFG['site']['bg']))
+            pg.goto(f'http://127.0.0.1:{port}/cards/card.html?{q}')
             pg.wait_for_function("document.title === 'ready'", timeout=30000)
             pg.screenshot(path=os.path.join(ROOT, 'og', f'{cid}.png'))
         b.close()

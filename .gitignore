@@ -1,2 +1,4 @@
 __pycache__/
 *.pyc
+changed_leagues.txt
+live-out/

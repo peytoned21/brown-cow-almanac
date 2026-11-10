@@ -1,7 +1,9 @@
-// Run in a signed-in fantasy.espn.com tab. Defines window.BC_FETCH(year) -> compact season JSON.
-window.BC_FETCH = async function (y, LID = 125611) {
+// Run in a signed-in fantasy.espn.com tab. Defines window.BC_FETCH(year, leagueId, histBefore) -> compact season JSON.
+// leagueId and histBefore come from the league config (espn.leagueId, espn.histBefore). The defaults are Brown Cow's,
+// so BC_FETCH(year) still works as before. Seasons before histBefore are read from ESPN's leagueHistory endpoint.
+window.BC_FETCH = async function (y, LID = 125611, HIST_BEFORE = 2020) {
   const B = 'https://lm-api-reads.fantasy.espn.com/apis/v3/games/ffl';
-  const hist = y < 2020;
+  const hist = y < HIST_BEFORE;
   const url = (views, extra = '') => hist
     ? `${B}/leagueHistory/${LID}?seasonId=${y}&${views}${extra}`
     : `${B}/seasons/${y}/segments/0/leagues/${LID}?${views}${extra}`;
@@ -70,7 +72,7 @@ window.BC_FETCH = async function (y, LID = 125611) {
     });
     if (rows.length) out.weeks[mp] = rows;
   }
-  // Transactions (2020+)
+  // Transactions (season endpoint only)
   if (!hist) {
     const seen = new Set();
     for (let sp = 0; sp <= 18; sp++) {

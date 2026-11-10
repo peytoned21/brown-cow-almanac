@@ -4,10 +4,10 @@ import json, sys
 D = json.load(open(sys.argv[1] if len(sys.argv) > 1 else 'data.json'))
 cur = D['meta'].get('cur')
 if not cur:
-    print('## Brown Cow Almanac\n\nThe season is final.')
+    print(f"## {D['meta'].get('league', 'Almanac')}\n\nThe season is final.")
     sys.exit()
 y = cur['y']
-print(f"## Brown Cow Almanac · {y} through Week {cur['week']}\n")
+print(f"## {D['meta'].get('league', 'Almanac')} · {y} through Week {cur['week']}\n")
 recs = [v for v in D['recaps'].values() if v['y'] == y]
 if recs:
     r = max(recs, key=lambda v: v['wk'])

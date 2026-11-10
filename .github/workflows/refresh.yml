@@ -1,18 +1,18 @@
 name: Weekly refresh
 
-# Pulls the current season from ESPN, rebuilds the almanac, runs the stats check,
-# and commits only if every check passes. GitHub Pages then republishes the site.
+# Every league in leagues/: pull the current season from ESPN, rebuild, run the stats check, redraw the share cards,
+# commit only the leagues whose checks pass, then post each league's recap to its GroupMe. Pages republishes the site.
 on:
   schedule:
     - cron: '49 13 * 9-12,1 2'   # Tuesdays, Sept–Jan (8:49 ET in winter, 9:49 ET in summer time)
   workflow_dispatch:
     inputs:
       force:
-        description: 'Rebuild and commit even if ESPN data has not changed'
+        description: 'Rebuild even if ESPN data has not changed'
         type: boolean
         default: false
       post_groupme:
-        description: 'Post the recap to the league GroupMe'
+        description: 'Post the recaps to GroupMe'
         type: boolean
         default: false
 
@@ -26,7 +26,7 @@ concurrency:
 jobs:
   refresh:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
 
@@ -35,64 +35,35 @@ jobs:
           python-version: '3.12'
           cache: pip
 
-      - run: pip install -r requirements.txt
-
-      - name: Work out the season
-        id: season
+      - name: Install
         run: |
-          y=$(date -u +%Y); m=$(date -u +%-m)
-          if [ "$m" -lt 8 ]; then y=$((y-1)); fi
-          echo "year=$y" >> "$GITHUB_OUTPUT"
-          if [ -f "raw/$y.json" ] && python3 -c "import json,sys; sys.exit(0 if json.load(open('raw/$y.json'))['done'] else 1)"; then
-            echo "done=true" >> "$GITHUB_OUTPUT"; echo "$y is already final; nothing to fetch."
-          else
-            echo "done=false" >> "$GITHUB_OUTPUT"
-          fi
+          pip install -q -r requirements.txt playwright
+          python3 -m playwright install --with-deps chromium > /dev/null
 
-      - name: Fetch from ESPN
-        if: steps.season.outputs.done == 'false'
+      - name: Fetch, build, check
+        id: run
         env:
           ESPN_S2: ${{ secrets.ESPN_S2 }}
           ESPN_SWID: ${{ secrets.ESPN_SWID }}
-        run: python3 pipeline/fetch_season.py ${{ steps.season.outputs.year }} raw/${{ steps.season.outputs.year }}.json
-
-      - name: Anything new?
-        id: changed
-        run: |
-          if [ -n "$(git status --porcelain raw)" ] || [ "${{ inputs.force }}" = "true" ]; then echo "yes=true" >> "$GITHUB_OUTPUT"; else echo "yes=false" >> "$GITHUB_OUTPUT"; echo "ESPN data unchanged; skipping rebuild."; fi
-
-      - name: Build
-        if: steps.changed.outputs.yes == 'true'
-        run: python3 pipeline/build.py raw data.json
-
-      - name: Stats check (holds the update back if anything fails)
-        if: steps.changed.outputs.yes == 'true'
-        run: python3 audit/audit.py raw data.json | tail -25
-
-      - name: Summary
-        if: steps.changed.outputs.yes == 'true'
-        run: python3 pipeline/summary.py data.json >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Link preview cards
-        if: steps.changed.outputs.yes == 'true'
-        continue-on-error: true   # a card problem never holds back the data
-        run: |
-          pip install -q playwright
-          python3 -m playwright install --with-deps chromium > /dev/null
-          python3 pipeline/cards.py
+          FORCE: ${{ inputs.force }}
+        run: pipeline/refresh.sh
 
       - name: Commit
-        if: steps.changed.outputs.yes == 'true'
+        if: always()
         run: |
+          if [ ! -s changed_leagues.txt ]; then echo "Nothing to commit."; exit 0; fi
           git config user.name "brown-cow-bot"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add raw data.json og s m index.html
-          git commit -m "Weekly refresh: $(python3 -c "import json; d=json.load(open('data.json')); c=d['meta'].get('cur'); print(f\"{c['y']} through week {c['week']}\" if c else 'final')")"
+          git add -A -- . ':!changed_leagues.txt'
+          git commit -q -m "Weekly refresh: $(python3 -c "import json; d=json.load(open('data.json')); c=d['meta'].get('cur'); print(f\"{c['y']} through week {c['week']}\" if c else 'final')")"
           git pull -q --rebase -X theirs
-          git push
+          git push -q
 
-      - name: Post the recap to GroupMe
-        if: steps.changed.outputs.yes == 'true' && (github.event_name == 'schedule' || inputs.post_groupme)
+      - name: Post recaps to GroupMe
+        if: always() && (github.event_name == 'schedule' || inputs.post_groupme)
         env:
           GROUPME_BOT_ID: ${{ secrets.GROUPME_BOT_ID }}
-        run: python3 pipeline/groupme.py data.json
+          AGS_GROUPME_BOT_ID: ${{ secrets.AGS_GROUPME_BOT_ID }}
+        run: |
+          [ -s changed_leagues.txt ] || exit 0
+          while read -r cfg; do python3 pipeline/groupme.py "$cfg" || echo "::warning::GroupMe post failed for $cfg"; done < changed_leagues.txt

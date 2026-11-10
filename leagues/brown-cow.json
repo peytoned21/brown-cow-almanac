@@ -1,0 +1,194 @@
+{
+  "_about": "Everything specific to one league. build.py, audit.py, fetch_season.js and page.py read this; the code itself is shared.",
+  "espn": {
+    "leagueId": 125611,
+    "histBefore": 2020,
+    "_histBefore": "Seasons before this year are read from ESPN's leagueHistory endpoint (and have no transaction log)."
+  },
+  "name": "Brown Cow 3.0",
+  "titleNoun": "Brown Cow",
+  "franchises": [
+    [
+      "jones",
+      "Chris Jones & Miguel Arias",
+      "Chris & Miguel",
+      [
+        "christopher jones",
+        "miguel arias"
+      ]
+    ],
+    [
+      "mccarthy",
+      "Connor McCarthy & Kunal Patel",
+      "Connor & Kunal",
+      [
+        "connor mccarthy",
+        "kunal patel"
+      ]
+    ],
+    [
+      "maxey",
+      "Andrew Maxey & Nick Thompson",
+      "Andrew & Nick",
+      [
+        "andrew maxey",
+        "nick thompson"
+      ]
+    ],
+    [
+      "edwards",
+      "Peyton Edwards",
+      "Peyton",
+      [
+        "peyton edwards"
+      ]
+    ],
+    [
+      "dejarnette",
+      "Nathan DeJarnette",
+      "Nathan",
+      [
+        "nathan dejarnette"
+      ]
+    ],
+    [
+      "brown",
+      "Mack Brown",
+      "Mack",
+      [
+        "mack brown"
+      ]
+    ],
+    [
+      "barry",
+      "Michael Barry",
+      "Michael",
+      [
+        "michael barry"
+      ]
+    ],
+    [
+      "yang",
+      "Mike Yang",
+      "Mike",
+      [
+        "mike yang"
+      ]
+    ],
+    [
+      "copp",
+      "Kevin Copp",
+      "Kevin",
+      [
+        "kevin copp"
+      ]
+    ],
+    [
+      "olsen",
+      "Dustin Olsen",
+      "Dustin",
+      [
+        "dustin olsen"
+      ]
+    ],
+    [
+      "taliaferro",
+      "John Taliaferro",
+      "John",
+      [
+        "john taliaferro"
+      ]
+    ],
+    [
+      "foxhall",
+      "Trey Foxhall",
+      "Trey",
+      [
+        "edward foxhall",
+        "trey foxhall"
+      ]
+    ]
+  ],
+  "niceNames": {
+    "christopher jones": "Chris Jones",
+    "dustin olsen": "Dustin Olsen",
+    "edward foxhall": "Trey Foxhall"
+  },
+  "me": "edwards",
+  "cutoffs": {
+    "seedsFrom": 2019,
+    "_seedsFrom": "First season whose playoff seeds are shown and counted for upsets and 'from the No. N seed' headlines.",
+    "pprFrom": 2013,
+    "_pprFrom": "Lowest-score, lowest-winning-score and points-per-game records start here.",
+    "earlyWeeks": 6
+  },
+  "losersLadder": true,
+  "_losersLadder": "12 teams, 6-team playoff: wk1 7v8, 9v10, 11v12; wk2 W1vW2, L1vW3, L2vL3; last place is loser(L1vW3) vs loser(L2vL3). Simulated for Sacko odds only when true.",
+  "oneOffs": {
+    "bridesmaid": "copp",
+    "_bridesmaid": "Home-page 'Always a bridesmaid' card and the 'Nth runner-up finish' season headline (3+)."
+  },
+  "page": {
+    "title": "Brown Cow Almanac",
+    "brandAria": "Brown Cow home",
+    "eyebrow": "ESPN Fantasy Football · est. 2012",
+    "h1Main": "Brown Cow",
+    "h1Ver": "3.0",
+    "tagline": "Fifteen seasons, twelve seats, one very questionable painting. The league's record book.",
+    "art": {
+      "emblem": "art/cow-head.jpg",
+      "painting": "art/brown-cow.jpg",
+      "alt": "Folk painting of a big brown cow and its calf in a green valley under blue mountains, with a boy on a tree stump",
+      "width": 900,
+      "height": 891,
+      "caption": "The league's patron saint"
+    },
+    "plateTitle": "Brown Cow Champions",
+    "loading": "Loading 15 seasons of Brown Cow…",
+    "copyPrefix": "Brown Cow",
+    "css": "",
+    "notes": {
+      "footerGaps": " ESPN keeps no weekly lineups for 2018–2019.",
+      "legendsGaps": "; 2012–2016 lineups are slightly incomplete",
+      "recordsLede": "Single-week marks use regular-season games, because the 2013–2018 playoff rounds ran two weeks. The lowest-score list starts in 2013, when the league went PPR.",
+      "pprEra": " (PPR era)",
+      "missedTail": " No winning record has missed since 2019.",
+      "upsetsEyebrow": "Since seeding got real in 2019",
+      "timelineLede": "Champions and every rule change ESPN recorded. Brown dots mark seasons where the format changed, which is why a 2015 score and a 2025 score don't compare one-to-one.",
+      "footerSeats": " Franchises that changed hands or added a co-manager are tracked as one seat."
+    }
+  },
+  "audit": {
+    "h2hSpot": [
+      "edwards",
+      "dejarnette"
+    ],
+    "seedingYears": [
+      2013,
+      2024
+    ],
+    "legacySnapshot": {
+      "throughYear": 2025,
+      "values": {
+        "barry": 65,
+        "taliaferro": 61,
+        "copp": 49,
+        "edwards": 47
+      }
+    },
+    "topStealMinPts": 300
+  },
+  "seedTiebreak": "h2h",
+  "site": {
+    "dir": "",
+    "url": "https://peytoned21.github.io/brown-cow-almanac/",
+    "short": "Brown Cow",
+    "theme": "#1f3f73",
+    "bg": "#f3ecdc",
+    "icon": "art/icon",
+    "groupmeSecret": "GROUPME_BOT_ID",
+    "slug": "brown-cow",
+    "liveUrl": "https://raw.githubusercontent.com/peytoned21/brown-cow-almanac/live/brown-cow.json",
+    "_about": "Where this league is published: its folder in the repo (\"\" = repo root), public address, home-screen name and colors, and which repository secret holds its GroupMe bot ID."
+  }
+}

@@ -1,0 +1,196 @@
+{
+  "_about": "Everything specific to one league. build.py, audit.py, fetch_season.js and page.py read this; the code itself is shared.",
+  "espn": {
+    "leagueId": 1469340,
+    "histBefore": 2024,
+    "_histBefore": "ESPN refuses the season endpoint for 2020-2023 in this league (401), so everything before 2024 comes from leagueHistory (no lineups or transactions for 2018-2023)."
+  },
+  "name": "Any Given Sunday",
+  "titleNoun": "Any Given Sunday",
+  "seedTiebreak": "points",
+  "franchises": [
+    [
+      "sanghvi",
+      "Sagar Sanghvi",
+      "Sagar",
+      [
+        "sagar sanghvi"
+      ]
+    ],
+    [
+      "edwards",
+      "Peyton Edwards",
+      "Peyton",
+      [
+        "peyton edwards"
+      ]
+    ],
+    [
+      "leone",
+      "Tyler Leone",
+      "Tyler",
+      [
+        "tyler leone",
+        "ty leon"
+      ]
+    ],
+    [
+      "schlossberg",
+      "Evan Schlossberg",
+      "Evan",
+      [
+        "evan schlossberg"
+      ]
+    ],
+    [
+      "viverito",
+      "Greg Viverito",
+      "Greg",
+      [
+        "greg viverito"
+      ]
+    ],
+    [
+      "burckle",
+      "Clark Burckle",
+      "Clark",
+      [
+        "clark burckle"
+      ]
+    ],
+    [
+      "shackleton",
+      "Kyle Shackleton",
+      "Kyle",
+      [
+        "kyle shackleton"
+      ]
+    ],
+    [
+      "shankar",
+      "Prithvi Shankar",
+      "Prithvi",
+      [
+        "prithvi shankar"
+      ]
+    ],
+    [
+      "staehelin",
+      "Tony Staehelin",
+      "Tony",
+      [
+        "anthony staehelin",
+        "tony staehelin",
+        "an st"
+      ]
+    ],
+    [
+      "murphy",
+      "Stephen Murphy",
+      "Stephen",
+      [
+        "stephen murphy"
+      ]
+    ],
+    [
+      "tormey",
+      "James Tormey",
+      "James",
+      [
+        "james tormey"
+      ]
+    ],
+    [
+      "harper",
+      "Ryan Harper",
+      "Ryan",
+      [
+        "ryan harper"
+      ]
+    ],
+    [
+      "saucedo",
+      "Matthew Saucedo",
+      "Matthew",
+      [
+        "matthew saucedo"
+      ]
+    ],
+    [
+      "qureishi",
+      "Omar Qureishi",
+      "Omar",
+      [
+        "omar qureishi"
+      ]
+    ]
+  ],
+  "niceNames": {
+    "sagar sanghvi": "Sagar Sanghvi",
+    "ty leon": "Tyler Leone",
+    "clark burckle": "Clark Burckle",
+    "an st": "Tony Staehelin",
+    "anthony staehelin": "Tony Staehelin",
+    "tony temp": "Tony Temp"
+  },
+  "me": "edwards",
+  "cutoffs": {
+    "seedsFrom": 2014,
+    "pprFrom": 2014,
+    "earlyWeeks": 7
+  },
+  "pointsWildcard": {
+    "from": 2024,
+    "spots": 1
+  },
+  "_pointsWildcard": "From 2024 the 4th playoff spot goes to the top scorer outside the top three records (2024 bracket: Stephen Murphy 7-8 with the league's most points over Evan Schlossberg 9-6). 2018, 2021 and 2022 show it was not the rule then; 2023 can't tell.",
+  "losersLadder": false,
+  "oneOffs": {},
+  "page": {
+    "title": "Any Given Sunday Almanac",
+    "brandAria": "Any Given Sunday home",
+    "eyebrow": "ESPN Fantasy Football · est. 2014",
+    "h1Main": "Any Given",
+    "h1Ver": "Sunday",
+    "tagline": "Thirteen seasons, fourteen managers, half a point per catch since day one. The league's record book.",
+    "art": {},
+    "plateTitle": "Any Given Sunday Champions",
+    "loading": "Loading 13 seasons of Any Given Sunday…",
+    "copyPrefix": "Any Given Sunday",
+    "nColors": 15,
+    "css": ":root {\n  --paper: #eef1ec; --sheet: #fbfcfa; --sheet-2: #f1f4ef; --ink: #17201b; --muted: #56625b; --faint: #8e9a93; --rule: #d5ddd6;\n  --brass: #a8700c; --brass-2: #c98f22; --brass-soft: #f6e6c2; --cow: #2f5d4a; --turf: #24734f; --turf-soft: #d9eee2; --loss: #b23a2c; --loss-soft: #f5dcd6;\n  --room: #16352a; --room-2: #20493a; --room-ink: #eef3ec; --room-muted: #a9c0b4; --plate-ink: #f0c75e; --badge-ink: #ffffff; --wall: #e4eae3;\n  --c0: #a8700c; --c1: #1f5f9e; --c2: #24734f; --c3: #8a3f8f; --c4: #b23a2c; --c5: #1f8a8a; --c6: #5a4fb0; --c7: #c2557a; --c8: #6b7a1f; --c9: #4a86c8; --c10: #8c5a2b; --c11: #4f5d68; --c12: #2c9a6a; --c13: #9c6b00; --c14: #6e3fa3;\n}\n@media (prefers-color-scheme: dark) { :root:not([data-theme=\"light\"]) {\n  --paper: #111814; --sheet: #18221d; --sheet-2: #1e2a24; --ink: #e9efea; --muted: #a2b0a8; --faint: #6c7a72; --rule: #2a3831;\n  --brass: #e7b14a; --brass-2: #f0c770; --brass-soft: #3a2e17; --cow: #8fc4aa; --turf: #6fcf9f; --turf-soft: #1b3428; --loss: #f08b7c; --loss-soft: #3d2420;\n  --room: #0c1f18; --room-2: #163428; --room-ink: #eef3ec; --room-muted: #93ad9f; --plate-ink: #f3cf73; --badge-ink: #111814; --wall: #141d18;\n  --c0: #e7b14a; --c1: #7fb1ea; --c2: #6fcf9f; --c3: #d38ad8; --c4: #f08b7c; --c5: #5fcaca; --c6: #a59cf0; --c7: #ee95b2; --c8: #b8c860; --c9: #9cc6f4; --c10: #d9a473; --c11: #a7b4be; --c12: #7fe0b1; --c13: #f2c95c; --c14: #c39af0;\n  color-scheme: dark } }\n:root[data-theme=\"dark\"] {\n  --paper: #111814; --sheet: #18221d; --sheet-2: #1e2a24; --ink: #e9efea; --muted: #a2b0a8; --faint: #6c7a72; --rule: #2a3831;\n  --brass: #e7b14a; --brass-2: #f0c770; --brass-soft: #3a2e17; --cow: #8fc4aa; --turf: #6fcf9f; --turf-soft: #1b3428; --loss: #f08b7c; --loss-soft: #3d2420;\n  --room: #0c1f18; --room-2: #163428; --room-ink: #eef3ec; --room-muted: #93ad9f; --plate-ink: #f3cf73; --badge-ink: #111814; --wall: #141d18;\n  --c0: #e7b14a; --c1: #7fb1ea; --c2: #6fcf9f; --c3: #d38ad8; --c4: #f08b7c; --c5: #5fcaca; --c6: #a59cf0; --c7: #ee95b2; --c8: #b8c860; --c9: #9cc6f4; --c10: #d9a473; --c11: #a7b4be; --c12: #7fe0b1; --c13: #f2c95c; --c14: #c39af0;\n  color-scheme: dark }\n/* No painting: the wordmark takes the whole masthead. */\n.mast-top, .mast.compact .mast-top { grid-template-columns: minmax(0, 1fr); }\n.brand h1 .cow { color: var(--ink); }\n.brand h1 .ver { color: var(--brass); display: block; }\n.mast.compact .brand h1 .ver { display: inline; }\n.mast { border-bottom: 4px solid var(--brass); }",
+    "notes": {
+      "footerGaps": " ESPN keeps no weekly lineups for 2018–2023.",
+      "footerSeats": " A seat that passed to a new manager starts a new manager record; name changes on the same account are one manager.",
+      "legendsGaps": "; 2014–2016 lineups are slightly incomplete",
+      "recordsLede": "Single-week marks use regular-season games. Every season has used half-point PPR, so scores compare across the whole history.",
+      "pprEra": "",
+      "missedTail": "",
+      "upsetsEyebrow": "Every bracket since 2014",
+      "timelineLede": "Champions and every rule change ESPN recorded. Marked dots show seasons where the format changed: 12 teams and six playoff spots in 2014–15, ten teams and four spots since."
+    }
+  },
+  "audit": {
+    "h2hSpot": [
+      "edwards",
+      "sanghvi"
+    ],
+    "seedingYears": [
+      2014,
+      2025
+    ],
+    "topStealMinPts": 200
+  },
+  "site": {
+    "dir": "any-given-sunday",
+    "url": "https://peytoned21.github.io/brown-cow-almanac/any-given-sunday/",
+    "short": "AGS Almanac",
+    "theme": "#16352a",
+    "bg": "#eef1ec",
+    "icon": "art/icon",
+    "groupmeSecret": "AGS_GROUPME_BOT_ID",
+    "slug": "any-given-sunday",
+    "liveUrl": "https://raw.githubusercontent.com/peytoned21/brown-cow-almanac/live/any-given-sunday.json",
+    "_about": "Where this league is published: its folder in the repo (\"\" = repo root), public address, home-screen name and colors, and which repository secret holds its GroupMe bot ID."
+  }
+}

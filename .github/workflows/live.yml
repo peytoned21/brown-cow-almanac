@@ -1,29 +1,34 @@
 name: Live scores
 
-# Every 15 minutes during NFL game windows: live scores, projected finals, live win chances and
-# live playoff odds, written to live.json. The site polls that file while it is open.
-# GitHub may start a scheduled run a few minutes late; that's normal.
+# During NFL game windows: one job per hour that takes a live snapshot for every league every 2 minutes while games
+# are on (and stops early when they aren't). Snapshots go to the `live` branch, overwritten each time, so game days
+# add no history to main and don't rebuild the site. The site reads them from raw.githubusercontent.com and keeps
+# scores moving in between from ESPN's public box scores.
 on:
   schedule:
-    - cron: '*/15 13-23 * 9-12,1 0'   # Sunday, London games through the late window (UTC)
-    - cron: '*/15 0-4 * 9-12,1 1'     # Sunday night game
-    - cron: '*/15 0-4 * 9-12,1 2'     # Monday night
-    - cron: '*/15 0-4 * 9-12,1 5'     # Thursday night
-    - cron: '*/15 17-23 * 12,1 6'     # Saturday games late in the season
-    - cron: '*/15 0-4 * 12,1 0'       # Saturday night
+    - cron: '2 13-23 * 9-12,1 0'   # Sunday (UTC), London games through the late window
+    - cron: '2 0-4 * 9-12,1 1'     # Sunday night game
+    - cron: '2 0-4 * 9-12,1 2'     # Monday night
+    - cron: '2 0-4 * 9-12,1 5'     # Thursday night
+    - cron: '2 17-23 * 12,1 6'     # Saturday games late in the season
+    - cron: '2 0-4 * 12,1 0'       # Saturday night
   workflow_dispatch:
+    inputs:
+      minutes:
+        description: 'How long to keep taking snapshots'
+        default: '56'
 
 permissions:
   contents: write
 
 concurrency:
-  group: refresh
+  group: live
   cancel-in-progress: false
 
 jobs:
   live:
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 65
     steps:
       - uses: actions/checkout@v4
 
@@ -31,17 +36,17 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Pull live scores
+      - name: Snapshots
         env:
           ESPN_S2: ${{ secrets.ESPN_S2 }}
           ESPN_SWID: ${{ secrets.ESPN_SWID }}
-        run: python3 pipeline/live.py data.json live.json
-
-      - name: Publish
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LIVE_DIR: ${{ github.workspace }}/live-out
         run: |
-          if [ -z "$(git status --porcelain live.json)" ]; then echo "Nothing new."; exit 0; fi
-          git config user.name "brown-cow-bot"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add live.json
-          git commit -q -m "Live: week $(python3 -c "import json; print(json.load(open('live.json'))['wk'])") $(date -u +%H:%M) UTC"
-          git pull -q --rebase && git push -q
+          git clone -q --depth 1 -b live "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" live-out 2>/dev/null || mkdir -p live-out
+          rm -rf live-out/.git
+          for cfg in leagues/*.json; do
+            slug=$(python3 -c "import json; print(json.load(open('$cfg'))['site']['slug'])")
+            python3 pipeline/live.py "$cfg" "live-out/$slug.json" --loop "${{ inputs.minutes || '56' }}" --every 120 --after pipeline/push_live.sh &
+          done
+          wait

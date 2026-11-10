@@ -32,11 +32,19 @@ h1 small { display: block; font-size: 31px; color: var(--muted); font-weight: 80
 .foot { border-top: 3px solid var(--ink); padding-top: 12px; font-size: 23px; color: var(--muted); }
 .foot b { color: var(--ink); }
 </style></head>
-<body><div class="card"><div class="art"><div><div class="frame"><div class="mat"><img src="../art/brown-cow.jpg" alt=""></div></div><div class="brand">BROWN COW <b>ALMANAC</b></div></div></div><div class="main" id="main"></div></div>
+<body><div class="card"><div class="art"><div><div class="frame"><div class="mat"><img id="art" alt=""></div></div><div class="brand" id="brand"></div></div></div><div class="main" id="main"></div></div>
 <script>
 (async function () {
-  const D = await (await fetch('../data.json')).json();
-  const c = new URLSearchParams(location.search).get('c') || 'home';
+  const Q = new URLSearchParams(location.search);
+  const dir = Q.get('dir') || ''; const base = '../' + (dir ? dir + '/' : '');
+  const D = await (await fetch(base + 'data.json')).json();
+  const c = Q.get('c') || 'home';
+  document.getElementById('art').src = base + (Q.get('art') || 'art/brown-cow.jpg');
+  const words = (Q.get('brand') || 'Brown Cow').toUpperCase().split(' ');
+  document.getElementById('brand').innerHTML = words.join(' ') + ' <b>ALMANAC</b>';
+  if (Q.get('room')) document.documentElement.style.setProperty('--room', Q.get('room'));
+  if (Q.get('accent')) document.documentElement.style.setProperty('--brass', Q.get('accent'));
+  if (Q.get('paper')) document.documentElement.style.setProperty('--paper', Q.get('paper'));
   const esc = (s) => String(s).replace(/[&<>"]/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
   const wl = (w, l, t) => `${w}–${l}${t ? '–' + t : ''}`;
   const MK = {}; D.managers.forEach((m) => { MK[m.key] = m; });
@@ -45,14 +53,14 @@ h1 small { display: block; font-size: 31px; color: var(--muted); font-weight: 80
     const P = D.power[D.power.length - 1], pv = D.live && D.live.preview, g = pv && pv.games.find((x) => x.gotw);
     return `<div class="eyebrow">${y} season · power rankings</div><h1>Week ${D.meta.cur.week}<small>Who's for real</small></h1>
       <div class="rows">${P.rows.slice(0, 5).map((r) => `<div class="row"><span class="rk">${r.rank}</span><span class="nm"><b>${esc(r.team)}</b><span>${esc(MK[r.key].short)}</span></span><span class="v">${wl(r.w, r.l)}</span></div>`).join('')}</div>
-      <div class="foot">${g ? `Game of the Week ${pv.wk}: <b>${esc(MK[g.hk].short)}</b> vs <b>${esc(MK[g.ak].short)}</b>` : 'Odds, records and 15 years of history'}</div>`;
+      <div class="foot">${g ? `Game of the Week ${pv.wk}: <b>${esc(MK[g.hk].short)}</b> vs <b>${esc(MK[g.ak].short)}</b>` : 'Odds, records and the history of every season'}</div>`;
   };
   let html = '';
   if (c === 'home') {
     if (D.meta.cur && D.power.length) html = live(D.meta.cur.y);
     else {
       const s = D.seasons[D.seasons.length - 1], ch = s.rows.find((r) => r.rank === 1);
-      html = `<div class="eyebrow">Brown Cow 3.0 · since ${D.meta.founded}</div><h1>The record book<small>${D.meta.nDone} champions, ${D.managers.length} managers</small></h1><div class="rows"><div class="row"><span class="rk">★</span><span class="nm"><b>${esc(ch.team)}</b><span>${esc(ch.mgr)}</span></span><span class="v">${s.y}</span></div></div><div class="foot">Every season, record and rivalry</div>`;
+      html = `<div class="eyebrow">${esc(D.meta.league)} · since ${D.meta.founded}</div><h1>The record book<small>${D.meta.nDone} champions, ${D.managers.length} managers</small></h1><div class="rows"><div class="row"><span class="rk">★</span><span class="nm"><b>${esc(ch.team)}</b><span>${esc(ch.mgr)}</span></span><span class="v">${s.y}</span></div></div><div class="foot">Every season, record and rivalry</div>`;
     }
   } else if (c.startsWith('s-')) {
     const y = +c.slice(2), s = D.seasons.find((x) => x.y === y);
