@@ -868,7 +868,24 @@ footer { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block:
       const started = h.pts + a.pts > 0 || h.playing + a.playing > 0;
       return { ...g, hs: h.pts, as_: a.pts, hp: h.proj, ap: a.proj, hwin: hw, hleft: h.left + h.playing, aleft: a.left + a.playing, status: done ? 'final' : started ? 'live' : 'pre' };
     });
-    return { ...L, games, fast: FAST.at };
+    return { ...L, games, odds: liveOdds(L, games), fast: FAST.at };
+  }
+  // Re-run the rest of the season in the browser whenever a live win chance moves, so the odds move with the scores.
+  // Same engine as the playoff machine; this week's games use their live win chances, and the kickoff baseline uses
+  // the same random draws, so the change column is pure game-day movement.
+  const ODDS_CACHE = { key: '', val: null };
+  function liveOdds(L, games) {
+    if (!D.live || !D.live.machine) return L.odds;
+    const key = games.map((g) => g.hwin.toFixed(3)).join(',');
+    if (ODDS_CACHE.key === key) return ODDS_CACHE.val;
+    try {
+      const E = mEngine(), M = E.M, wk = L.wk;
+      const ph = {}; games.forEach((g) => { ph[g.h + '-' + g.a] = g; });
+      const withP = (f) => ({ ...E, M: { ...M, games: M.games.map((x) => (x[0] === wk && ph[x[1] + '-' + x[2]] ? [x[0], x[1], x[2], f(ph[x[1] + '-' + x[2]])] : x)) } });
+      const now = mSim(withP((g) => g.hwin), 2000, null, {}).cnt, pre = mSim(withP((g) => g.hwin0), 2000, null, {}).cnt;
+      const val = E.tids.map((t) => ({ tid: t, po: now[t].po, po0: pre[t].po, title: now[t].title, title0: pre[t].title, div: now[t].div, bye: now[t].bye }));
+      ODDS_CACHE.key = key; ODDS_CACHE.val = val; return val;
+    } catch (e) { return L.odds; }
   }
 
   // win-chance path for one live game: home team above the midline, away team below
