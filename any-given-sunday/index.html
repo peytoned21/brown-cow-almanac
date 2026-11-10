@@ -420,6 +420,13 @@ td.tm-cell .chip { margin-top: 3px; }
 .mx-promo b { font-family: var(--display); font-weight: 900; font-size: 22px; text-transform: uppercase; }
 .mx-promo .mx-go { grid-row: 1 / span 2; grid-column: 3; font-weight: 700; color: var(--brass); }
 .mx-dock { display: none; }
+/* ---- game-day motion */
+[data-anim] { transition: color .4s ease, background-color .4s ease; border-radius: 4px; }
+.tick-up { color: var(--turf) !important; background-color: color-mix(in srgb, var(--turf) 14%, transparent); }
+.tick-down { color: var(--loss) !important; background-color: color-mix(in srgb, var(--loss) 12%, transparent); }
+.wp-line { transition: d .9s ease; }
+@media (prefers-reduced-motion: reduce) { [data-anim] { transition: none; } }
+
 /* ---- the paper */
 .paper-teaser { display: grid; gap: 6px; padding: 18px 20px; text-decoration: none; color: var(--ink); border-top: 4px double var(--ink); }
 .pp-mast { font-family: var(--poster); font-size: 15px; letter-spacing: .06em; text-transform: uppercase; color: var(--brass); }
@@ -785,7 +792,7 @@ footer { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block:
       const myP = home ? g.hp : g.ap, opP = home ? g.ap : g.hp;
       const h2 = D.h2h && D.h2h[ME] && D.h2h[ME][opp.key] ? D.h2h[ME][opp.key] : null;
       mu = `<div class="yw-game"><span class="eyebrow">${live ? (g.status === 'final' ? 'Final' : 'Live now') : `Week ${D.meta.cur.week + 1}`} vs ${esc(MK[opp.key].short)}</span>
-        <div class="yw-score num">${live ? `${f1(mine)} <i>–</i> ${f1(home ? g.as_ : g.hs)}` : `${f1(myP)} <i>–</i> ${f1(opP)}`}</div>
+        <div class="yw-score num">${live ? `<span data-anim="yw-me" data-v="${mine}" data-fmt="f1">${f1(mine)}</span> <i>–</i> <span data-anim="yw-op" data-v="${home ? g.as_ : g.hs}" data-fmt="f1">${f1(home ? g.as_ : g.hs)}</span>` : `${f1(myP)} <i>–</i> ${f1(opP)}`}</div>
         <span class="sub">${live ? `projected ${f1(myP)}–${f1(opP)} · ` : 'projected · '}<b>${pct(win)}</b> to win${h2 ? ` · all-time ${h2[0]}–${h2[1]}${h2[2] ? '–' + h2[2] : ''}` : ''}</span></div>`;
     }
     const tile = (k, v, sub) => `<div class="yw-t"><span class="k">${k}</span><span class="v num">${v}</span>${sub ? `<span class="sub">${sub}</span>` : ''}</div>`;
@@ -804,9 +811,9 @@ footer { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block:
     const L = liveView(), M = D.live.machine, T = {}; M.teams.forEach((x) => { T[x.tid] = x; });
     const mine = (g) => (meTid() === g.h || meTid() === g.a ? 0 : 1);
     const gs = [...L.games].sort((a, b) => mine(a) - mine(b));
-    t.innerHTML = `<div class="tk-in"><span class="tk-lab">${L.final ? 'Final' : '<span class="live-dot"></span>Live'} · Wk ${L.wk}</span>${gs.map((g) => {
+    animSwap(t, `<div class="tk-in"><span class="tk-lab">${L.final ? 'Final' : '<span class="live-dot"></span>Live'} · Wk ${L.wk}</span>${gs.map((g) => {
       const hk = T[g.h].key, ak = T[g.a].key, hw = g.hs >= g.as_;
-      return `<a class="tk ${g.status}" href="#s-${L.y}" data-k="${hk}"><span class="tk-r${hw ? ' up' : ''}" data-k="${hk}"><b>${esc(MK[hk].short)}</b><span class="num">${f1(g.hs)}</span></span><span class="tk-r${!hw ? ' up' : ''}" data-k="${ak}"><b>${esc(MK[ak].short)}</b><span class="num">${f1(g.as_)}</span></span><span class="tk-p num">${g.status === 'final' ? 'Final' : `${esc(MK[g.hwin >= 0.5 ? hk : ak].short.split(' ')[0])} ${Math.round(Math.max(g.hwin, 1 - g.hwin) * 100)}%`}</span></a>`; }).join('')}</div>`;
+      return `<a class="tk ${g.status}" href="#s-${L.y}" data-k="${hk}"><span class="tk-r${hw ? ' up' : ''}" data-k="${hk}"><b>${esc(MK[hk].short)}</b><span class="num" data-anim="tk-${g.h}" data-v="${g.hs}" data-fmt="f1">${f1(g.hs)}</span></span><span class="tk-r${!hw ? ' up' : ''}" data-k="${ak}"><b>${esc(MK[ak].short)}</b><span class="num" data-anim="tk-${g.a}" data-v="${g.as_}" data-fmt="f1">${f1(g.as_)}</span></span><span class="tk-p num">${g.status === 'final' ? 'Final' : `${esc(MK[g.hwin >= 0.5 ? hk : ak].short.split(' ')[0])} ${Math.round(Math.max(g.hwin, 1 - g.hwin) * 100)}%`}</span></a>`; }).join('')}</div>`);
     t.hidden = false; markMe();
   }
   // ------------------------------------------------------------- live game day
@@ -821,7 +828,7 @@ footer { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block:
     const mine = (g) => (meTid() === g.h || meTid() === g.a ? 0 : 1);
     const games = [...L.games].sort((x, y) => mine(x) - mine(y) || ord_[x.status] - ord_[y.status] || Math.abs(x.hwin - 0.5) - Math.abs(y.hwin - 0.5));
     const chip = (st) => st === 'live' ? '<span class="lv-chip on">Live</span>' : st === 'final' ? '<span class="lv-chip">Final</span>' : '<span class="lv-chip">Not started</span>';
-    const row = (tid, sc, pj, left, win, lead) => { const k = T[tid].key; return `<div class="lv-row${lead ? ' lead' : ''}">${badge(k)}<span class="lv-tm"><a class="mgr" href="#m-${k}">${esc(mgr(k).short)}</a><span class="sub">${esc(T[tid].team)} · ${rec(tid)}${left ? ` · ${left} to play` : ''}<span class="lv-pj-s"> · proj ${f1(pj)}</span></span></span><span class="lv-sc num">${f1(sc)}</span><span class="lv-pj num">${f1(pj)}<i>proj</i></span><span class="lv-w num">${pct(win)}</span></div>`; };
+    const row = (tid, sc, pj, left, win, lead) => { const k = T[tid].key; return `<div class="lv-row${lead ? ' lead' : ''}">${badge(k)}<span class="lv-tm"><a class="mgr" href="#m-${k}">${esc(mgr(k).short)}</a><span class="sub">${esc(T[tid].team)} · ${rec(tid)}${left ? ` · ${left} to play` : ''}<span class="lv-pj-s"> · proj ${f1(pj)}</span></span></span><span class="lv-sc num" data-anim="sc-${tid}" data-v="${sc}" data-fmt="f1">${f1(sc)}</span><span class="lv-pj num"><span data-anim="pj-${tid}" data-v="${pj}" data-fmt="f1">${f1(pj)}</span><i>proj</i></span><span class="lv-w num" data-anim="w-${tid}" data-v="${win}" data-fmt="pct">${pct(win)}</span></div>`; };
     const card = (g) => { const hk = T[g.h].key, ak = T[g.a].key; const moved = Math.round((g.hwin - g.hwin0) * 100); const fav = g.hwin >= 0.5 ? g.h : g.a;
       return `<article class="sheet lv ${g.status}"><div class="lv-top">${chip(g.status)}${g.status !== 'pre' && Math.abs(moved) >= 5 ? `<span class="sub">${esc(mgr(T[moved > 0 ? g.h : g.a].key).short)} up ${Math.abs(moved)} points since kickoff</span>` : ''}</div>
         ${row(g.h, g.hs, g.hp, g.hleft, g.hwin, g.status === 'final' ? g.hs > g.as_ : fav === g.h)}${row(g.a, g.as_, g.ap, g.aleft, 1 - g.hwin, g.status === 'final' ? g.as_ > g.hs : fav === g.a)}
@@ -829,7 +836,7 @@ footer { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block:
     const od = [...L.odds].map((o) => ({ ...o, d: o.po - o.po0, k: T[o.tid].key })).sort((x, y) => Math.abs(y.d) - Math.abs(x.d) || y.po - x.po);
     const odShow = full === false ? od.filter((o) => Math.abs(o.d) >= 0.01).slice(0, 5) : od;
     const delta = (d) => { const v = Math.round(d * 100); return v === 0 ? '<span class="muted">—</span>' : `<span class="${v > 0 ? 'pos' : 'neg'}">${v > 0 ? '▲' : '▼'}${Math.abs(v)}</span>`; };
-    const tbl = odShow.length ? `<div class="sheet tbl"><table><caption>Playoff odds right now <span class="muted">· if every game finished the way it's trending</span></caption><thead><tr><th>Team</th><th class="r">At kickoff</th><th class="r">Now</th><th class="r">Change</th><th class="r hide-sm">Title</th></tr></thead><tbody>${odShow.map((o) => `<tr><td class="tm-cell"><a class="mgr" href="#m-${o.k}">${esc(T[o.tid].team)}</a><span class="sub">${esc(T[o.tid].mgr)}</span></td><td class="r num">${pct(o.po0)}</td><td class="r num"><b>${pct(o.po)}</b></td><td class="r num">${delta(o.d)}</td><td class="r num hide-sm">${pct(o.title)}</td></tr>`).join('')}</tbody></table></div>` : '';
+    const tbl = odShow.length ? `<div class="sheet tbl"><table><caption>Playoff odds right now <span class="muted">· if every game finished the way it's trending</span></caption><thead><tr><th>Team</th><th class="r">At kickoff</th><th class="r">Now</th><th class="r">Change</th><th class="r hide-sm">Title</th></tr></thead><tbody>${odShow.map((o) => `<tr><td class="tm-cell"><a class="mgr" href="#m-${o.k}">${esc(T[o.tid].team)}</a><span class="sub">${esc(T[o.tid].mgr)}</span></td><td class="r num">${pct(o.po0)}</td><td class="r num"><b data-anim="od-${o.tid}" data-v="${o.po}" data-fmt="pct">${pct(o.po)}</b></td><td class="r num">${delta(o.d)}</td><td class="r num hide-sm">${pct(o.title)}</td></tr>`).join('')}</tbody></table></div>` : '';
     const fresh = L.fast ? `scores from ESPN at ${new Date(L.fast).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', second: '2-digit' })} · odds ${when}` : (when ? `updated ${when}` : '');
     return `<section id="live"><div class="sec-head"><div class="eyebrow"><span class="live-dot${L.final ? ' off' : ''}"></span>${L.final ? 'All games final' : 'Live'}${fresh ? ` · ${fresh}` : ''}</div><h2>Week ${L.wk}, live</h2></div>
       <div class="lv-grid">${games.map(card).join('')}</div>${tbl}
@@ -932,9 +939,27 @@ footer { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block:
       <figcaption><span>${esc(mgr(hk).short)}</span><span>win chance since kickoff</span><span>${esc(mgr(ak).short)}</span></figcaption></figure>`;
   }
   function erf(x) { const t = 1 / (1 + 0.3275911 * Math.abs(x)); const y = 1 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * Math.exp(-x * x); return x >= 0 ? y : -y; }
+
+  // Game-day motion: when live numbers change, count them up (or down) instead of jumping, and flash the change.
+  const REDUCE = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function animSwap(el, html, outer) {
+    const old = {}; el.querySelectorAll('[data-anim]').forEach((x) => { old[x.dataset.anim] = +x.dataset.v; });
+    let host = el;
+    if (outer) { const tmp = document.createElement('div'); tmp.innerHTML = html; host = tmp.firstElementChild; if (!host) { el.remove(); return; } el.replaceWith(host); }
+    else el.innerHTML = html;
+    if (REDUCE) return;
+    host.querySelectorAll('[data-anim]').forEach((x) => {
+      const id = x.dataset.anim, to = +x.dataset.v, from = old[id];
+      if (from == null || isNaN(from) || Math.abs(from - to) < 1e-6) return;
+      const fmt = x.dataset.fmt === 'pct' ? pct : f1, t0 = performance.now(), dur = 900;
+      x.classList.add(to > from ? 'tick-up' : 'tick-down');
+      const step = (now) => { const k = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - k, 3); x.textContent = fmt(from + (to - from) * e); if (k < 1) requestAnimationFrame(step); else setTimeout(() => x.classList.remove('tick-up', 'tick-down'), 900); };
+      x.textContent = fmt(from); requestAnimationFrame(step);
+    });
+  }
   function redrawLive() {
-    const slot = document.getElementById('live-slot'); if (slot && liveOk(LIVE)) slot.innerHTML = liveHtml(slot.dataset.full !== 'false');
-    const yw = document.querySelector('#view .yw'); if (yw) yw.outerHTML = yourWeekHtml();
+    const slot = document.getElementById('live-slot'); if (slot && liveOk(LIVE)) animSwap(slot, liveHtml(slot.dataset.full !== 'false'));
+    const yw = document.querySelector('#view .yw'); if (yw) animSwap(yw, yourWeekHtml(), true);
     renderTicker(); markMe();
   }
   async function pollLive() {
