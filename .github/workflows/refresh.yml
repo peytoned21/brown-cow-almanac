@@ -1,7 +1,8 @@
 name: Weekly refresh
 
 # Every league in leagues/: pull the current season from ESPN, rebuild, run the stats check, redraw the share cards,
-# commit only the leagues whose checks pass, then post each league's recap to its GroupMe. Pages republishes the site.
+# commit only the leagues whose checks pass. Pages republishes the site. The GroupMe post comes later, with the
+# newsletter (see post.yml).
 on:
   schedule:
     - cron: '49 13 * 9-12,1 2'   # Tuesdays, Sept–Jan (8:49 ET in winter, 9:49 ET in summer time)
@@ -60,7 +61,7 @@ jobs:
           git push -q
 
       - name: Post recaps to GroupMe
-        if: always() && (github.event_name == 'schedule' || inputs.post_groupme)
+        if: always() && inputs.post_groupme   # scheduled posts come from the newsletter (post.yml)
         env:
           GROUPME_BOT_ID: ${{ secrets.GROUPME_BOT_ID }}
           AGS_GROUPME_BOT_ID: ${{ secrets.AGS_GROUPME_BOT_ID }}

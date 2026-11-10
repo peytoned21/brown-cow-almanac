@@ -1,8 +1,9 @@
 """Post the weekly recap to the league GroupMe through a GroupMe bot.
 
 Reads the bot ID from the environment variable the league config names (site.groupmeSecret), e.g. GROUPME_BOT_ID.
-With --dry, prints the message instead of posting.
-Usage: python3 pipeline/groupme.py LEAGUE_CONFIG [--dry]
+With --dry, prints the message instead of posting. With --issue, posts this week's newsletter teaser and link
+instead of the stats recap. With --once, skips the post if this week already got one (newsletter/posted.json).
+Usage: python3 pipeline/groupme.py LEAGUE_CONFIG [--issue] [--once] [--dry]
 """
 import json, os, sys, urllib.request
 
@@ -49,7 +50,20 @@ def message(D):
 
 if __name__ == '__main__':
     D = json.load(open(os.path.join(ROOT, CFG['site']['dir'], 'data.json')))
-    msg = message(D)
+    cur = D['meta'].get('cur'); week = f"{cur['y']}-{cur['week']}" if cur else f"{D['seasons'][-1]['y']}-final"
+    nd = os.path.join(ROOT, CFG['site']['dir'], 'newsletter'); pp = os.path.join(nd, 'posted.json')
+    posted = json.load(open(pp)) if os.path.exists(pp) else {}
+    if '--once' in sys.argv and week in posted:
+        print(f'Already posted for {week} ({posted[week]}).'); sys.exit()
+    if '--issue' in sys.argv:
+        idx = json.load(open(os.path.join(nd, 'index.json'))) if os.path.exists(os.path.join(nd, 'index.json')) else []
+        it = idx[0] if idx else None
+        if not it or (cur and (it['y'], it['wk']) != (cur['y'], cur['week'])):
+            sys.exit('No newsletter issue for this week.')
+        doc = json.load(open(os.path.join(nd, it['file'])))
+        msg = f"{doc['groupme']}\n\n{doc['title']}: {SITE}#news-{it['y']}-{it['wk']}"
+    else:
+        msg = message(D)
     bot = os.environ.get(CFG['site']['groupmeSecret'], '').strip()
     if '--dry' in sys.argv or not bot:
         print(msg if bot or '--dry' in sys.argv else f"{CFG['site']['groupmeSecret']} is not set; not posting.\n\n" + msg)
@@ -58,3 +72,5 @@ if __name__ == '__main__':
                                  headers={'Content-Type': 'application/json'})
     with urllib.request.urlopen(req, timeout=30) as r:
         print('Posted to GroupMe:', r.status)
+    os.makedirs(nd, exist_ok=True); posted[week] = 'newsletter' if '--issue' in sys.argv else 'recap'
+    json.dump(posted, open(pp, 'w'), indent=1)

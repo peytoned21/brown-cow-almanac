@@ -163,6 +163,22 @@ def snapshot(cfg, D, wk_data, events, boxes, scoring, now):
                 events={k: dict(teams=v['teams'], frac=v['frac'], state=v['state']) for k, v in events.items()})
 
 
+def add_history(L, old, now):
+    """Each game keeps its win-chance path for the week: [[minutes since epoch, home win chance], ...]."""
+    prev = {}
+    if old and old.get('y') == L['y'] and old.get('wk') == L['wk']:
+        prev = {f"{g['h']}-{g['a']}": g.get('hist') or [] for g in old.get('games', [])}
+    t = int(now // 60)
+    for g in L['games']:
+        h = list(prev.get(f"{g['h']}-{g['a']}", []))
+        if g['status'] == 'pre' and not h:
+            g['hist'] = []; continue
+        if not h: h.append([t, g['hwin0']])
+        if h[-1][1] != g['hwin'] or t - h[-1][0] >= 30:
+            if g['status'] != 'final' or h[-1][1] != g['hwin']: h.append([t, g['hwin']])
+        g['hist'] = h[-400:]
+
+
 def same(a, b):
     strip = lambda x: {k: v for k, v in x.items() if k != 'updated'}
     return strip(a) == strip(b)
@@ -210,6 +226,7 @@ def main():
         L = snapshot(cfg, D, wk_data, events, boxes, scoring, now)
         if L:
             old = json.load(open(out_p)) if os.path.exists(out_p) else None
+            add_history(L, old, now)
             if old and same(old, L):
                 print(time.strftime('%H:%M:%S'), 'no change')
             else:

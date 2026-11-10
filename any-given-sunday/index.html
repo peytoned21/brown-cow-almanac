@@ -420,6 +420,83 @@ td.tm-cell .chip { margin-top: 3px; }
 .mx-promo b { font-family: var(--display); font-weight: 900; font-size: 22px; text-transform: uppercase; }
 .mx-promo .mx-go { grid-row: 1 / span 2; grid-column: 3; font-weight: 700; color: var(--brass); }
 .mx-dock { display: none; }
+/* ---- the paper */
+.paper-teaser { display: grid; gap: 6px; padding: 18px 20px; text-decoration: none; color: var(--ink); border-top: 4px double var(--ink); }
+.pp-mast { font-family: var(--poster); font-size: 15px; letter-spacing: .06em; text-transform: uppercase; color: var(--brass); }
+.pp-title { font-family: var(--display); font-weight: 900; text-transform: uppercase; font-size: clamp(24px, 3.4vw, 34px); line-height: 1.02; }
+.pp-dek { color: var(--muted); font-size: 16px; }
+.pp-go { color: var(--brass); font-weight: 700; }
+.paper .pp { max-width: 760px; margin: 12px auto 0; padding: clamp(18px, 4vw, 40px); }
+.pp header { border-bottom: 3px double var(--ink); padding-bottom: 14px; margin-bottom: 8px; text-align: center; }
+.pp .pp-mast { font-size: clamp(22px, 4vw, 34px); color: var(--ink); }
+.pp-meta { font-family: var(--mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin-top: 4px; }
+.pp-h { margin: 14px 0 6px; font-family: var(--display); font-weight: 900; text-transform: uppercase; font-size: clamp(30px, 5vw, 48px); line-height: .98; }
+.pp .pp-dek { font-size: 18px; font-style: italic; margin: 0; }
+.pp-sec h3 { font-family: var(--display); font-weight: 800; text-transform: uppercase; letter-spacing: .04em; font-size: 20px; margin: 22px 0 6px; color: var(--brass); }
+.pp-sec p { font-size: 17px; line-height: 1.62; margin: 0 0 12px; }
+.pp header + .pp-sec p:first-child::first-letter { font-family: var(--poster); float: left; font-size: 58px; line-height: .9; padding: 4px 8px 0 0; color: var(--brass); }
+.pp-foot { margin-top: 18px; padding-top: 12px; border-top: 1px solid var(--rule); color: var(--muted); font-size: 13px; text-align: center; }
+.pp-more { max-width: 760px; margin: 18px auto 0; display: grid; gap: 6px; }
+.pp-more a { color: var(--ink); text-decoration: none; padding: 8px 0; border-bottom: 1px solid var(--rule); }
+.pp-more a b { font-family: var(--mono); font-size: 12px; color: var(--muted); margin-right: 8px; font-weight: 500; }
+
+/* ---- your team, ticker, logos, win-chance charts */
+.mono-badge { position: relative; overflow: hidden; }
+.mono-badge.has-logo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; background: var(--sheet); }
+.me-btn { position: sticky; right: 0; box-shadow: -10px 0 12px -6px var(--paper); margin-left: auto; flex: 0 0 auto; display: inline-flex; align-items: center; gap: 8px; font: inherit; font-family: var(--display); font-weight: 800; text-transform: uppercase; letter-spacing: .05em; font-size: 14px; border: 1px solid var(--rule); background: var(--sheet); color: var(--ink); border-radius: 999px; padding: 4px 12px 4px 4px; margin-block: 6px; cursor: pointer; }
+.me-btn:not(:has(.mono-badge)) { padding-left: 12px; }
+.me-btn .mono-badge { width: 26px; height: 26px; font-size: 11px; }
+.me-modal { position: fixed; inset: 0; z-index: 60; background: rgba(10, 14, 22, .55); display: grid; place-items: center; padding: 16px; }
+.me-panel { width: min(560px, 100%); max-height: min(88vh, 720px); overflow: auto; padding: 20px; display: grid; gap: 12px; }
+.me-panel h3 { margin: 0; font-family: var(--display); font-weight: 900; text-transform: uppercase; font-size: 26px; }
+.me-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; }
+.me-pick { display: flex; gap: 10px; align-items: center; text-align: left; font: inherit; border: 1px solid var(--rule); background: var(--sheet); color: var(--ink); border-radius: 10px; padding: 8px 10px; cursor: pointer; }
+.me-pick:hover, .me-pick.on { border-color: var(--brass); box-shadow: inset 0 0 0 1px var(--brass); }
+.me-pick > span { display: grid; min-width: 0; }
+.me-foot { display: flex; gap: 8px; justify-content: flex-end; }
+.me-prompt { display: grid; gap: 10px; padding: 14px 16px; margin-bottom: 18px; border-left: 4px solid var(--brass); }
+.me-prompt > div:first-child { display: grid; gap: 2px; }
+.me-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.me-chip { display: inline-flex; align-items: center; gap: 6px; font: inherit; font-size: 14px; border: 1px solid var(--rule); background: var(--sheet-2); color: var(--ink); border-radius: 999px; padding: 3px 12px 3px 3px; cursor: pointer; }
+.me-chip .mono-badge { width: 26px; height: 26px; font-size: 11px; }
+.me-chip.ghost { padding-left: 12px; background: transparent; color: var(--muted); }
+.me-chip:hover { border-color: var(--brass); }
+.linklike { font: inherit; background: none; border: 0; padding: 0; color: var(--brass); text-decoration: underline; cursor: pointer; }
+.is-me { box-shadow: inset 4px 0 0 var(--brass) !important; background: color-mix(in srgb, var(--brass) 8%, var(--sheet)) !important; }
+tr.is-me td:first-child, tr.is-me th:first-child { box-shadow: inset 4px 0 0 var(--brass); }
+tr.is-me { box-shadow: none !important; }
+.yw { margin-bottom: 22px; }
+.yw-in { padding: 18px 20px; display: grid; gap: 16px; border-top: 5px solid var(--mc); background: linear-gradient(180deg, color-mix(in srgb, var(--mc) 9%, var(--sheet)), var(--sheet) 60%); }
+.yw-head { display: flex; gap: 14px; align-items: center; }
+.yw-head h2 { margin: 2px 0; font-family: var(--display); font-weight: 900; text-transform: uppercase; font-size: clamp(26px, 4vw, 38px); line-height: 1; }
+.yw-game { display: grid; gap: 4px; }
+.yw-score { font-family: var(--display); font-weight: 900; font-size: clamp(40px, 7vw, 64px); line-height: 1; }
+.yw-score i { font-style: normal; color: var(--faint); }
+.yw-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; }
+.yw-t { display: grid; gap: 2px; background: var(--sheet); border: 1px solid var(--rule); border-radius: 8px; padding: 10px 12px; }
+.yw-t .k { font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.yw-t .v { font-family: var(--display); font-weight: 900; font-size: 30px; line-height: 1; }
+.yw-links { display: flex; flex-wrap: wrap; gap: 16px; font-weight: 600; }
+.yw-links a { color: var(--brass); text-decoration: none; }
+.ticker { border-top: 1px solid var(--rule); }
+.tk-in { max-width: 1120px; margin: 0 auto; padding: 6px 12px; display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; align-items: stretch; }
+.tk-in::-webkit-scrollbar { display: none; }
+.tk-lab { flex: 0 0 auto; align-self: center; font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); padding-right: 4px; }
+.tk { flex: 0 0 auto; display: grid; grid-template-columns: auto auto; column-gap: 10px; text-decoration: none; color: var(--ink); background: var(--sheet); border: 1px solid var(--rule); border-radius: 8px; padding: 4px 10px; font-size: 12.5px; line-height: 1.35; }
+.tk.live { border-color: color-mix(in srgb, #d23b2a 45%, var(--rule)); }
+.tk-r { display: contents; color: var(--muted); }
+.tk-r b { font-weight: 600; }
+.tk-r.up { color: var(--ink); }
+.tk-r.up b { font-weight: 800; }
+.tk-r .num { text-align: right; }
+.tk-p { grid-column: 1 / -1; font-family: var(--mono); font-size: 10.5px; color: var(--muted); }
+.wp { margin: 0; display: grid; gap: 2px; }
+.wp svg { width: 100%; height: 56px; display: block; background: var(--sheet-2); border-radius: 6px; }
+.wp-mid { stroke: var(--rule); stroke-width: 1; stroke-dasharray: 3 3; vector-effect: non-scaling-stroke; }
+.wp-line { fill: none; stroke: var(--ink); stroke-width: 2; vector-effect: non-scaling-stroke; }
+.wp figcaption { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 10.5px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+@media (max-width: 600px) { .me-btn span:not(.mono-badge) { display: none; } .me-btn { padding: 3px; } .me-btn:not(:has(.mono-badge)) span { display: inline; padding: 0 8px; } }
+
 .share-btn { margin-left: auto; font: inherit; font-size: 12.5px; border: 1px solid var(--rule); background: var(--sheet); color: var(--ink); border-radius: 999px; padding: 3px 11px; cursor: pointer; }
 .share-btn:hover { border-color: var(--brass); color: var(--brass); }
 .crumbs { align-items: center; }
@@ -560,15 +637,16 @@ footer { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block:
   </div>
 </header>
 <nav class="tabs" aria-label="Sections"><div class="tabs-in" id="tabs">
-  <a href="#home" data-tab="home">Home</a><a href="#managers" data-tab="managers">Managers</a><a href="#records" data-tab="records">Records</a><a href="#stats" data-tab="stats">Stats</a><a href="#seasons" data-tab="seasons">Seasons</a>
-</div></nav>
+  <a href="#home" data-tab="home">Home</a><a href="#managers" data-tab="managers">Managers</a><a href="#records" data-tab="records">Records</a><a href="#stats" data-tab="stats">Stats</a><a href="#seasons" data-tab="seasons">Seasons</a><button type="button" class="me-btn" id="me-btn" hidden></button>
+</div><div class="ticker" id="ticker" hidden></div></nav>
+<div class="me-modal" id="me-modal" hidden><div class="me-panel sheet" role="dialog" aria-modal="true" aria-labelledby="me-title"><h3 id="me-title">Which team is yours?</h3><p class="sub">Your matchup, odds and rows go first everywhere on the site. It's saved on this device only.</p><div class="me-list" id="me-list"></div><div class="me-foot"><button type="button" class="btn ghost" data-me="-">Just browsing</button><button type="button" class="btn ghost" data-me-close>Cancel</button></div></div></div>
 <main id="view"><div class="loading">Loading 13 seasons of Any Given Sunday…</div></main>
 <footer id="foot"></footer>
 
 <script>
 (function () {
   'use strict';
-  const LG = {"copyPrefix":"Any Given Sunday","notes":{"footerGaps":" ESPN keeps no weekly lineups for 2018–2023.","footerSeats":" A seat that passed to a new manager starts a new manager record; name changes on the same account are one manager.","legendsGaps":"; 2014–2016 lineups are slightly incomplete","recordsLede":"Single-week marks use regular-season games. Every season has used half-point PPR, so scores compare across the whole history.","pprEra":"","missedTail":"","upsetsEyebrow":"Every bracket since 2014","timelineLede":"Champions and every rule change ESPN recorded. Marked dots show seasons where the format changed: 12 teams and six playoff spots in 2014–15, ten teams and four spots since."},"me":"edwards","bridesmaid":null,"seedsFrom":2014,"earlyWeeks":7,"losersLadder":false,"tiebreak":"points","nColors":15,"site":"https://peytoned21.github.io/brown-cow-almanac/any-given-sunday/","liveUrl":"https://raw.githubusercontent.com/peytoned21/brown-cow-almanac/live/any-given-sunday.json"};
+  const LG = {"copyPrefix":"Any Given Sunday","notes":{"footerGaps":" ESPN keeps no weekly lineups for 2018–2023.","footerSeats":" A seat that passed to a new manager starts a new manager record; name changes on the same account are one manager.","legendsGaps":"; 2014–2016 lineups are slightly incomplete","recordsLede":"Single-week marks use regular-season games. Every season has used half-point PPR, so scores compare across the whole history.","pprEra":"","missedTail":"","upsetsEyebrow":"Every bracket since 2014","timelineLede":"Champions and every rule change ESPN recorded. Marked dots show seasons where the format changed: 12 teams and six playoff spots in 2014–15, ten teams and four spots since."},"me":"edwards","bridesmaid":null,"seedsFrom":2014,"earlyWeeks":7,"losersLadder":false,"tiebreak":"points","nColors":15,"site":"https://peytoned21.github.io/brown-cow-almanac/any-given-sunday/","liveUrl":"https://raw.githubusercontent.com/peytoned21/brown-cow-almanac/live/any-given-sunday.json","paper":"The Sunday Sheet"};
   const $ = (id) => document.getElementById(id);
   const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const f1 = (n) => (n == null ? '—' : Number(n).toFixed(1));
@@ -584,7 +662,7 @@ footer { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block:
   const mlink = (k, label) => `<a class="mgr" href="#m-${k}">${esc(label || mgr(k).name)}</a>`;
   const slink = (y, label) => `<a href="#s-${y}">${esc(label || y)}</a>`;
   const initials = (k) => { const n = mgr(k).name.split(' & ').map((p) => p.trim()); return n.length > 1 ? n.map((p) => p[0]).join('') : n[0].split(' ').map((p) => p[0]).join('').slice(0, 2); };
-  const badge = (k, lg) => `<span class="mono-badge${lg ? ' lg' : ''}" style="--mc:${COLORS[k]}" aria-hidden="true">${esc(initials(k))}</span>`;
+  const badge = (k, lg) => { const lo = MK[k] && MK[k].logo; return `<span class="mono-badge${lg ? ' lg' : ''}${lo ? ' has-logo' : ''}" style="--mc:${COLORS[k]}" aria-hidden="true">${esc(initials(k))}${lo ? `<img src="${esc(lo)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : ''}</span>`; };
   const wl = (w, l, t) => `${w}–${l}${t ? '–' + t : ''}`;
   const seasonOf = (y) => D.seasons.find((s) => s.y === +y);
   const dSpot = (d) => (d.bid != null ? (d.prank <= 30 ? `$${d.bid}, ${ord(d.prank)}-highest price` : `a $${d.bid} buy`) : `round ${d.rd}, pick ${d.pick}`);
@@ -637,6 +715,97 @@ footer { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block:
     try { await navigator.clipboard.writeText(u); b.textContent = 'Copied'; } catch (er) { b.textContent = u; }
     setTimeout(() => { b.textContent = 'Copy link'; }, 2000);
   });
+
+
+  // ------------------------------------------------------------- the weekly paper
+  let NEWS = [];
+  async function loadNews() { try { const r = await fetch('newsletter/index.json', { cache: 'no-cache' }); if (r.ok) NEWS = await r.json(); } catch (e) { NEWS = []; } }
+  const mdLite = (t) => esc(t).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
+  function paperTeaserHtml() {
+    const i = NEWS[0]; if (!i || !D.meta.cur || i.y !== D.meta.cur.y) return '';
+    return `<section><div class="sec-head"><div class="eyebrow">${esc(LG.paper)} · Week ${i.wk}</div><h2>The paper</h2><a href="#news-${i.y}-${i.wk}" class="eyebrow">Read the issue →</a></div>
+      <a class="sheet paper-teaser" href="#news-${i.y}-${i.wk}"><span class="pp-mast">${esc(LG.paper)}</span><b class="pp-title">${esc(i.title)}</b><span class="pp-dek">${esc(i.dek)}</span><span class="pp-go">Read the full issue →</span></a></section>`;
+  }
+  function newsView(y, wk) {
+    const i = NEWS.find((x) => x.y === y && x.wk === wk);
+    if (!i) return notFound();
+    return `<section class="paper" id="paper-body"><div class="crumbs"><a href="#seasons">Seasons</a><span>/</span><a href="#s-${y}">${y}</a><span>/</span><span>Week ${wk}</span></div><div class="loading">Loading the issue…</div></section>`;
+  };
+  async function newsAfter(y, wk) {
+    const i = NEWS.find((x) => x.y === y && x.wk === wk); if (!i) return;
+    let doc; try { doc = await (await fetch('newsletter/' + i.file, { cache: 'no-cache' })).json(); } catch (e) { return; }
+    const others = NEWS.filter((x) => x !== i).slice(0, 8);
+    const el = $('paper-body'); if (!el) return;
+    el.innerHTML = `<div class="crumbs"><a href="#seasons">Seasons</a><span>/</span><a href="#s-${y}">${y}</a><span>/</span><span>Week ${wk}</span>${shareBtn('#news-' + y + '-' + wk)}</div>
+      <article class="sheet pp"><header><div class="pp-mast">${esc(LG.paper)}</div><div class="pp-meta">${y} · Week ${wk}</div><h2 class="pp-h">${esc(doc.title)}</h2><p class="pp-dek">${esc(doc.dek)}</p></header>
+      ${doc.sections.map((s_) => `<section class="pp-sec"><h3>${esc(s_.head)}</h3>${s_.body.map((p) => `<p>${mdLite(p)}</p>`).join('')}</section>`).join('')}
+      <footer class="pp-foot">Written each Tuesday from the league's own numbers. Every figure comes from this site's data.</footer></article>
+      ${others.length ? `<div class="pp-more"><span class="eyebrow">Back issues</span>${others.map((x) => `<a href="#news-${x.y}-${x.wk}"><b>${x.y} · Week ${x.wk}</b> ${esc(x.title)}</a>`).join('')}</div>` : ''}`;
+    markMe();
+  }
+  // ------------------------------------------------------------- who are you / ticker
+  const ME_STORE = 'almanac-me:' + LG.site;
+  let ME = (() => { try { return localStorage.getItem(ME_STORE) || ''; } catch (e) { return ''; } })();
+  const meValid = () => ME && ME !== '-' && MK[ME];
+  function meTid() { if (!meValid() || !D.live || !D.live.machine) return null; const t = D.live.machine.teams.find((x) => x.key === ME); return t ? t.tid : null; }
+  function setMe(k) { ME = k; try { localStorage.setItem(ME_STORE, k); } catch (e) {} closeMe(); meButton(); route(); }
+  function meButton() { const b = $('me-btn'); if (!b || !D) return; b.hidden = false; b.innerHTML = meValid() ? `${badge(ME)}<span>${esc(MK[ME].short)}</span>` : '<span>Pick your team</span>'; }
+  function openMe() {
+    const cur = D.live && D.live.machine ? D.live.machine.teams.map((t) => t.key) : D.managers.map((m) => m.key);
+    $('me-list').innerHTML = [...D.managers].filter((m) => cur.includes(m.key)).sort((a, b) => a.short.localeCompare(b.short))
+      .map((m) => `<button type="button" class="me-pick${m.key === ME ? ' on' : ''}" data-me="${m.key}">${badge(m.key)}<span><b>${esc(m.short)}</b><span class="sub">${esc(m.team)}</span></span></button>`).join('');
+    $('me-modal').hidden = false;
+  }
+  function closeMe() { $('me-modal').hidden = true; }
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('#me-btn') || e.target.closest('[data-me-open]')) { openMe(); return; }
+    const p = e.target.closest('[data-me]'); if (p) { setMe(p.dataset.me); return; }
+    if (e.target.closest('[data-me-close]') || e.target.id === 'me-modal') closeMe();
+  });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !$('me-modal').hidden) closeMe(); });
+  function markMe() {
+    if (!meValid()) return;
+    document.querySelectorAll(`#view a.mgr[href="#m-${ME}"], #ticker [data-k="${ME}"]`).forEach((a) => {
+      const el = a.closest('tr, .lv, .pv, .pv-row, .goat-row, .riv, .mcard, .ends-l li, .tk'); if (el) el.classList.add('is-me'); });
+  }
+  function yourWeekHtml() {
+    if (!meValid() || !D.meta.cur || !D.live || !D.live.machine) return '';
+    const M = D.live.machine, me = M.teams.find((t) => t.key === ME); if (!me) return '';
+    const O = (D.odds || []).find((o) => o.key === ME) || {}, P = D.power.length ? D.power[D.power.length - 1].rows.find((r) => r.key === ME) : null;
+    let g = null, live = false;
+    if (liveOk(LIVE)) { const v = liveView(); g = v.games.find((x) => x.h === me.tid || x.a === me.tid); live = !!g; }
+    if (!g && D.live.preview) g = D.live.preview.games.find((x) => x.h === me.tid || x.a === me.tid);
+    let mu = '';
+    if (g) {
+      const home = g.h === me.tid, opp = M.teams.find((t) => t.tid === (home ? g.a : g.h));
+      const win = home ? g.hwin : 1 - g.hwin, mine = home ? (live ? g.hs : g.hp) : (live ? g.as_ : g.ap), theirs = home ? (live ? g.as_ : g.hs != null && !live ? g.ap : g.hp) : (live ? g.hs : g.hp);
+      const myP = home ? g.hp : g.ap, opP = home ? g.ap : g.hp;
+      const h2 = D.h2h && D.h2h[ME] && D.h2h[ME][opp.key] ? D.h2h[ME][opp.key] : null;
+      mu = `<div class="yw-game"><span class="eyebrow">${live ? (g.status === 'final' ? 'Final' : 'Live now') : `Week ${D.meta.cur.week + 1}`} vs ${esc(MK[opp.key].short)}</span>
+        <div class="yw-score num">${live ? `${f1(mine)} <i>–</i> ${f1(home ? g.as_ : g.hs)}` : `${f1(myP)} <i>–</i> ${f1(opP)}`}</div>
+        <span class="sub">${live ? `projected ${f1(myP)}–${f1(opP)} · ` : 'projected · '}<b>${pct(win)}</b> to win${h2 ? ` · all-time ${h2[0]}–${h2[1]}${h2[2] ? '–' + h2[2] : ''}` : ''}</span></div>`;
+    }
+    const tile = (k, v, sub) => `<div class="yw-t"><span class="k">${k}</span><span class="v num">${v}</span>${sub ? `<span class="sub">${sub}</span>` : ''}</div>`;
+    return `<section class="yw"><div class="sheet yw-in" style="--mc:${COLORS[ME]}"><div class="yw-head">${badge(ME, 1)}<div><span class="eyebrow">Your week</span><h2>${esc(MK[ME].team)}</h2><span class="sub">${esc(MK[ME].name)} · <button type="button" class="linklike" data-me-open>change</button></span></div></div>
+      ${mu}<div class="yw-tiles">${tile('Record', `${me.w}–${me.l}`)}${P ? tile('Power rank', `#${P.rank}`, P.move ? `${P.move > 0 ? '▲' : '▼'}${Math.abs(P.move)} this week` : '') : ''}${O.po != null ? tile('Playoffs', pct(O.po)) : ''}${O.title != null ? tile('Title', pct(O.title)) : ''}</div>
+      <div class="yw-links"><a href="#machine">Your playoff machine →</a><a href="#m-${ME}">Your career page →</a></div></div></section>`;
+  }
+  function mePromptHtml() {
+    if (ME) return '';
+    const keys = D.live && D.live.machine ? D.live.machine.teams.map((t) => t.key) : D.managers.map((m) => m.key);
+    return `<section class="me-prompt sheet"><div><b>Which team is yours?</b><span class="sub">Your matchup, odds and rows go first everywhere.</span></div><div class="me-chips">${keys.map((k) => `<button type="button" class="me-chip" data-me="${k}">${badge(k)}<span>${esc(MK[k].short)}</span></button>`).join('')}<button type="button" class="me-chip ghost" data-me="-">Just browsing</button></div></section>`;
+  }
+  function renderTicker() {
+    const t = $('ticker'); if (!t) return;
+    if (!D || !liveOk(LIVE)) { t.hidden = true; return; }
+    const L = liveView(), M = D.live.machine, T = {}; M.teams.forEach((x) => { T[x.tid] = x; });
+    const mine = (g) => (meTid() === g.h || meTid() === g.a ? 0 : 1);
+    const gs = [...L.games].sort((a, b) => mine(a) - mine(b));
+    t.innerHTML = `<div class="tk-in"><span class="tk-lab">${L.final ? 'Final' : '<span class="live-dot"></span>Live'} · Wk ${L.wk}</span>${gs.map((g) => {
+      const hk = T[g.h].key, ak = T[g.a].key, hw = g.hs >= g.as_;
+      return `<a class="tk ${g.status}" href="#s-${L.y}" data-k="${hk}"><span class="tk-r${hw ? ' up' : ''}" data-k="${hk}"><b>${esc(MK[hk].short)}</b><span class="num">${f1(g.hs)}</span></span><span class="tk-r${!hw ? ' up' : ''}" data-k="${ak}"><b>${esc(MK[ak].short)}</b><span class="num">${f1(g.as_)}</span></span><span class="tk-p num">${g.status === 'final' ? 'Final' : `${esc(MK[g.hwin >= 0.5 ? hk : ak].short.split(' ')[0])} ${Math.round(Math.max(g.hwin, 1 - g.hwin) * 100)}%`}</span></a>`; }).join('')}</div>`;
+    t.hidden = false; markMe();
+  }
   // ------------------------------------------------------------- live game day
   let LIVE = null;
   function liveOk(L) { return L && D.meta.cur && L.y === D.meta.cur.y && L.wk === D.meta.cur.week + 1 && L.started; }
@@ -646,13 +815,14 @@ footer { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block:
     const rec = (t) => `${T[t].w}–${T[t].l}`;
     const upd = new Date(L.updated); const when = isNaN(upd) ? '' : upd.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
     const ord_ = { live: 0, pre: 1, final: 2 };
-    const games = [...L.games].sort((x, y) => ord_[x.status] - ord_[y.status] || Math.abs(x.hwin - 0.5) - Math.abs(y.hwin - 0.5));
+    const mine = (g) => (meTid() === g.h || meTid() === g.a ? 0 : 1);
+    const games = [...L.games].sort((x, y) => mine(x) - mine(y) || ord_[x.status] - ord_[y.status] || Math.abs(x.hwin - 0.5) - Math.abs(y.hwin - 0.5));
     const chip = (st) => st === 'live' ? '<span class="lv-chip on">Live</span>' : st === 'final' ? '<span class="lv-chip">Final</span>' : '<span class="lv-chip">Not started</span>';
     const row = (tid, sc, pj, left, win, lead) => { const k = T[tid].key; return `<div class="lv-row${lead ? ' lead' : ''}">${badge(k)}<span class="lv-tm"><a class="mgr" href="#m-${k}">${esc(mgr(k).short)}</a><span class="sub">${esc(T[tid].team)} · ${rec(tid)}${left ? ` · ${left} to play` : ''}</span></span><span class="lv-sc num">${f1(sc)}</span><span class="lv-pj num">${f1(pj)}<i>proj</i></span><span class="lv-w num">${pct(win)}</span></div>`; };
     const card = (g) => { const hk = T[g.h].key, ak = T[g.a].key; const moved = Math.round((g.hwin - g.hwin0) * 100); const fav = g.hwin >= 0.5 ? g.h : g.a;
       return `<article class="sheet lv ${g.status}"><div class="lv-top">${chip(g.status)}${g.status !== 'pre' && Math.abs(moved) >= 5 ? `<span class="sub">${esc(mgr(T[moved > 0 ? g.h : g.a].key).short)} up ${Math.abs(moved)} points since kickoff</span>` : ''}</div>
         ${row(g.h, g.hs, g.hp, g.hleft, g.hwin, g.status === 'final' ? g.hs > g.as_ : fav === g.h)}${row(g.a, g.as_, g.ap, g.aleft, 1 - g.hwin, g.status === 'final' ? g.as_ > g.hs : fav === g.a)}
-        <div class="pv-bar" role="img" aria-label="Win chance ${Math.round(g.hwin * 100)} to ${Math.round((1 - g.hwin) * 100)}"><i style="width:${g.hwin * 100}%;background:${COLORS[hk]}"></i><i style="width:${(1 - g.hwin) * 100}%;background:${COLORS[ak]}"></i></div></article>`; };
+        ${wpChart(g, hk, ak)}</article>`; };
     const od = [...L.odds].map((o) => ({ ...o, d: o.po - o.po0, k: T[o.tid].key })).sort((x, y) => Math.abs(y.d) - Math.abs(x.d) || y.po - x.po);
     const odShow = full === false ? od.filter((o) => Math.abs(o.d) >= 0.01).slice(0, 5) : od;
     const delta = (d) => { const v = Math.round(d * 100); return v === 0 ? '<span class="muted">—</span>' : `<span class="${v > 0 ? 'pos' : 'neg'}">${v > 0 ? '▲' : '▼'}${Math.abs(v)}</span>`; };
@@ -725,8 +895,28 @@ footer { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block:
     });
     return { ...L, games, fast: FAST.at };
   }
+
+  // win-chance path for one live game: home team above the midline, away team below
+  function wpChart(g, hk, ak) {
+    const pts = (g.hist || []).slice(); if (g.status !== 'pre') pts.push([Date.now() / 60000, g.hwin]);
+    if (pts.length < 2) return `<div class="pv-bar" role="img" aria-label="Win chance ${Math.round(g.hwin * 100)} to ${Math.round((1 - g.hwin) * 100)}"><i style="width:${g.hwin * 100}%;background:${COLORS[hk]}"></i><i style="width:${(1 - g.hwin) * 100}%;background:${COLORS[ak]}"></i></div>`;
+    const W = 300, H = 56, t0 = pts[0][0], t1 = Math.max(pts[pts.length - 1][0], t0 + 1);
+    const X = (t) => ((t - t0) / (t1 - t0)) * W, Y = (p) => H - p * H;
+    let d = `M${X(pts[0][0]).toFixed(1)},${Y(pts[0][1]).toFixed(1)}`;
+    for (let i = 1; i < pts.length; i++) d += `H${X(pts[i][0]).toFixed(1)}V${Y(pts[i][1]).toFixed(1)}`;
+    const id = `wp${g.h}x${g.a}`;
+    return `<figure class="wp" aria-label="Win chance over the week: ${esc(mgr(hk).short)} ${Math.round(g.hwin * 100)}%"><svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
+      <defs><clipPath id="${id}t"><rect x="0" y="0" width="${W}" height="${H / 2}"/></clipPath><clipPath id="${id}b"><rect x="0" y="${H / 2}" width="${W}" height="${H / 2}"/></clipPath></defs>
+      <path d="${d}V${H / 2}H0Z" fill="${COLORS[hk]}" opacity=".28" clip-path="url(#${id}t)"/><path d="${d}V${H / 2}H0Z" fill="${COLORS[ak]}" opacity=".28" clip-path="url(#${id}b)"/>
+      <line x1="0" x2="${W}" y1="${H / 2}" y2="${H / 2}" class="wp-mid"/><path d="${d}" class="wp-line"/></svg>
+      <figcaption><span>${esc(mgr(hk).short)}</span><span>win chance since kickoff</span><span>${esc(mgr(ak).short)}</span></figcaption></figure>`;
+  }
   function erf(x) { const t = 1 / (1 + 0.3275911 * Math.abs(x)); const y = 1 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * Math.exp(-x * x); return x >= 0 ? y : -y; }
-  function redrawLive() { const slot = document.getElementById('live-slot'); if (slot && liveOk(LIVE)) slot.innerHTML = liveHtml(slot.dataset.full !== 'false'); }
+  function redrawLive() {
+    const slot = document.getElementById('live-slot'); if (slot && liveOk(LIVE)) slot.innerHTML = liveHtml(slot.dataset.full !== 'false');
+    const yw = document.querySelector('#view .yw'); if (yw) yw.outerHTML = yourWeekHtml();
+    renderTicker(); markMe();
+  }
   async function pollLive() {
     try {
       const src = new URLSearchParams(location.search).get('live') || LG.liveUrl;
@@ -743,7 +933,7 @@ footer { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block:
     const side = (k, t, m, rec, p, win, st, top, feat) => `<div class="pv-side"><div class="pv-who">${badge(k)}<div><a class="mgr" href="#m-${k}">${esc(t)}</a><span class="sub">${esc(m)} · ${rec}</span></div></div><div class="pv-proj num">${f1(p)}</div><div class="pv-win">${Math.round(win * 100)}% win chance</div>${full !== false || feat ? `<p class="pv-stake">Win: <b>${pct(st.poWin)}</b> to make the playoffs. Lose: <b>${pct(st.poLose)}</b>.</p>` : ''}${top && (full !== false || feat) ? `<span class="sub">Top projected: ${esc(top[0])} (${esc(top[1])}) ${f1(top[2])}</span>` : ''}</div>`;
     const game = (g, feat) => `<article class="sheet pv${feat ? ' gotw' : ''}">${feat ? `<div class="pv-flag"><span class="eyebrow">Game of the Week</span><span class="sub">The biggest playoff swing of the week: the two teams' playoff odds move a combined ${Math.round(g.swing * 100)} points on the result</span></div>` : ''}
       <div class="pv-grid">${side(g.hk, g.ht, g.hm, g.hrec, g.hp, g.hwin, g.hs, g.htop, feat)}<div class="pv-mid"><span class="pv-vs">vs</span><div class="pv-bar" role="img" aria-label="${Math.round(g.hwin * 100)} to ${Math.round((1 - g.hwin) * 100)} win chance"><i style="width:${Math.round(g.hwin * 100)}%;background:${COLORS[g.hk]}"></i><i style="width:${Math.round((1 - g.hwin) * 100)}%;background:${COLORS[g.ak]}"></i></div><span class="sub">All-time ${g.h2h[0]}–${g.h2h[1]}${g.h2h[2] ? '–' + g.h2h[2] : ''}</span></div>${side(g.ak, g.at, g.am, g.arec, g.ap, 1 - g.hwin, g.as_, g.atop, feat)}</div></article>`;
-    const rest = P.games.slice(1);
+    const rest = P.games.slice(1).sort((x, y) => (ME === y.hk || ME === y.ak) - (ME === x.hk || ME === x.ak));
     return `<section id="preview"><div class="sec-head"><div class="eyebrow">Week ${P.wk} · ESPN projections</div><h2>This week's matchups</h2></div>
       ${game(g0, true)}
       ${full === false ? `<div class="pv-list">${rest.map((g) => `<a class="sheet pv-row" href="#s-${D.meta.cur.y}"><span class="pv-l"><b>${esc(mgr(g.hk).short)}</b> <span class="num">${f1(g.hp)}</span></span><span class="pv-bar sm"><i style="width:${Math.round(g.hwin * 100)}%;background:${COLORS[g.hk]}"></i><i style="width:${Math.round((1 - g.hwin) * 100)}%;background:${COLORS[g.ak]}"></i></span><span class="pv-r"><span class="num">${f1(g.ap)}</span> <b>${esc(mgr(g.ak).short)}</b></span><span class="pv-pct num">${Math.round(g.hwin * 100)}–${Math.round((1 - g.hwin) * 100)}</span></a>`).join('')}</div>` : `<div class="pv-all">${rest.map((g) => game(g, false)).join('')}</div>`}
@@ -941,7 +1131,7 @@ footer { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block:
     MCH.picks = {};
     if (sv && sv.y === M.y && sv.picks) Object.entries(sv.picks).forEach(([k, v]) => { if (valid.has(k) && (v === 'h' || v === 'a')) MCH.picks[k] = v; });
     const bubble = [...D.odds].sort((a, b) => Math.abs(a.po - 0.5) - Math.abs(b.po - 0.5))[0];
-    MCH.focus = sv && sv.focus && MCH.E.byKey[sv.focus] ? sv.focus : (bubble ? bubble.key : M.teams[0].key);
+    MCH.focus = sv && sv.focus && MCH.E.byKey[sv.focus] ? sv.focus : (meValid() && MCH.E.byKey[ME] ? ME : (bubble ? bubble.key : M.teams[0].key));
     const wks = [...new Set(M.games.map((g) => g[0]))];
     MCH.wk = sv && wks.includes(sv.wk) ? sv.wk : wks[0];
     MCH.bk = (sv && sv.bk) || {};
@@ -1202,10 +1392,11 @@ footer { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block:
     if (copp) facts.push(card('Always a bridesmaid', [1], copp.ru.length, mlink(copp.key), `Runner-up finishes: ${copp.ru.join(', ')}. Finally won it in ${copp.titles.join(', ')}.`, () => ''));
     const ws = R.winStreak[0]; facts.push(card('Longest win streak', [1], ws.n, mlink(ws.key), `${ws.start[0]} Wk ${ws.start[1]} through ${ws.end[0]} Wk ${ws.end[1]}`, () => ''));
     const lk = R.lucky[0]; facts.push(card('Luckiest season', [1], sgn(lk.luck), mlink(lk.key, lk.mgr), `${slink(lk.y)}: went ${wl(lk.w, lk.l)} but scored like a ${f1(lk.exp)}-win team`, () => ''));
-    let html = '';
+    let html = mePromptHtml() + yourWeekHtml();
     if (cur) {
       const lastKey = `${cur.y}-${cur.played}`;
       html += matchupsHtml(false).replace('<div id="live-slot">', '<div id="live-slot" data-full="false">');
+      html += paperTeaserHtml();
       if (D.live && D.live.machine && D.live.machine.games.length) html += `<a class="sheet mx-promo" href="#machine"><span class="eyebrow">Tool</span><b>Playoff machine</b><span class="sub">Pick every game left in ${D.live.machine.y} and watch the seeds, odds and bracket change.</span><span class="mx-go">Open →</span></a>`;
       html += `<section><div class="sec-head"><div class="eyebrow">${cur.y} season · through Week ${cur.played}</div><h2>This season</h2><a href="#s-${cur.y}" class="eyebrow">Everything on ${cur.y} →</a></div>
         <div class="sheet tbl">${powerTable(true, 5)}<div class="more-row"><a href="#s-${cur.y}">All ${cur.rows.length} teams, odds, finishes and schedule luck →</a></div></div>
@@ -1458,8 +1649,10 @@ footer { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block:
         <div class="sheet lore" id="lore">${loreHtml(lore, s.y)}</div></section>`;
     P.MX = !s.done && D.live && D.live.machine && D.live.machine.y === s.y && D.live.machine.games.length ? `<a class="sheet mx-promo" href="#machine"><span class="eyebrow">Tool</span><b>Playoff machine</b><span class="sub">Pick every game left and watch the seeds, odds and bracket change.</span><span class="mx-go">Open →</span></a>` : '';
     P.PW = !s.done && D.power.length ? `<section><div class="sec-head"><div class="eyebrow">Through week ${s.played}</div><h2>Power rankings</h2></div><div class="sheet tbl">${powerTable(false)}</div>${endsHtml()}<p class="note">${POWER_NOTE}</p></section>` : '';
-    const order = s.done ? ['T', 'ST', 'AW', 'DV', 'PO', 'RC', 'SL', 'CH', 'DR', 'WK', 'TR', 'LO']
-      : ['T', 'PV', 'MX', 'PW', 'OD', 'AW', 'ST', 'DV', 'SL', 'RC', 'WK', ...(s.rounds.length ? ['PO'] : []), 'DR', 'TR', 'LO'];
+    const iss = NEWS.filter((x) => x.y === s.y);
+    P.NW = iss.length ? `<section><div class="sec-head"><div class="eyebrow">${esc(LG.paper)}</div><h2>The paper</h2></div><div class="pp-more" style="margin:0">${iss.map((x) => `<a href="#news-${x.y}-${x.wk}"><b>Week ${x.wk}</b> ${esc(x.title)}</a>`).join('')}</div></section>` : '';
+    const order = s.done ? ['T', 'ST', 'AW', 'DV', 'PO', 'RC', 'SL', 'CH', 'DR', 'WK', 'NW', 'TR', 'LO']
+      : ['T', 'PV', 'MX', 'NW', 'PW', 'OD', 'AW', 'ST', 'DV', 'SL', 'RC', 'WK', ...(s.rounds.length ? ['PO'] : []), 'DR', 'TR', 'LO'];
     return ybar + order.map((k) => P[k]).join('\n');
   };
   function loreHtml(list, y) {
@@ -1784,6 +1977,7 @@ footer { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block:
     if ((m = h.match(/^m-([a-z]+)$/))) { tab = 'managers'; html = views.manager(m[1]); }
     else if ((m = h.match(/^s-(\d{4})$/))) { const live_ = D.meta.cur && +m[1] === D.meta.cur.y && !seasonOf(+m[1]).done; tab = live_ ? 'now' : 'seasons'; html = views.season(+m[1]); after = () => seasonAfter(+m[1]); }
     else if (h === 'machine') { tab = 'machine'; html = views.machine(); after = machineAfter; }
+    else if ((m = h.match(/^news-(\d{4})-(\d{1,2})$/))) { tab = 'home'; html = newsView(+m[1], +m[2]); after = () => newsAfter(+m[1], +m[2]); }
     else if (h === 'history') { tab = 'seasons'; html = views.seasons(); after = () => { const t = $('timeline'); if (t) t.scrollIntoView(); }; }
     else if ((m = h.match(/^compare(?:-([a-z]+)-([a-z]+))?$/))) { tab = 'managers'; html = views.compare(m[1], m[2]); after = compareAfter; }
     else if (views[h] && !['manager', 'season', 'history', 'compare'].includes(h)) { tab = h; html = views[h](); if (h === 'managers') after = () => { allTimeTable($('alltime')); goat(); };  if (h === 'stats') after = statsTables; if (h === 'auction') after = auctionAfter; }
@@ -1792,7 +1986,7 @@ footer { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block:
     document.querySelectorAll('#tabs a').forEach((a) => a.setAttribute('aria-current', a.dataset.tab === tab ? 'page' : 'false'));
     $('mast').classList.toggle('compact', tab !== 'home');
     if (after) after();
-    jumpBar();
+    jumpBar(); markMe(); renderTicker(); meButton();
     wireCompose();
     const cur = document.querySelector('#tabs a[aria-current="page"]'); if (cur && cur.scrollIntoView) try { cur.scrollIntoView({ block: 'nearest', inline: 'nearest' }); } catch (e) {}
   }
@@ -1883,6 +2077,7 @@ footer { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block:
     KEYS = D.managers.map((m) => m.key);
     buildParts();
     if ('serviceWorker' in navigator && location.protocol === 'https:') { try { navigator.serviceWorker.register('sw.js'); } catch (e) {} }
+    await loadNews();
     if (D.meta.cur) { await pollLive(); setInterval(() => { if (!document.hidden) pollLive(); }, 60000); if (liveOk(LIVE)) tickFast(); setInterval(tickFast, 45000); document.addEventListener('visibilitychange', () => { if (!document.hidden) { pollLive(); tickFast(); } }); }
     shell();
     route();

@@ -78,7 +78,7 @@ def fetch(y, lid=125611, cookie='', hist_before=2020):
             addP(e['playerPoolEntry']['player']); roster.append(e['playerId'])
         out['teams'].append({
             'id': t['id'], 'name': (t.get('name') or ((t.get('location') or '') + ' ' + (t.get('nickname') or ''))).strip(),
-            'abbrev': t.get('abbrev'), 'owners': [mem.get(x, '?') for x in t.get('owners') or []], 'div': t.get('divisionId'),
+            'abbrev': t.get('abbrev'), **({'logo': t['logo']} if (t.get('logo') or '').startswith('https://') else {}), 'owners': [mem.get(x, '?') for x in t.get('owners') or []], 'div': t.get('divisionId'),
             'w': o['wins'], 'l': o['losses'], 't': o['ties'], 'pf': round(o['pointsFor'], 2), 'pa': round(o['pointsAgainst'], 2),
             'rank': t.get('rankCalculatedFinal') or 0, 'seed': t.get('playoffSeed') or 0,
             'tc': [tc.get('acquisitions', 0), tc.get('drops', 0), tc.get('trades', 0), tc.get('moveToActive', 0), tc.get('acquisitionBudgetSpent', 0)],

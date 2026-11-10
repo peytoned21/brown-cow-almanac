@@ -1,0 +1,52 @@
+name: Post to GroupMe
+
+# The Tuesday newsletter task dispatches this with kind=newsletter once an issue is published. If no post has gone
+# out by late morning (the newsletter didn't run), the scheduled run posts the plain stats recap instead.
+# A league posts only if its GroupMe bot secret is set, and at most once per week.
+on:
+  schedule:
+    - cron: '31 16 * 9-12,1 2'   # Tuesdays ~11:31 ET: fallback recap
+  workflow_dispatch:
+    inputs:
+      league:
+        description: 'League slug (brown-cow, any-given-sunday) or "all"'
+        default: 'all'
+      kind:
+        description: 'newsletter or recap'
+        default: 'newsletter'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: refresh
+  cancel-in-progress: false
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Post
+        env:
+          GROUPME_BOT_ID: ${{ secrets.GROUPME_BOT_ID }}
+          AGS_GROUPME_BOT_ID: ${{ secrets.AGS_GROUPME_BOT_ID }}
+          LEAGUE: ${{ inputs.league || 'all' }}
+          KIND: ${{ inputs.kind || 'recap' }}
+        run: |
+          for cfg in leagues/*.json; do
+            slug=$(python3 -c "import json; print(json.load(open('$cfg'))['site']['slug'])")
+            [ "$LEAGUE" = "all" ] || [ "$LEAGUE" = "$slug" ] || continue
+            if [ "$KIND" = "newsletter" ]; then python3 pipeline/groupme.py "$cfg" --issue --once || echo "::warning::$slug: no newsletter post"
+            else python3 pipeline/groupme.py "$cfg" --once || echo "::warning::$slug: recap post failed"; fi
+          done
+      - name: Remember what was posted
+        run: |
+          [ -n "$(git status --porcelain -- '*newsletter/posted.json' newsletter)" ] || exit 0
+          git config user.name "brown-cow-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A && git commit -q -m "GroupMe: posted" && git pull -q --rebase && git push -q

@@ -1171,10 +1171,11 @@ for k in keys:
     sw = swap.get(k, dict(w=0, exp=0, po=0, poExp=0))
     leg = sorted(legend_by.get(k, []), key=lambda x: -x['pts'])[:8]
     cur_team = next((t['name'] for t in (CUR or seasons[-1])['teams'] if (CUR or seasons[-1])['fk'][t['id']] == k), m['teamNames'][-1][1])
+    cur_logo = next((t.get('logo') for t in (CUR or seasons[-1])['teams'] if (CUR or seasons[-1])['fk'][t['id']] == k), None)
     best_season = max((x for x in season_luck if x['key'] == k and x['done']), key=lambda x: (x['w'] - x['l'], -x['rank']), default=None)
     worst_season = min((x for x in season_luck if x['key'] == k and x['done']), key=lambda x: (x['w'] - x['l'], -x['rank']), default=None)
     managers.append(dict(
-        key=k, name=m['name'], short=m['short'], team=cur_team, seasons=m['seasons'], teamNames=m['teamNames'], finishes=m['finishes'],
+        key=k, name=m['name'], short=m['short'], team=cur_team, **({'logo': cur_logo} if cur_logo else {}), seasons=m['seasons'], teamNames=m['teamNames'], finishes=m['finishes'],
         titles=m['titles'], ru=m['ru'], last=m['last'], po=m['po'], divs=m['divs'], wcs=m['wcs'], berths=m['berths'], champAs=m['champAs'],
         w=m['w'], l=m['l'], t=m['t'], pct=round(m['w'] / max(1, m['w'] + m['l'] + m['t']), 3), pf=round(m['pf'], 1), pa=round(m['pa'], 1),
         ppg=round(m['pf'] / max(1, m['g']), 1), pw=m['pw'], pl=m['pl'],

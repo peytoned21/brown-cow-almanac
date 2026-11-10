@@ -35,7 +35,7 @@ lg = dict(
     bridesmaid=(cfg.get('oneOffs') or {}).get('bridesmaid'),
     seedsFrom=cut.get('seedsFrom', 0), earlyWeeks=cut.get('earlyWeeks', 6), losersLadder=bool(cfg.get('losersLadder')),
     tiebreak=cfg.get('seedTiebreak', 'h2h'), nColors=P.get('nColors', 12),
-    site=SITE['url'], liveUrl=SITE['liveUrl'],
+    site=SITE['url'], liveUrl=SITE['liveUrl'], paper=P.get('paperName', 'The Weekly'),
 )
 # </script> can't appear inside the inline script
 lg_json = json.dumps(lg, ensure_ascii=False, separators=(',', ':')).replace('</', '<\\/')
