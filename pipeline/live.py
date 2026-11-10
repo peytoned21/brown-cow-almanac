@@ -93,54 +93,104 @@ def simulate(M, wk, fixed, h2h=True, N=6000, seed=1):
 
 
 # ---------------------------------------------------------------- one snapshot
-def team_side(side, sp, team_frac, box, scoring, players_out):
+# How much a player's score swings week to week, by position: sd = a * mean^b, fit on every starter-season in both
+# leagues since 2020 (each player's spread around his own average). live.py scales these so a full lineup's total
+# spread matches the league's weekly spread (machine.sd), then each player's remaining share of it shrinks as his
+# game is played.
+POS_SD = {1: (2.518, 0.353), 2: (1.308, 0.619), 3: (1.637, 0.564), 4: (1.268, 0.656), 5: (1.221, 0.556), 16: (2.838, 0.327)}
+SKIP_STATUS = {'OUT', 'INJURY_RESERVE', 'SUSPENSION'}
+FLEX_SLOTS = {23: {2, 3, 4}, 3: {2, 3}, 5: {3, 4}, 7: {1, 2, 3, 4}}   # FLEX (RB/WR/TE), RB/WR, WR/TE, OP
+SLOT_POS = {0: 1, 2: 2, 4: 3, 6: 4, 16: 16, 17: 5}
+
+
+def player_sd(pos, proj):
+    a, b = POS_SD.get(pos, (1.6, 0.56))
+    return a * max(proj, 1.0) ** b
+
+
+def entry_info(e, sp):
+    p = e['playerPoolEntry']['player']
+    pr = next((s_ for s_ in p.get('stats') or [] if s_.get('scoringPeriodId') == sp and s_.get('statSourceId') == 1), None)
+    return p, e['playerPoolEntry'].get('appliedStatTotal') or 0, (pr or {}).get('appliedTotal') or 0
+
+
+def best_lineup(entries, sp, slot_counts):
+    """The lineup a manager would set from ESPN's projections: fixed positions first, then the flex spots."""
+    pool = []
+    for e in entries:
+        p, act, prj = entry_info(e, sp)
+        if (p.get('injuryStatus') or '') in SKIP_STATUS or prj <= 0: continue
+        pool.append((prj, p.get('defaultPositionId') or 0, e))
+    pool.sort(key=lambda x: -x[0]); used = set(); picked = []
+    for slot, posn in SLOT_POS.items():
+        for _ in range(int(slot_counts.get(str(slot), slot_counts.get(slot, 0)) or 0)):
+            c = next((x for x in pool if id(x[2]) not in used and x[1] == posn), None)
+            if c: used.add(id(c[2])); picked.append(c[2])
+    for slot, allowed in FLEX_SLOTS.items():
+        for _ in range(int(slot_counts.get(str(slot), slot_counts.get(slot, 0)) or 0)):
+            c = next((x for x in pool if id(x[2]) not in used and x[1] in allowed), None)
+            if c: used.add(id(c[2])); picked.append(c[2])
+    return picked
+
+
+def team_side(side, sp, team_frac, box, scoring, players_out, slot_counts, scale):
     R = side.get('rosterForCurrentScoringPeriod') or side.get('rosterForMatchupPeriod') or {}
-    pts = proj_total = proj_left = 0.0; left = playing = 0
-    for e in R.get('entries') or []:
-        if e.get('lineupSlotId') in BENCH: continue
-        p = e['playerPoolEntry']['player']
-        act = e['playerPoolEntry'].get('appliedStatTotal') or 0
-        pr = next((s_ for s_ in p.get('stats') or [] if s_.get('scoringPeriodId') == sp and s_.get('statSourceId') == 1), None)
-        prj = (pr or {}).get('appliedTotal') or 0
-        pro = p.get('proTeamId') or 0
-        if pro in team_frac: frac = team_frac[pro]
-        else: frac = 1.0 if act == 0 else 0.0           # no game found (bye or unknown): trust the points
+    entries = R.get('entries') or []
+    starters = [e for e in entries if e.get('lineupSlotId') not in BENCH]
+    fr = lambda p, act: team_frac.get(p.get('proTeamId') or 0, 1.0 if act == 0 else 0.0)
+    started = any(fr(*entry_info(e, sp)[:2]) < 1 or entry_info(e, sp)[1] for e in starters)
+    if not started and slot_counts:            # nobody has played yet: assume the best lineup on the roster
+        bl = best_lineup(entries, sp, slot_counts)
+        if bl and sum(entry_info(e, sp)[2] for e in bl) > sum(entry_info(e, sp)[2] for e in starters): starters = bl
+    pts = proj = var = 0.0; left = playing = 0
+    for e in starters:
+        p, act, prj = entry_info(e, sp)
+        frac = fr(p, act)
         if frac >= 1: left += 1
         elif frac > 0: playing += 1
-        pts += act; proj_total += prj; proj_left += prj * frac
+        pace_w = 0.5 * (1 - frac)              # trust the player's own pace more as his game goes on
+        rate = prj if frac >= 1 or frac <= 0 else (1 - pace_w) * prj + pace_w * min(act / max(1e-6, 1 - frac), 3 * prj + 6)
+        rem = rate * frac
+        sd = scale * player_sd(p.get('defaultPositionId') or 0, prj)
+        pts += act; proj += act + rem; var += sd * sd * frac
         aid = p['id']
-        players_out.append([aid, p.get('defaultPositionId') or 0, pro, round(act, 2), round(prj, 1),
-                            nflbox.calc(box.get(aid), scoring) if aid > 0 else 0])
-    proj_final = pts + proj_left
-    share = (proj_left / proj_total) if proj_total else (1.0 if pts == 0 else 0.0)
-    return dict(pts=round(pts, 2), proj=round(proj_final, 1), share=round(min(1, max(0, share)), 3), left=left, playing=playing)
+        players_out.append([aid, p.get('defaultPositionId') or 0, p.get('proTeamId') or 0, round(act, 2), round(prj, 1),
+                            nflbox.calc(box.get(aid), scoring) if aid > 0 else 0, p.get('fullName') or '', round(sd, 2)])
+    return dict(pts=round(pts, 2), proj=round(proj, 1), var=round(var, 2), left=left, playing=playing, started=started)
 
 
-def snapshot(cfg, D, wk_data, events, boxes, scoring, now):
+def snapshot(cfg, D, wk_data, events, boxes, scoring, now, slot_counts=None):
     M = D['live']['machine']; y = M['y']; wk = M['played'] + 1
     if wk > M['reg']: return None
     sp = wk; h2h = cfg.get('seedTiebreak', 'h2h') != 'points'
     name = {t['tid']: t for t in M['teams']}
     pre = {(g[1], g[2]): g[3] for g in M['games'] if g[0] == wk}
-    pv = D['live'].get('preview') or {}; pproj = {}
-    if pv.get('wk') == wk:
-        for g in pv['games']: pproj[g['h']] = g['hp']; pproj[g['a']] = g['ap']
     team_frac = {}
     for ev in events.values():
         for t in ev['teams']: team_frac[t] = ev['frac']
     box = {}
     for b in boxes.values(): box.update(b)
-    sd = M['sd']; games = []; fixed = {}; base = {}; lineups = {}
+    sd = M['sd']
+    # scale per-player spreads so a typical full lineup's spread equals the league's weekly spread
+    full_var = []
+    for s_ in wk_data.get('schedule') or []:
+        if s_.get('matchupPeriodId') != wk or not s_.get('away'): continue
+        for side in (s_['home'], s_['away']):
+            R = side.get('rosterForCurrentScoringPeriod') or side.get('rosterForMatchupPeriod') or {}
+            v = sum(player_sd(entry_info(e, sp)[0].get('defaultPositionId') or 0, entry_info(e, sp)[2]) ** 2
+                    for e in R.get('entries') or [] if e.get('lineupSlotId') not in BENCH)
+            if v: full_var.append(v)
+    scale = sd / math.sqrt(sum(full_var) / len(full_var)) if full_var else 1.0
+    games = []; fixed = {}; base = {}; lineups = {}
     for s_ in wk_data.get('schedule') or []:
         if s_.get('matchupPeriodId') != wk or not s_.get('away'): continue
         h, a = s_['home']['teamId'], s_['away']['teamId']
         lineups[h] = []; lineups[a] = []
-        th = team_side(s_['home'], sp, team_frac, box, scoring, lineups[h]); ta = team_side(s_['away'], sp, team_frac, box, scoring, lineups[a])
-        for t_, tl in ((h, th), (a, ta)):   # before kickoff, assume the best lineup (managers fix lineups up to kickoff)
-            if tl['pts'] == 0 and tl['playing'] == 0 and tl['share'] >= 0.999 and t_ in pproj: tl['proj'] = max(tl['proj'], pproj[t_])
-        done = th['share'] == 0 and ta['share'] == 0 and th['playing'] == 0 and ta['playing'] == 0 and bool(th['pts'] or ta['pts'])
+        th = team_side(s_['home'], sp, team_frac, box, scoring, lineups[h], slot_counts, scale)
+        ta = team_side(s_['away'], sp, team_frac, box, scoring, lineups[a], slot_counts, scale)
+        done = th['left'] + th['playing'] + ta['left'] + ta['playing'] == 0 and bool(th['pts'] or ta['pts'])
         if s_.get('winner') in ('HOME', 'AWAY'): done = True
-        rem_sd = math.sqrt(sd * sd * th['share'] + sd * sd * ta['share'])
+        rem_sd = math.sqrt(th['var'] + ta['var'])
         if done or rem_sd < 0.5:
             ph = 1.0 if th['pts'] > ta['pts'] else 0.0 if ta['pts'] > th['pts'] else 0.5
             if s_.get('winner') == 'HOME': ph = 1.0
@@ -149,10 +199,9 @@ def snapshot(cfg, D, wk_data, events, boxes, scoring, now):
             ph = phi((th['proj'] - ta['proj']) / rem_sd)
         p0 = pre.get((h, a), 0.5)
         fixed[(h, a)] = (ph, th['proj'], ta['proj']); base[(h, a)] = (p0, name[h]['mu'], name[a]['mu'])
-        started = (th['pts'] + ta['pts']) > 0 or th['playing'] + ta['playing'] > 0
-        games.append(dict(h=h, a=a, hs=th['pts'], as_=ta['pts'], hp=th['proj'], ap=ta['proj'], hwin=round(ph, 3), hwin0=round(p0, 3),
-                          hleft=th['left'] + th['playing'], aleft=ta['left'] + ta['playing'], hpre=pproj.get(h), apre=pproj.get(a),
-                          status='final' if done else ('live' if started else 'pre')))
+        status = 'final' if done else 'live' if th['playing'] + ta['playing'] else 'paused' if th['started'] or ta['started'] else 'pre'
+        games.append(dict(h=h, a=a, hs=th['pts'], as_=ta['pts'], hp=th['proj'], ap=ta['proj'], hvar=th['var'], avar=ta['var'],
+                          hwin=round(ph, 3), hwin0=round(p0, 3), hleft=th['left'] + th['playing'], aleft=ta['left'] + ta['playing'], status=status))
     if not games: return None
     o_live = simulate(M, wk, fixed, h2h, seed=wk); o_pre = simulate(M, wk, base, h2h, seed=wk)
     odds = [dict(tid=t, po=o_live[t]['po'], po0=o_pre[t]['po'], title=o_live[t]['title'], title0=o_pre[t]['title'],
@@ -160,23 +209,22 @@ def snapshot(cfg, D, wk_data, events, boxes, scoring, now):
     return dict(league=cfg['site']['slug'], y=y, wk=wk, updated=datetime.datetime.fromtimestamp(now, datetime.timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'),
                 started=any(g['status'] != 'pre' for g in games), final=all(g['status'] == 'final' for g in games),
                 sd=sd, games=games, odds=odds, scoring=scoring, lineups={str(k): v for k, v in lineups.items()},
-                events={k: dict(teams=v['teams'], frac=v['frac'], state=v['state']) for k, v in events.items()})
+                events={k: dict(teams=v['teams'], frac=v['frac'], state=v['state'], date=v.get('date')) for k, v in events.items()})
 
 
 def add_history(L, old, now):
-    """Each game keeps its win-chance path for the week: [[minutes since epoch, home win chance], ...]."""
+    """Each game keeps its win-chance path for the week: [[minutes since epoch, home win chance, 'p' if before kickoff], ...]."""
     prev = {}
     if old and old.get('y') == L['y'] and old.get('wk') == L['wk']:
         prev = {f"{g['h']}-{g['a']}": g.get('hist') or [] for g in old.get('games', [])}
     t = int(now // 60)
     for g in L['games']:
         h = list(prev.get(f"{g['h']}-{g['a']}", []))
-        if g['status'] == 'pre' and not h:
-            g['hist'] = []; continue
-        if not h: h.append([t, g['hwin0']])
-        if h[-1][1] != g['hwin'] or t - h[-1][0] >= 30:
-            if g['status'] != 'final' or h[-1][1] != g['hwin']: h.append([t, g['hwin']])
-        g['hist'] = h[-400:]
+        tag = ['p'] if g['status'] == 'pre' else []
+        if not h: h.append([t, g['hwin0'], 'p'])
+        if h[-1][1] != g['hwin'] or t - h[-1][0] >= 30 or (len(h[-1]) > 2) != bool(tag):
+            if g['status'] != 'final' or h[-1][1] != g['hwin']: h.append([t, g['hwin']] + tag)
+        g['hist'] = h[-500:]
 
 
 def same(a, b):
@@ -205,6 +253,7 @@ def main():
     league = f'{B}/seasons/{y}/segments/0/leagues/{lid}'
     st = get(f'{league}?view=mSettings')
     scoring = nflbox.scoring_from_settings((st.get('settings') or {}).get('scoringSettings', {}).get('scoringItems'))
+    slot_counts = ((st.get('settings') or {}).get('rosterSettings') or {}).get('lineupSlotCounts') or {}
     loop_until = time.time() + 60 * float(opt('--loop', 0)); every = float(opt('--every', 180)); after = opt('--after')
     final_boxes = {}
     while True:
@@ -223,7 +272,7 @@ def main():
             except Exception as e:
                 print('box score unavailable for', eid, e)
         wk_data = get(f'{league}?view=mMatchupScore&view=mBoxscore&view=mScoreboard&scoringPeriodId={wk}')
-        L = snapshot(cfg, D, wk_data, events, boxes, scoring, now)
+        L = snapshot(cfg, D, wk_data, events, boxes, scoring, now, slot_counts)
         if L:
             old = json.load(open(out_p)) if os.path.exists(out_p) else None
             add_history(L, old, now)
