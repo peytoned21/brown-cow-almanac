@@ -25,6 +25,14 @@ def message(D):
     recs = [v for v in D['recaps'].values() if v['y'] == y and v['wk'] == wk]
     if recs:
         parts.append('\n'.join('• ' + line for line in recs[0]['lines']))
+    try:
+        ri = next((x for x in json.load(open(os.path.join(ROOT, CFG['site']['dir'], 'replays', 'index.json'))) if x['y'] == y and x['wk'] == wk), None)
+    except (OSError, ValueError):
+        ri = None
+    c = (ri or {}).get('comeback')
+    if c and c['low'] < 0.35 and c['winner'] in MK and c['loser'] in MK:
+        parts.append(f"Comeback of the week: {MK[c['winner']]['short']} came back from {round(c['low'] * 100) or '<1'}% ({c['when']}) to beat {MK[c['loser']]['short']}. "
+                     f"Watch the replay: {SITE}#rp-{y}-{wk}-{c['winner']}-{c['loser']}")
     if D.get('power'):
         P = D['power'][-1]['rows']
         parts.append('Power rankings: ' + '  '.join(f"{r['rank']}. {MK[r['key']]['short']} {r['w']}–{r['l']}" for r in P[:5]))

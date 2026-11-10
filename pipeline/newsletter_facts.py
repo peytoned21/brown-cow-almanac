@@ -37,11 +37,32 @@ nxt = [dict(home=who(g['hk']), homeTeam=g['ht'], homeRecord=g['hrec'], away=who(
             homeProjected=g['hp'], awayProjected=g['ap'], homeWinChance=g['hwin'], gameOfTheWeek=bool(g.get('gotw')),
             playoffOddsSwing=g['swing'], allTimeSeriesHomeFirst=g['h2h'],
             homeTopProjected=g.get('htop'), awayTopProjected=g.get('atop')) for g in pv.get('games', [])]
+# the replay of this week (pipeline/replay_archive.py): the comeback and the plays that swung games most
+comeback = None; swings = []
+rp_dir = os.path.join(ROOT, CFG['site']['dir'], 'replays')
+try:
+    ri = next((x for x in json.load(open(os.path.join(rp_dir, 'index.json'))) if x['y'] == y and x['wk'] == wk), None)
+except (OSError, ValueError):
+    ri = None
+if ri:
+    c = ri.get('comeback')
+    if c and c['low'] < 0.35:
+        comeback = dict(winner=who(c['winner']), loser=who(c['loser']), lowestWinChance=c['low'], when=c['when'])
+    try:
+        for g in json.load(open(os.path.join(rp_dir, ri['file'])))['games']:
+            for m in g['moments']:
+                mine = m[8] if m[1] == 'h' else -m[8]
+                if m[6] > 0 and mine >= 0.08 and m[9]:
+                    swings.append(dict(player=m[5], manager=who(g['hk'] if m[1] == 'h' else g['ak']), play=m[9], points=m[6], winChanceSwing=round(mine, 2)))
+    except (OSError, ValueError, KeyError):
+        pass
+    swings = sorted(swings, key=lambda x: -x['winChanceSwing'])[:4]
 facts = dict(
     league=CFG['name'], season=y, week=wk, weeksInRegularSeason=D['live']['machine']['reg'] if D.get('live') else None,
     playoffSpots=D['live']['machine']['po'] if D.get('live') else None,
     managers={who(k): dict(fullName=MK[k]['name'], team=rows[k]['team'] if k in rows else MK[k]['team'], titles=MK[k]['titles']) for k in rows},
-    thisWeek=dict(results=games, recapLines=rec.get('lines', [])),
+    thisWeek=dict(results=games, recapLines=rec.get('lines', []), comebackOfTheWeek=comeback, biggestSwingPlays=swings,
+                  replayLink=f"{CFG['site']['url']}#s-{y}" if ri else None),
     standings=[dict(manager=who(r['key']), team=r['team'], w=r['w'], l=r['l'], pointsFor=r['pf']) for r in sorted(S['rows'], key=lambda r: (-r['w'], -r['pf']))],
     powerRankings=[dict(rank=r['rank'], manager=who(r['key']), team=r['team'], record=f"{r['w']}–{r['l']}", movedSinceLastWeek=r.get('move', 0),
                         allPlayPct=r['allplay'], last3Avg=r['form']) for r in P],

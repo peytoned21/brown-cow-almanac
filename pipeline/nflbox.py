@@ -67,7 +67,26 @@ def scoreboard(y, wk):
 
 def box(eid):
     """athleteId -> {field: value} for one game."""
+    return summary(eid)[0]
+
+
+def scoring_plays(d):
+    """The game's scoring plays, oldest first: [{id, text, kind, team, period, clock}]."""
+    out = []
+    for p in d.get('scoringPlays') or []:
+        out.append(dict(id=str(p.get('id')), text=p.get('text') or '', kind=((p.get('type') or {}).get('text') or ''),
+                        team=int(((p.get('team') or {}).get('id')) or 0), period=((p.get('period') or {}).get('number')),
+                        clock=((p.get('clock') or {}).get('displayValue'))))
+    return out
+
+
+def summary(eid):
+    """(athleteId -> {field: value}, scoring plays) for one game."""
     d = get(f'{SITE_API}/summary?event={eid}')
+    return parse_box(d), scoring_plays(d)
+
+
+def parse_box(d):
     out = {}
     for team in ((d.get('boxscore') or {}).get('players') or []):
         for cat in team.get('statistics') or []:

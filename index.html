@@ -622,6 +622,139 @@ footer { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block:
 .auc-tip { position: absolute; z-index: 5; pointer-events: none; display: grid; gap: 2px; max-width: 240px; padding: 8px 10px; background: var(--sheet); border: 1px solid var(--rule); border-radius: 6px; box-shadow: 0 6px 18px -8px rgba(0,0,0,.35); font-size: 13px; }
 .yearbar button { font-family: var(--mono); font-size: 13px; border: 1px solid var(--rule); background: var(--sheet); color: var(--ink); padding: 6px 10px; border-radius: 4px; flex: 0 0 auto; cursor: pointer; }
 .yearbar button[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+/* ---- matchup replay */
+.rp-btn { display: inline-flex; align-items: center; gap: 6px; font: inherit; font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; padding: 3px 10px 3px 8px; border-radius: 999px; border: 1px solid var(--ink); background: var(--ink); color: var(--paper); cursor: pointer; margin-left: auto; white-space: nowrap; }
+.rp-btn::before { content: ""; width: 0; height: 0; border-left: 7px solid currentColor; border-top: 4.5px solid transparent; border-bottom: 4.5px solid transparent; }
+.rp-btn:hover { background: var(--brass); border-color: var(--brass); }
+.rp-btn.sm { margin: 2px 0 0; grid-column: 1 / -1; justify-self: start; font-size: 10px; padding: 2px 8px 2px 7px; background: transparent; color: var(--ink); border-color: var(--rule); }
+.rp-btn.sm:hover { border-color: var(--brass); color: var(--brass); background: transparent; }
+.rp-cb { margin: 0; padding: 10px 12px; border-radius: var(--r); background: color-mix(in srgb, var(--brass) 12%, var(--sheet)); border: 1px solid color-mix(in srgb, var(--brass) 35%, transparent); display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; font-size: 14px; }
+.rp-cb .rp-btn { margin-left: auto; }
+.rp-modal { position: fixed; inset: 0; z-index: 70; display: grid; place-items: center; padding: 18px; background: rgba(8, 11, 18, .62); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+.rp-modal:not([hidden]) { animation: rpfade .25s ease both; }
+.rp { position: relative; width: min(860px, 100%); max-height: calc(100dvh - 36px); overflow: auto; overscroll-behavior: contain; background: var(--sheet); border-radius: 18px; box-shadow: 0 30px 80px -20px rgba(0,0,0,.55); padding: 20px 22px 18px; display: grid; gap: 14px; isolation: isolate; }
+.rp-modal:not([hidden]) .rp { animation: rprise .38s cubic-bezier(.2, .9, .25, 1.05) both; }
+@keyframes rpfade { from { opacity: 0; } }
+@keyframes rprise { from { transform: translateY(24px) scale(.98); opacity: 0; } }
+.rp::before, .rp::after { content: ""; position: absolute; z-index: -1; top: -80px; width: 340px; height: 260px; border-radius: 50%; filter: blur(60px); opacity: .22; pointer-events: none; }
+.rp::before { left: -90px; background: var(--lc); } .rp::after { right: -90px; background: var(--rc); }
+.rp-top { display: flex; align-items: center; gap: 10px; }
+.rp-top h3 { font-family: var(--display); font-weight: 900; text-transform: uppercase; font-size: clamp(22px, 4vw, 30px); line-height: 1; margin: 2px 0 0; }
+.rp-top .eyebrow { display: block; }
+.rp-top .share-btn { margin-left: auto; }
+.rp-x { flex: 0 0 auto; width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--rule); background: var(--sheet); color: var(--ink); font-size: 20px; line-height: 1; cursor: pointer; display: grid; place-items: center; }
+.rp-top .share-btn + .rp-x { margin-left: 0; } .rp-top > div + .rp-x { margin-left: auto; }
+.rp-x:hover { border-color: var(--ink); }
+.rp-board { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 10px; }
+.rp-side { display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "b w" "s s"; gap: 6px 12px; align-items: center; min-width: 0; }
+.rp-side.r { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "w b" "s s"; text-align: right; }
+.rp-side > .mono-badge { grid-area: b; } .rp-side > .rp-who { grid-area: w; }
+.rp-side .mono-badge { width: 54px; height: 54px; font-size: 22px; box-shadow: 0 0 0 3px var(--sheet), 0 0 0 5px var(--tc); }
+.rp-who { min-width: 0; display: grid; }
+.rp-who b { font-weight: 700; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rp-who .sub { font-size: 12px; }
+.rp-sc { grid-area: s; font-family: var(--poster); font-size: clamp(34px, 7vw, 58px); line-height: .95; letter-spacing: -.01em; font-variant-numeric: tabular-nums; transition: opacity .3s, color .3s; }
+.rp-side.trail .rp-sc { opacity: .5; }
+.rp.done .rp-side.win .rp-sc { color: var(--tc); opacity: 1; }
+.rp-mid { display: grid; justify-items: center; gap: 6px; }
+.rp-vs { width: 34px; height: 34px; border-radius: 50%; background: var(--ink); color: var(--paper); display: grid; place-items: center; font-family: var(--display); font-weight: 900; font-size: 14px; text-transform: uppercase; }
+.rp-clock { font-family: var(--mono); font-size: 11px; letter-spacing: .06em; color: var(--muted); text-transform: uppercase; white-space: nowrap; min-width: 9ch; text-align: center; }
+.rp-bar { display: grid; grid-template-columns: 4.2em minmax(0, 1fr) 4.2em; align-items: center; gap: 12px; }
+.rp-bar .num { font-family: var(--display); font-weight: 900; font-size: 22px; }
+.rp-bar .num.r { text-align: right; }
+.rp-track2 { display: flex; gap: 6px; height: 10px; }
+.rp-track2 i { display: block; height: 100%; border-radius: 999px; background: var(--tc); min-width: 6px; transition: flex-grow .2s linear; }
+.rp.done .rp-track2 i.lose { background: var(--rule); }
+.rp-chart { position: relative; touch-action: pan-y; user-select: none; -webkit-user-select: none; }
+.rp-chart svg { display: block; width: 100%; overflow: visible; }
+.rp-grid line { stroke: var(--rule); stroke-width: 1; }
+.rp-grid line.mid { stroke-dasharray: 4 4; stroke: var(--faint); opacity: .7; }
+.rp-grid line.seg { stroke-dasharray: 2 4; opacity: .7; }
+.rp-grid text { font-size: 11px; fill: var(--muted); }
+.rp-grid text.x { text-anchor: middle; }
+.rp-line { fill: none; stroke: var(--tc); stroke-width: 3; stroke-linejoin: round; stroke-linecap: round; }
+.rp-line.ghost { stroke-width: 1.5; opacity: .14; }
+.rp-ph { stroke: var(--ink); stroke-width: 1; opacity: .18; }
+.rp-ov { position: absolute; inset: 0; pointer-events: none; }
+.rp-head { position: absolute; transform: translate(-50%, -50%); width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; }
+.rp-head::before { content: ""; position: absolute; inset: -6px; border-radius: 50%; background: var(--tc); opacity: .22; }
+.rp.playing .rp-head::before, .rp.livenow .rp-head::before { animation: rppulse 1.4s ease-in-out infinite; }
+@keyframes rppulse { 50% { transform: scale(1.35); opacity: .06; } }
+.rp-head .mono-badge { width: 30px; height: 30px; font-size: 12px; box-shadow: 0 0 0 2px var(--sheet), 0 0 0 4px var(--tc); }
+.rp-pin { position: absolute; width: 0; height: 0; pointer-events: none; }
+.rp-pin .dot { position: absolute; left: -6px; top: -6px; width: 12px; height: 12px; border-radius: 50%; background: var(--sheet); border: 3px solid var(--tc); box-sizing: border-box; }
+.rp-pin .bub { position: absolute; left: -21px; bottom: 14px; width: 42px; height: 42px; pointer-events: auto; cursor: pointer; border: 0; padding: 0; background: none; }
+.rp-pin .bub::after { content: ""; position: absolute; left: 50%; bottom: -7px; margin-left: -6px; border: 6px solid transparent; border-top-color: var(--tc); border-bottom: 0; }
+.rp-pin.below .bub { bottom: auto; top: 14px; }
+.rp-pin.below .bub::after { bottom: auto; top: -7px; border-top: 0; border-bottom: 6px solid var(--tc); }
+.rp-pin .rp-shot { width: 42px; height: 42px; }
+.rp-pin { opacity: 0; transform: scale(.4); transition: opacity .25s, transform .45s cubic-bezier(.3, 1.6, .5, 1); }
+.rp-pin.on { opacity: 1; transform: none; }
+.rp-pin.hot .rp-shot { box-shadow: 0 0 0 3px var(--tc), 0 6px 18px -4px var(--tc); }
+.rp-shot { position: relative; display: block; border-radius: 50%; overflow: hidden; background: color-mix(in srgb, var(--tc) 22%, var(--sheet-2)); box-shadow: 0 0 0 3px var(--tc); flex: 0 0 auto; }
+.rp-shot img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 12%; }
+.rp-shot.team img { object-fit: contain; padding: 14%; object-position: center; box-sizing: border-box; }
+.rp-shot span { position: absolute; inset: 0; display: grid; place-items: center; font-family: var(--display); font-weight: 900; font-size: 15px; color: var(--ink); }
+.rp-call { position: absolute; z-index: 3; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 2px 12px; align-items: center; min-width: 210px; max-width: 290px; padding: 10px 16px 10px 10px; border-radius: 16px; background: var(--ink); color: var(--paper); box-shadow: 0 16px 40px -14px rgba(0,0,0,.6), inset 4px 0 0 var(--tc); pointer-events: none; opacity: 0; transform: translateY(6px) scale(.96); transition: opacity .2s, transform .35s cubic-bezier(.3, 1.4, .5, 1); }
+.rp-call.on { opacity: 1; transform: none; }
+.rp-call .rp-shot { grid-row: 1 / 4; width: 54px; height: 54px; box-shadow: 0 0 0 3px var(--tc); }
+.rp-call .nm { font-weight: 700; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rp-call .nm i { font-style: normal; font-family: var(--mono); font-size: 10.5px; opacity: .7; margin-left: 6px; letter-spacing: .06em; }
+.rp-call .what { font-family: var(--display); font-weight: 900; font-size: 19px; text-transform: uppercase; line-height: 1.05; letter-spacing: .01em; }
+.rp-call .meta { font-family: var(--mono); font-size: 11px; opacity: .8; }
+.rp-call .meta b { color: var(--tc); font-weight: 600; filter: brightness(1.25); }
+.rp-ctl { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 14px; }
+.rp-play { width: 44px; height: 44px; border-radius: 50%; border: 0; background: var(--ink); color: var(--paper); cursor: pointer; display: grid; place-items: center; }
+.rp-play:hover { background: var(--brass); }
+.rp-play svg { width: 18px; height: 18px; fill: currentColor; }
+.rp-scrub { position: relative; height: 28px; cursor: pointer; touch-action: none; }
+.rp-scrub .rail, .rp-scrub .fill { position: absolute; left: 0; top: 50%; height: 6px; margin-top: -3px; border-radius: 999px; }
+.rp-scrub .rail { right: 0; background: var(--rule); }
+.rp-scrub .fill { background: var(--ink); }
+.rp-scrub .tick { position: absolute; top: 50%; width: 12px; height: 12px; margin: -6px 0 0 -6px; border-radius: 50%; background: var(--sheet); border: 2.5px solid var(--tc); box-sizing: border-box; transition: background .2s; }
+.rp-scrub .tick.on { background: var(--tc); }
+.rp-scrub .knob { position: absolute; top: 50%; width: 18px; height: 18px; margin: -9px 0 0 -9px; border-radius: 50%; background: var(--sheet); border: 3px solid var(--ink); box-sizing: border-box; box-shadow: 0 2px 6px rgba(0,0,0,.25); }
+.rp-scrub:focus-visible { outline: 2px solid var(--brass); outline-offset: 4px; border-radius: 6px; }
+.rp-spd { font: inherit; font-family: var(--mono); font-size: 12px; font-weight: 600; min-width: 3.4em; padding: 6px 8px; border-radius: 999px; border: 1px solid var(--rule); background: var(--sheet); color: var(--ink); cursor: pointer; }
+.rp-sum { margin: 0; font-size: 14px; color: var(--muted); display: grid; gap: 4px; opacity: 0; transform: translateY(4px); transition: opacity .4s, transform .4s; }
+.rp-sum b { color: var(--ink); }
+.rp.done .rp-sum { opacity: 1; transform: none; }
+.rp-feed { display: grid; gap: 6px; border-top: 1px solid var(--rule); padding-top: 12px; }
+.rp-feed .eyebrow { display: flex; justify-content: space-between; }
+.rp-list { display: grid; gap: 6px; align-content: start; margin: 0; padding: 0 2px 0 0; list-style: none; height: 232px; overflow: auto; }
+.rp-list:empty { display: none; }
+.rp-empty { min-height: 232px; }
+.rp-list li { animation: rpin .35s cubic-bezier(.2, .9, .3, 1.1) both; }
+@keyframes rpin { from { opacity: 0; transform: translateY(-8px); } }
+.rp-list button { width: 100%; font: inherit; color: inherit; text-align: left; display: grid; grid-template-columns: 4.6em auto minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 6px 10px 6px 8px; border-radius: 10px; border: 1px solid var(--rule); background: var(--sheet); cursor: pointer; }
+.rp-list button:hover { border-color: var(--tc); }
+.rp-list li.key button { background: color-mix(in srgb, var(--tc) 9%, var(--sheet)); border-color: color-mix(in srgb, var(--tc) 35%, var(--rule)); }
+.rp-list .t { font-family: var(--mono); font-size: 10.5px; color: var(--muted); text-transform: uppercase; line-height: 1.2; }
+.rp-list .rp-shot { width: 30px; height: 30px; box-shadow: 0 0 0 2px var(--tc); }
+.rp-list .rp-shot span { font-size: 11px; }
+.rp-list .tx { min-width: 0; font-size: 13.5px; line-height: 1.3; }
+.rp-list .tx b { font-weight: 700; }
+.rp-list .tx .sub { display: block; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rp-list .sw { font-family: var(--mono); font-size: 12px; font-weight: 600; text-align: right; line-height: 1.25; }
+.rp-list .sw small { display: block; font-weight: 400; color: var(--muted); font-size: 10.5px; }
+.rp-empty { font-size: 13px; color: var(--muted); margin: 0; }
+.rp-confetti { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 5; border-radius: 18px; }
+.rp-confetti i { position: absolute; top: -12px; width: 8px; height: 14px; border-radius: 2px; animation: rpfall 2.2s cubic-bezier(.25, .6, .4, 1) forwards; }
+@keyframes rpfall { to { transform: translate(var(--dx), 640px) rotate(var(--rot)); opacity: 0; } }
+@media (max-width: 600px) {
+  .rp-modal { padding: 0; place-items: end stretch; }
+  .rp { width: 100%; max-height: 100dvh; min-height: 100dvh; border-radius: 0; padding: 14px 14px calc(14px + env(safe-area-inset-bottom, 0px)); gap: 12px; align-content: start; }
+  .rp-side .mono-badge { width: 40px; height: 40px; font-size: 16px; }
+  .rp-who b { font-size: 13px; }
+  .rp-vs { width: 28px; height: 28px; font-size: 12px; }
+  .rp-bar { grid-template-columns: 3.4em minmax(0, 1fr) 3.4em; gap: 8px; }
+  .rp-bar .num { font-size: 18px; }
+  .rp-pin .bub, .rp-pin .rp-shot { width: 32px; height: 32px; } .rp-pin .bub { left: -16px; }
+  .rp-call { min-width: 180px; max-width: 230px; padding: 8px 12px 8px 8px; }
+  .rp-call .rp-shot { width: 44px; height: 44px; }
+  .rp-call .what { font-size: 16px; }
+  .rp-list { height: auto; max-height: none; } .rp-empty { min-height: 0; }
+}
 </style>
 
 <header class="mast" id="mast">
@@ -642,6 +775,7 @@ footer { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block:
   <a href="#home" data-tab="home">Home</a><a href="#managers" data-tab="managers">Managers</a><a href="#records" data-tab="records">Records</a><a href="#stats" data-tab="stats">Stats</a><a href="#seasons" data-tab="seasons">Seasons</a><button type="button" class="me-btn" id="me-btn" hidden></button>
 </div><div class="ticker" id="ticker" hidden></div></nav>
 <div class="me-modal" id="me-modal" hidden><div class="me-panel sheet" role="dialog" aria-modal="true" aria-labelledby="me-title"><h3 id="me-title">Which team is yours?</h3><p class="sub">Your matchup, odds and rows go first everywhere on the site. It's saved on this device only.</p><div class="me-list" id="me-list"></div><div class="me-foot"><button type="button" class="btn ghost" data-me="-">Just browsing</button><button type="button" class="btn ghost" data-me-close>Cancel</button></div></div></div>
+<div class="rp-modal" id="rp-modal" hidden><div class="rp" id="rp" role="dialog" aria-modal="true" aria-labelledby="rp-title"></div></div>
 <main id="view"><div class="loading">Loading 15 seasons of Brown Cow…</div></main>
 <footer id="foot"></footer>
 
@@ -827,7 +961,7 @@ footer { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block:
       const pv = PV[g.h + '-' + g.a], pre = g.status === 'pre';
       const stk = pre && pv && pv.hs && pv.as_ ? [[hk, pv.hs], [ak, pv.as_]].filter(([, x]) => Math.abs(x.poWin - x.poLose) >= 0.05).map(([k, x]) => `${esc(mgr(k).short)} ${pct(x.poWin)} with a win, ${pct(x.poLose)} with a loss`) : [];
       const stakes = stk.length ? `<p class="lv-story">Playoff odds on the line: ${stk.join(' · ')}</p>` : '';
-      return `<article class="sheet lv ${g.status}${pv && pv.gotw ? ' gotw' : ''}"><div class="lv-top">${chip(g.status)}${pv && pv.gotw ? '<span class="lv-chip gw">Game of the Week</span>' : ''}${Math.abs(moved) >= 5 ? `<span class="sub">${esc(mgr(T[moved > 0 ? g.h : g.a].key).short)} up ${Math.abs(moved)} points ${pre ? 'since Tuesday' : 'this week'}</span>` : ''}</div>
+      return `<article class="sheet lv ${g.status}${pv && pv.gotw ? ' gotw' : ''}"><div class="lv-top">${chip(g.status)}${pv && pv.gotw ? '<span class="lv-chip gw">Game of the Week</span>' : ''}${Math.abs(moved) >= 5 ? `<span class="sub">${esc(mgr(T[moved > 0 ? g.h : g.a].key).short)} up ${Math.abs(moved)} points ${pre ? 'since Tuesday' : 'this week'}</span>` : ''}${liveHasReplay(LIVE.games.find((x) => x.h === g.h && x.a === g.a) || g) ? `<button type="button" class="rp-btn" data-replay="live:${g.h}-${g.a}">Replay</button>` : ''}</div>
         ${row(g.h, g.hs, g.hp, g.hleft, g.hwin, g.status === 'final' ? g.hs > g.as_ : fav === g.h, g.hvar, pre)}${row(g.a, g.as_, g.ap, g.aleft, 1 - g.hwin, g.status === 'final' ? g.as_ > g.hs : fav === g.a, g.avar, pre)}
         ${storyLine(g, T)}${stakes}${marginCurve(g, hk, ak)}${wpChart(g, hk, ak)}</article>`; };
     const od = [...L.odds].map((o) => ({ ...o, d: o.po - o.po0, k: T[o.tid].key })).sort((x, y) => Math.abs(y.d) - Math.abs(x.d) || y.po - x.po);
@@ -1371,7 +1505,7 @@ footer { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block:
   const move = (m) => m > 0 ? `<span class="mv up" title="Up ${m}">▲${m}</span>` : m < 0 ? `<span class="mv dn" title="Down ${-m}">▼${-m}</span>` : '<span class="mv muted">–</span>';
   function recapHtml(key) {
     const r = D.recaps[key]; if (!r) return '<p class="muted">No recap for this week.</p>';
-    return `<ul>${r.lines.map((l) => `<li>${esc(l)}</li>`).join('')}</ul><div class="scores">${r.games.map(([a, as_, b, bs]) => `<div class="sc"><span class="${as_ > bs ? 'w' : ''}">${esc(mgr(a).short)}</span><span class="num ${as_ > bs ? 'w' : ''}">${f2(as_)}</span><span class="${bs > as_ ? 'w' : ''}">${esc(mgr(b).short)}</span><span class="num ${bs > as_ ? 'w' : ''}">${f2(bs)}</span></div>`).join('')}</div>`;
+    return `${comebackHtml(r.y, r.wk)}<ul>${r.lines.map((l) => `<li>${esc(l)}</li>`).join('')}</ul><div class="scores">${r.games.map(([a, as_, b, bs]) => `<div class="sc"><span class="${as_ > bs ? 'w' : ''}">${esc(mgr(a).short)}</span><span class="num ${as_ > bs ? 'w' : ''}">${f2(as_)}</span><span class="${bs > as_ ? 'w' : ''}">${esc(mgr(b).short)}</span><span class="num ${bs > as_ ? 'w' : ''}">${f2(bs)}</span>${rpHas(r.y, r.wk, a, b) ? `<button type="button" class="rp-btn sm" data-replay="arc:${r.y}:${r.wk}:${a}:${b}">Replay</button>` : ''}</div>`).join('')}</div>`;
   }
 
   const POWER_NOTE = "Power rankings are about this season only: all-play record (50%), the last three weeks of scoring (30%) and wins (20%). Early on, all-play is blended with last season's, and that fades as games are played; the league's history says last season is worth about as much as the first month. Playoff and title odds simulate the rest of the season 10,000 times from each team's scoring, with the same light nudge from last season. Career Elo, the all-seasons rating, lives on the manager pages.";
@@ -2054,13 +2188,318 @@ footer { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block:
       ${m.guys.length ? `<div class="sheet tbl"><table><caption>Their guys · bought three times or more</caption><thead><tr><th>Player</th><th>Seasons and prices</th></tr></thead><tbody>${m.guys.map((g) => `<tr><td><b>${esc(g.player)}</b> <span class="chip">${esc(g.pos)}</span></td><td class="wrapcell num">${g.buys.map(([y, p]) => `${y} $${p}`).join(' · ')}</td></tr>`).join('')}</tbody></table></div>` : ''}</section>`;
   }
 
+  // ------------------------------------------------------------- matchup replay
+  // Every matchup's week as a story: both teams' win chances from kickoff to the final whistle, the big plays that
+  // moved them (from pipeline/live.py's moments), and the scores ticking up as it plays. Live weeks replay up to now
+  // from the live snapshot; finished weeks come from replays/<year>-w<week>.json (pipeline/replay_archive.py).
+  let REPLAYS = []; const RP_FILES = {};
+  async function loadReplays() { try { const r = await fetch('replays/index.json', { cache: 'no-cache' }); if (r.ok) REPLAYS = await r.json(); } catch (e) { REPLAYS = []; } }
+  const rpIdx = (y, wk) => REPLAYS.find((x) => x.y === y && x.wk === wk);
+  const rpHas = (y, wk, a, b) => { const i = rpIdx(y, wk); return !!i && i.games.some(([h, w]) => (h === a && w === b) || (h === b && w === a)); };
+  const NFLAB = { 1: 'atl', 2: 'buf', 3: 'chi', 4: 'cin', 5: 'cle', 6: 'dal', 7: 'den', 8: 'det', 9: 'gb', 10: 'ten', 11: 'ind', 12: 'kc', 13: 'lv', 14: 'lar', 15: 'mia', 16: 'min', 17: 'ne', 18: 'no', 19: 'nyg', 20: 'nyj', 21: 'phi', 22: 'ari', 23: 'pit', 24: 'lac', 25: 'sf', 26: 'sea', 27: 'tb', 28: 'wsh', 29: 'car', 30: 'jax', 33: 'bal', 34: 'hou' };
+  const POSN = { 1: 'QB', 2: 'RB', 3: 'WR', 4: 'TE', 5: 'K', 16: 'D/ST' };
+  const plName = (n) => { const p = String(n || '').trim().split(/\s+/); return p.length > 1 && !/D\/ST$/.test(n) ? `${p[0][0]}. ${p.slice(1).join(' ')}` : String(n || ''); };
+  const capFirst = (s) => (s ? s[0].toUpperCase() + s.slice(1) : s);
+  function shotHtml(m, cls) {
+    const team = m.pos === 16 || m.aid < 0, ab = NFLAB[m.pro];
+    const src = team ? (ab ? `https://a.espncdn.com/i/teamlogos/nfl/500/${ab}.png` : '') : `https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/${m.aid}.png&w=200&h=146&cb=1`;
+    const ini = team ? (ab || 'DST').toUpperCase() : String(m.name || '?').split(/\s+/).map((x) => x[0]).slice(0, 2).join('');
+    return `<span class="rp-shot${team ? ' team' : ''} ${cls || ''}"><span>${esc(ini)}</span>${src ? `<img src="${src}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : ''}</span>`;
+  }
+  const clockOf = (t, withMin) => { const d = new Date(t * 60000); if (isNaN(d)) return ''; const wd = d.toLocaleDateString([], { weekday: 'short' }); let h = d.getHours(); const ap = h >= 12 ? 'pm' : 'am'; h = h % 12 || 12; return `${wd} ${h}${withMin ? ':' + String(d.getMinutes()).padStart(2, '0') : ''}${ap}`; };
+
+  // One matchup, seen from the left team: ME's team goes on the left when it's in the game.
+  function rpBuild(src) {
+    const flip = meValid() && ME === src.ak;
+    const Lk = flip ? src.ak : src.hk, Rk = flip ? src.hk : src.ak;
+    const raw = (src.hist || []).filter((x) => x && x.length >= 2);
+    const pre = raw.filter((x) => x[2] === 'p'), game = raw.filter((x) => x[2] !== 'p');
+    if (!game.length) return null;
+    const pts = []; let hs = 0, as_ = 0;
+    const push = (t, hw, h, a) => { pts.push({ t, w: flip ? 1 - hw : hw, sl: flip ? a : h, sr: flip ? h : a }); };
+    const base = pre.length ? pre[pre.length - 1][1] : (src.hwin0 != null ? src.hwin0 : game[0][1]);
+    push(game[0][0] - 1, base, 0, 0);
+    game.forEach((x) => { if (x.length > 4) { hs = x[3]; as_ = x[4]; } push(Math.max(x[0], pts[pts.length - 1].t), x[1], hs, as_); });
+    if (src.now) { const lt = pts[pts.length - 1].t; push(Math.max(lt + 1, Math.min(src.now.t, lt + 10)), src.now.hwin, src.now.hs, src.now.as_); }
+    if (src.final) { const l = pts[pts.length - 1]; const h = src.hs, a = src.as_; push(l.t + 1, h > a ? 1 : a > h ? 0 : 0.5, h, a); }
+    const mo = (src.moments || []).map((m) => {
+      const who = (m[1] === 'h') !== flip ? 'L' : 'R', wl = flip ? 1 - m[7] : m[7], dwl = flip ? -m[8] : m[8];
+      const mine = who === 'L' ? dwl : -dwl;
+      return { t: m[0], who, aid: m[2], pos: m[3], pro: m[4], name: m[5], dp: m[6], wl, mine, lab: m[9] || '' };
+    }).filter((m) => m.t >= pts[0].t);
+    return { y: src.y, wk: src.wk, hk: src.hk, ak: src.ak, Lk, Rk, pts, mo, final: !!src.final, live: !src.final,
+      fs: src.final ? { l: flip ? src.as_ : src.hs, r: flip ? src.hs : src.as_ } : null };
+  }
+  // Time on the x axis only counts while games are on: the dead hours between Thursday night and Sunday morning
+  // shrink to a sliver, so the chart reads as Thursday | Sunday morning | 1pm | 4pm | night | Monday.
+  function rpAxis(R, gap) {
+    const ts = R.pts.map((p) => p.t); let segs = []; let s = ts[0], e = ts[0];
+    ts.slice(1).forEach((t) => { if (t - e > 50) { segs.push([s, e]); s = t; } e = t; }); segs.push([s, e]);
+    segs = segs.filter(([a, b]) => b - a >= 12); if (!segs.length) segs = [[ts[0], ts[ts.length - 1]]];
+    segs[0][0] = Math.min(segs[0][0], ts[0]); segs[segs.length - 1][1] = Math.max(segs[segs.length - 1][1], ts[ts.length - 1]);
+    const GAP = segs.length > 1 ? Math.min(0.035, 0.25 / segs.length) : 0, dur = (sg) => Math.max(1, sg[1] - sg[0]);
+    const act = segs.reduce((x, sg) => x + dur(sg), 0), room = 1 - GAP * (segs.length - 1);
+    const st = []; let x = 0; segs.forEach((sg) => { st.push(x); x += (dur(sg) / act) * room + GAP; });
+    const wd = segs.map((sg) => (dur(sg) / act) * room);
+    const X = (t) => {
+      for (let i = 0; i < segs.length; i++) {
+        const [a, b] = segs[i];
+        if (t <= b || i === segs.length - 1) {
+          if (t >= a) return Math.min(1, st[i] + Math.min(1, (t - a) / dur(segs[i])) * wd[i]);
+          if (i === 0) return 0;
+          const pb = segs[i - 1][1]; return st[i] - GAP + ((t - pb) / Math.max(1, a - pb)) * GAP;
+        }
+      }
+      return 1;
+    };
+    const ticks = [], mg = gap || 0.085; const add = (t, lab) => { const xx = X(t); if (ticks.every((k) => Math.abs(k.x - xx) > mg) && xx < 1 - mg * 0.9) ticks.push({ x: xx, lab }); };
+    segs.forEach(([a, b]) => {
+      if (b - a < 40 && segs.length > 1) return;
+      add(a, clockOf(a));
+      if (b - a > 300) for (let t = a + 60; t < b - 40; t += 1) { const d = new Date(t * 60000); if (d.getMinutes() === 0 && [13, 16, 20].includes(d.getHours())) add(t, clockOf(t)); }
+    });
+    ticks.push({ x: 1, lab: R.final ? 'Final' : 'Now', end: true });
+    return { X, segs, st, wd, GAP, ticks };
+  }
+
+  let RP = null;
+  function rpState(x) {
+    const P = RP.P; let lo = 0, hi = P.length - 1;
+    if (x <= P[0].x) return { ...P[0], i: 0 };
+    if (x >= P[hi].x) return { ...P[hi], i: hi };
+    while (hi - lo > 1) { const m = (lo + hi) >> 1; if (P[m].x <= x) lo = m; else hi = m; }
+    const a = P[lo], b = P[hi], k = (x - a.x) / Math.max(1e-9, b.x - a.x);
+    return { ...a, w: a.w + (b.w - a.w) * k, i: lo };
+  }
+  function rpPick(R, A) {
+    // pins: the plays that moved the win chance most, one per snapshot, spread out along the chart
+    const byT = {};
+    R.mo.forEach((m) => { if (m.dp > 0 === m.mine > 0 && Math.abs(m.mine) >= 0.02) { const k = m.t + m.who; if (!byT[k] || Math.abs(m.dp) > Math.abs(byT[k].dp)) byT[k] = m; } });
+    const cand = Object.values(byT).sort((a, b) => Math.abs(b.mine) - Math.abs(a.mine));
+    const n = (RP && RP.cw < 560) ? 5 : 7, out = [];
+    cand.forEach((m) => { const x = A.X(m.t); if (out.length < n && out.every((o) => Math.abs(o.x - x) > 0.05)) out.push({ ...m, x }); });
+    out.sort((a, b) => a.x - b.x);
+    const feed = R.mo.map((m) => ({ ...m, x: A.X(m.t), key: out.some((o) => o.t === m.t && o.aid === m.aid) })).sort((a, b) => a.x - b.x);
+    return { pins: out, feed };
+  }
+  const PLAY_ICON = '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M6 3.5v13l11-6.5z"/></svg>';
+  const PAUSE_ICON = '<svg viewBox="0 0 20 20" aria-hidden="true"><rect x="4.5" y="3.5" width="4" height="13" rx="1"/><rect x="11.5" y="3.5" width="4" height="13" rx="1"/></svg>';
+  const AGAIN_ICON = '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 3a7 7 0 1 1-6.6 4.7l1.9.6A5 5 0 1 0 10 5v2.6L5.8 4.3 10 1z"/></svg>';
+
+  function openReplay(src) {
+    const R = rpBuild(src); if (!R) return;
+    const box = $('rp'), modal = $('rp-modal');
+    const T = (k) => ({ k, m: mgr(k), c: COLORS[k] });
+    const L = T(R.Lk), Rt = T(R.Rk);
+    const rec = (k) => { const t = D.live && D.live.machine && R.y === D.live.machine.y ? D.live.machine.teams.find((x) => x.key === k) : null; return t ? `${t.w}–${t.l}` : ''; };
+    const side = (t, cls) => `<div class="rp-side ${cls}" style="--tc:${t.c}">${badge(t.k)}<div class="rp-who"><b>${esc(t.m.team || t.m.short)}</b><span class="sub">${esc(t.m.short)}${rec(t.k) ? ' · ' + rec(t.k) : ''}</span></div><div class="rp-sc" id="rp-s${cls[0]}">0.00</div></div>`;
+    const link = `#rp-${R.y}-${R.wk}-${R.hk}-${R.ak}`;
+    box.style.setProperty('--lc', L.c); box.style.setProperty('--rc', Rt.c);
+    box.className = 'rp' + (R.live ? ' islive' : '');
+    box.innerHTML = `<div class="rp-top"><div><span class="eyebrow">${R.live ? '<span class="live-dot"></span>' : ''}Matchup replay · Week ${R.wk}${R.live ? ' · so far' : ''}</span><h3 id="rp-title">${R.live ? 'The week so far' : 'Matchup replay'}</h3></div>${shareBtn(link)}<button type="button" class="rp-x" data-rp-close aria-label="Close replay">×</button></div>
+      <div class="rp-board">${side(L, 'l')}<div class="rp-mid"><span class="rp-vs">vs</span><span class="rp-clock" id="rp-clock"></span></div>${side(Rt, 'r')}</div>
+      <div class="rp-bar"><span class="num" id="rp-pl" style="color:${L.c}"></span><div class="rp-track2"><i id="rp-bl" style="--tc:${L.c}"></i><i id="rp-br" style="--tc:${Rt.c}"></i></div><span class="num r" id="rp-pr" style="color:${Rt.c}"></span></div>
+      <div class="rp-chart" id="rp-chart"></div>
+      <div class="rp-ctl"><button type="button" class="rp-play" id="rp-play" aria-label="Play">${PLAY_ICON}</button><div class="rp-scrub" id="rp-scrub" role="slider" tabindex="0" aria-label="Replay position" aria-valuemin="0" aria-valuemax="100"></div><button type="button" class="rp-spd" id="rp-spd" aria-label="Playback speed">1×</button></div>
+      <p class="rp-sum" id="rp-sum"></p>
+      <div class="rp-feed"><span class="eyebrow"><span>Big plays</span><span id="rp-cnt"></span></span><ol class="rp-list" id="rp-list"></ol><p class="rp-empty" id="rp-empty">Big plays show up here as the replay runs.</p></div>`;
+    RP = { R, L, Rt, x: 0, playing: false, speed: 1, hold: 0, last: 0, raf: 0, shown: -1, callT: 0, link, cw: 0, done: false };
+    modal.hidden = false; document.body.style.overflow = 'hidden';
+    rpLayout();
+    $('rp-play').onclick = () => (RP.playing ? rpPause() : rpPlay());
+    $('rp-spd').onclick = () => { RP.speed = RP.speed === 1 ? 2 : RP.speed === 2 ? 4 : 1; $('rp-spd').textContent = RP.speed + '×'; };
+    const sc = $('rp-scrub');
+    const seekEv = (e) => { const r = sc.getBoundingClientRect(); rpSeek(Math.max(0, Math.min(1, (e.clientX - r.left) / r.width))); };
+    sc.onpointerdown = (e) => { rpPause(); sc.setPointerCapture(e.pointerId); seekEv(e); sc.onpointermove = seekEv; };
+    sc.onpointerup = sc.onpointercancel = () => { sc.onpointermove = null; };
+    sc.onkeydown = (e) => { const st = { ArrowRight: 0.02, ArrowLeft: -0.02, PageUp: 0.1, PageDown: -0.1 }[e.key]; if (st != null) { e.preventDefault(); rpPause(); rpSeek(Math.max(0, Math.min(1, RP.x + st))); } else if (e.key === ' ') { e.preventDefault(); RP.playing ? rpPause() : rpPlay(); } };
+    $('rp-list').onclick = (e) => { const b = e.target.closest('[data-x]'); if (!b) return; rpPause(); rpSeek(+b.dataset.x, true); rpCall(RP.feed[+b.dataset.i]); };
+    $('rp-chart').onclick = (e) => { const b = e.target.closest('[data-pin]'); if (!b) return; rpPause(); const m = RP.pins[+b.dataset.pin]; rpCall(m); };
+    setTimeout(() => { const c = box.querySelector('.rp-x'); if (c) c.focus({ preventScroll: true }); }, 50);
+    if (REDUCE) { rpSeek(1); rpFinish(true); } else { rpSeek(0); setTimeout(() => { if (RP && RP.R === R) rpPlay(); }, 650); }
+  }
+  function rpLayout() {
+    const el = $('rp-chart'); if (!el || !RP) return;
+    const cw = el.clientWidth || 600, ch = cw < 560 ? 220 : 290, pl = 38, pr = 16, pt = 22, pb = 30;
+    RP.cw = cw; const A = rpAxis(RP.R, 66 / (cw - pl - pr)); RP.A = A;
+    const PX = (x) => pl + x * (cw - pl - pr), PY = (w) => pt + (1 - w) * (ch - pt - pb);
+    RP.PX = PX; RP.PY = PY;
+    RP.P = RP.R.pts.map((p) => ({ ...p, x: A.X(p.t) }));
+    const pk = rpPick(RP.R, A); RP.pins = pk.pins; RP.feed = pk.feed;
+    const line = (f) => RP.P.map((p, i) => `${i ? 'L' : 'M'}${PX(p.x).toFixed(1)},${PY(f(p.w)).toFixed(1)}`).join('');
+    const grid = [0, .25, .5, .75, 1].map((v) => `<line x1="${pl}" x2="${cw - pr}" y1="${PY(v)}" y2="${PY(v)}"${v === 0.5 ? ' class="mid"' : ''}/><text x="${pl - 8}" y="${PY(v) + 4}" text-anchor="end">${v * 100}%</text>`).join('');
+    const segl = A.segs.slice(1).map((sg, i) => { const x = PX(A.st[i + 1] - A.GAP / 2); return `<line class="seg" x1="${x}" x2="${x}" y1="${pt}" y2="${ch - pb}"/>`; }).join('');
+    const xt = A.ticks.map((k) => `<text class="x" x="${PX(k.x)}" y="${ch - 8}"${k.end ? ' text-anchor="end" style="text-anchor:end"' : ''}>${esc(k.lab)}</text>`).join('');
+    const id = 'rpc' + Math.random().toString(36).slice(2, 7);
+    el.innerHTML = `<svg width="${cw}" height="${ch}" viewBox="0 0 ${cw} ${ch}" role="img" aria-label="Win chance for each team through the week">
+      <defs><clipPath id="${id}"><rect id="rp-clip" x="0" y="0" width="${pl}" height="${ch}"/></clipPath>
+      <linearGradient id="${id}l" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="${RP.L.c}" stop-opacity=".16"/><stop offset="1" stop-color="${RP.L.c}" stop-opacity="0"/></linearGradient>
+      <linearGradient id="${id}r" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="${RP.Rt.c}" stop-opacity=".16"/><stop offset="1" stop-color="${RP.Rt.c}" stop-opacity="0"/></linearGradient></defs>
+      <g class="rp-grid">${grid}${segl}${xt}</g>
+      <path class="rp-line ghost" style="--tc:${RP.L.c}" d="${line((w) => w)}"/><path class="rp-line ghost" style="--tc:${RP.Rt.c}" d="${line((w) => 1 - w)}"/>
+      <g clip-path="url(#${id})"><path d="${line((w) => w)}L${PX(1)},${ch - pb}L${PX(0)},${ch - pb}Z" fill="url(#${id}l)"/><path d="${line((w) => 1 - w)}L${PX(1)},${ch - pb}L${PX(0)},${ch - pb}Z" fill="url(#${id}r)"/>
+      <path class="rp-line" style="--tc:${RP.Rt.c}" d="${line((w) => 1 - w)}"/><path class="rp-line" style="--tc:${RP.L.c}" d="${line((w) => w)}"/></g>
+      <line class="rp-ph" id="rp-ph" x1="0" x2="0" y1="${pt}" y2="${ch - pb}"/></svg>
+      <div class="rp-ov">${RP.pins.map((m, i) => { const v = m.who === 'L' ? m.wl : 1 - m.wl, tc = m.who === 'L' ? RP.L.c : RP.Rt.c;
+        return `<div class="rp-pin${v > 0.72 ? ' below' : ''}" id="rp-pin${i}" style="left:${PX(m.x)}px;top:${PY(v)}px;--tc:${tc}"><span class="dot"></span><button type="button" class="bub" data-pin="${i}" aria-label="${esc(m.name)}: ${esc(m.lab)}">${shotHtml(m)}</button></div>`; }).join('')}
+      <div class="rp-head" id="rp-hl" style="--tc:${RP.L.c}">${badge(RP.L.k)}</div><div class="rp-head" id="rp-hr" style="--tc:${RP.Rt.c}">${badge(RP.Rt.k)}</div>
+      <div class="rp-call" id="rp-call"></div></div>`;
+    RP.clip = el.querySelector('#rp-clip');
+    $('rp-scrub').innerHTML = `<span class="rail"></span><span class="fill" id="rp-fill"></span>${RP.pins.map((m, i) => `<span class="tick" id="rp-tk${i}" style="left:${m.x * 100}%;--tc:${m.who === 'L' ? RP.L.c : RP.Rt.c}"></span>`).join('')}<span class="knob" id="rp-knob"></span>`;
+    $('rp-cnt').textContent = RP.feed.length ? `${RP.feed.length} of them` : '';
+    RP.shown = -1; $('rp-list').innerHTML = '';
+    rpDraw();
+  }
+  function rpDraw() {
+    if (!RP || !RP.P) return;
+    const s = rpState(RP.x), PX = RP.PX, PY = RP.PY, R = RP.R;
+    const atEnd = RP.x >= 1 - 1e-6, fin = atEnd && R.final;
+    const sl = fin ? R.fs.l : s.sl, sr = fin ? R.fs.r : s.sr;
+    $('rp-sl').textContent = f2(sl); $('rp-sr').textContent = f2(sr);
+    $('rp-sl').parentNode.classList.toggle('trail', sl < sr); $('rp-sr').parentNode.classList.toggle('trail', sr < sl);
+    const w = s.w; $('rp-pl').textContent = fin && sl !== sr ? (sl > sr ? 'Won' : 'Lost') : pct(w); $('rp-pr').textContent = fin && sl !== sr ? (sr > sl ? 'Won' : 'Lost') : pct(1 - w);
+    $('rp-bl').style.flexGrow = Math.max(0.0001, w); $('rp-br').style.flexGrow = Math.max(0.0001, 1 - w);
+    $('rp-clock').innerHTML = fin ? 'Final' : atEnd && R.live ? '<span class="live-dot"></span>Now' : esc(clockOf(RP.A ? Math.round(rpTime(RP.x)) : s.t, true));
+    const x = PX(RP.x); if (RP.clip) RP.clip.setAttribute('width', x + 1);
+    const ph = $('rp-ph'); if (ph) { ph.setAttribute('x1', x); ph.setAttribute('x2', x); ph.style.display = RP.x > 0 && !atEnd ? '' : 'none'; }
+    const hl = $('rp-hl'), hr = $('rp-hr'); if (hl) { hl.style.left = x + 'px'; hl.style.top = PY(w) + 'px'; hr.style.left = x + 'px'; hr.style.top = PY(1 - w) + 'px'; }
+    $('rp-fill').style.width = RP.x * 100 + '%'; $('rp-knob').style.left = RP.x * 100 + '%';
+    $('rp-scrub').setAttribute('aria-valuenow', Math.round(RP.x * 100)); $('rp-scrub').setAttribute('aria-valuetext', $('rp-clock').textContent);
+    RP.pins.forEach((m, i) => { const on = m.x <= RP.x + 1e-6; const p = $('rp-pin' + i); if (p) p.classList.toggle('on', on); const t = $('rp-tk' + i); if (t) t.classList.toggle('on', on); });
+    // the feed: every big play so far, newest first
+    let n = 0; while (n < RP.feed.length && RP.feed[n].x <= RP.x + 1e-6) n++;
+    if (n !== RP.shown) {
+      const list = $('rp-list'); const add = n > RP.shown && RP.shown >= 0 ? RP.feed.slice(RP.shown, n) : null;
+      const li = (m, i) => { const tc = m.who === 'L' ? RP.L.c : RP.Rt.c, up = m.mine >= 0;
+        return `<li class="${m.key ? 'key' : ''}" style="--tc:${tc}"><button type="button" data-x="${m.x}" data-i="${i}"><span class="t">${esc(clockOf(m.t, true))}</span>${shotHtml(m)}<span class="tx"><b>${esc(plName(m.name))}</b> <span class="muted">${POSN[m.pos] || ''}</span><span class="sub">${esc(capFirst(m.lab) || (m.dp > 0 ? 'Big stretch' : 'Rough stretch'))}</span></span><span class="sw" style="color:${m.dp >= 0 ? 'var(--turf)' : 'var(--loss)'}">${sgn(m.dp)}<small>${Math.abs(m.mine) >= 0.005 ? `${up ? '▲' : '▼'}${Math.round(Math.abs(m.mine) * 100)}% win` : 'pts'}</small></span></button></li>`; };
+      if (add && add.length <= 3) add.forEach((m, j) => list.insertAdjacentHTML('afterbegin', li(m, RP.shown + j)));
+      else list.innerHTML = RP.feed.slice(0, n).map((m, i) => li(m, i)).reverse().join('');
+      RP.shown = n; $('rp-empty').hidden = n > 0;
+    }
+  }
+  function rpTime(x) {
+    const A = RP.A; x = Math.max(0, Math.min(1, x)); for (let i = 0; i < A.segs.length; i++) { const [a, b] = A.segs[i]; if (x <= A.st[i] + A.wd[i] || i === A.segs.length - 1) { if (x >= A.st[i] || i === 0) return a + Math.max(0, Math.min(1, (x - A.st[i]) / Math.max(1e-9, A.wd[i]))) * (b - a); const pb = A.segs[i - 1][1]; return pb + ((x - (A.st[i] - A.GAP)) / A.GAP) * (a - pb); } }
+    return A.segs[A.segs.length - 1][1];
+  }
+  function rpCall(m) {
+    const c = $('rp-call'); if (!c || !m) return;
+    const tc = m.who === 'L' ? RP.L.c : RP.Rt.c, team = mgr(m.who === 'L' ? RP.L.k : RP.Rt.k).short;
+    const v = m.who === 'L' ? m.wl : 1 - m.wl, before = v - m.mine;
+    c.style.setProperty('--tc', tc);
+    c.innerHTML = `${shotHtml(m)}<span class="nm">${esc(plName(m.name))}<i>${POSN[m.pos] || ''}${NFLAB[m.pro] ? ' · ' + NFLAB[m.pro].toUpperCase() : ''}</i></span><span class="what">${esc(capFirst(m.lab) || (m.dp > 0 ? 'Big stretch' : 'Rough stretch'))}</span><span class="meta">${sgn(m.dp)} pts for ${esc(team)}${Math.abs(m.mine) >= 0.005 ? ` · win <b>${pct(Math.max(0, Math.min(1, before)))} → ${pct(v)}</b>` : ''}</span>`;
+    const x = RP.PX(m.x), y = RP.PY(v), cw = RP.cw, w = Math.min(290, cw * 0.62);
+    const left = x + 34 + w < cw ? x + 30 : Math.max(0, x - 30 - w);
+    c.style.left = left + 'px'; c.style.top = Math.max(0, Math.min(RP.PY(0) - 80, y - 40)) + 'px'; c.style.width = w + 'px';
+    c.classList.add('on'); RP.pins.forEach((p, i) => { const el = $('rp-pin' + i); if (el) el.classList.toggle('hot', p === m || (p.t === m.t && p.aid === m.aid)); });
+    clearTimeout(RP.callT); RP.callT = setTimeout(() => { c.classList.remove('on'); document.querySelectorAll('.rp-pin.hot').forEach((p) => p.classList.remove('hot')); }, RP.playing ? 2600 / RP.speed : 4200);
+  }
+  function rpSeek(x, quiet) {
+    if (!RP) return; const was = RP.x; RP.x = x;
+    if (x < 1 - 1e-6 && RP.done) { RP.done = false; $('rp').classList.remove('done'); rpTitle(); }
+    if (!quiet && x < was) { RP.nextPin = RP.pins.findIndex((m) => m.x > x); }
+    rpDraw(); rpIcon();
+  }
+  function rpIcon() { const b = $('rp-play'); if (!b) return; b.innerHTML = RP.playing ? PAUSE_ICON : RP.x >= 1 - 1e-6 ? AGAIN_ICON : PLAY_ICON; b.setAttribute('aria-label', RP.playing ? 'Pause' : RP.x >= 1 - 1e-6 ? 'Play again' : 'Play'); $('rp').classList.toggle('playing', RP.playing); }
+  function rpPlay() {
+    if (!RP) return; if (RP.x >= 1 - 1e-6) rpSeek(0);
+    RP.playing = true; RP.last = performance.now(); RP.nextPin = RP.pins.findIndex((m) => m.x > RP.x + 1e-6); rpIcon();
+    cancelAnimationFrame(RP.raf); RP.raf = requestAnimationFrame(rpTick);
+  }
+  function rpPause() { if (!RP) return; RP.playing = false; cancelAnimationFrame(RP.raf); rpIcon(); }
+  const RP_SECONDS = 24;          // a whole week, at 1×
+  function rpTick(now) {
+    if (!RP || !RP.playing) return;
+    const dt = Math.max(0, Math.min(64, now - RP.last)); RP.last = now;
+    if (RP.hold > 0) { RP.hold -= dt; RP.raf = requestAnimationFrame(rpTick); return; }
+    let nx = Math.min(1, RP.x + (dt * RP.speed) / (RP_SECONDS * 1000));
+    const np = RP.nextPin >= 0 ? RP.pins[RP.nextPin] : null;
+    if (np && np.x <= nx) { nx = np.x; RP.x = nx; rpDraw(); rpCall(np); RP.hold = 1100 / RP.speed; RP.nextPin = RP.nextPin + 1 < RP.pins.length ? RP.nextPin + 1 : -1; RP.raf = requestAnimationFrame(rpTick); return; }
+    RP.x = nx; rpDraw();
+    if (nx >= 1) { RP.playing = false; rpIcon(); rpFinish(); return; }
+    RP.raf = requestAnimationFrame(rpTick);
+  }
+  function rpTitle() {
+    const h = $('rp-title'); if (!h) return; const R = RP.R;
+    if (!RP.done) { h.textContent = R.live ? 'The week so far' : 'Matchup replay'; return; }
+    const meIn = meValid() && (ME === R.Lk || ME === R.Rk);
+    if (R.live) { const s = rpState(1), lead = s.w >= 0.5 ? RP.L : RP.Rt; h.textContent = `${lead.m.short} ${pct(Math.max(s.w, 1 - s.w))} to win`; return; }
+    const lw = R.fs.l > R.fs.r, tie = R.fs.l === R.fs.r, wn = lw ? RP.L : RP.Rt, mg = Math.abs(R.fs.l - R.fs.r);
+    h.textContent = tie ? 'A tie' : meIn ? (wn.k === ME ? 'Congrats, you won!' : `Lost by ${f2(mg)}`) : `${wn.m.short} win by ${f2(mg)}`;
+  }
+  function rpFinish(quiet) {
+    if (!RP) return; RP.done = true; const box = $('rp'), R = RP.R; box.classList.add('done'); rpTitle();
+    if (!R.live) {
+      const lw = R.fs.l > R.fs.r, wn = lw ? RP.L : RP.Rt;
+      box.querySelectorAll('.rp-side').forEach((el) => el.classList.toggle('win', el.classList.contains(lw ? 'l' : 'r') && R.fs.l !== R.fs.r));
+      $('rp-bl').classList.toggle('lose', !lw); $('rp-br').classList.toggle('lose', lw);
+      const path = RP.P.slice(1, -1).map((p) => ({ t: p.t, v: lw ? p.w : 1 - p.w })); const lo = path.length ? path.reduce((a, b) => (b.v < a.v ? b : a)) : null;
+      const big = [...RP.feed].filter((m) => m.dp > 0 && m.mine > 0).sort((a, b) => Math.abs(b.mine) - Math.abs(a.mine))[0];
+      const lines = [];
+      if (lo && lo.v < 0.35 && R.fs.l !== R.fs.r) lines.push(`🔥 <b>Comeback:</b> ${esc(wn.m.short)} ${wn.m.short.includes(' ') ? 'were' : 'was'} down to <b>${pct(lo.v)}</b> at ${esc(clockOf(lo.t, true))} and still won.`);
+      if (big && Math.abs(big.mine) >= 0.05) lines.push(`⚡ <b>Biggest swing:</b> ${esc(plName(big.name))}'s ${esc(big.lab || 'big stretch')} (${big.mine > 0 ? '+' : '−'}${Math.round(Math.abs(big.mine) * 100)} points of win chance for ${esc(mgr(big.who === 'L' ? RP.L.k : RP.Rt.k).short)}).`);
+      $('rp-sum').innerHTML = lines.map((l) => `<span>${l}</span>`).join('');
+      const meIn = meValid() && (ME === R.Lk || ME === R.Rk);
+      if (!quiet && !REDUCE && R.fs.l !== R.fs.r && (!meIn || wn.k === ME)) rpConfetti(wn.c);
+    } else {
+      const s = rpState(1); $('rp-sum').innerHTML = `<span><span class="live-dot"></span>Caught up to the latest scores. ${esc((s.w >= 0.5 ? RP.L : RP.Rt).m.short)} ${(s.w >= 0.5 ? RP.L : RP.Rt).m.short.includes(' ') ? 'lead' : 'leads'} the way with <b>${pct(Math.max(s.w, 1 - s.w))}</b> to win.</span>`;
+    }
+  }
+  function rpConfetti(c) {
+    const box = $('rp'); const f = document.createElement('div'); f.className = 'rp-confetti';
+    const cols = [c, c, 'var(--brass)', 'var(--matgold)', 'var(--turf)'];
+    f.innerHTML = Array.from({ length: 46 }, (_, i) => `<i style="left:${Math.random() * 100}%;background:${cols[i % cols.length]};--dx:${(Math.random() * 160 - 80).toFixed(0)}px;--rot:${(Math.random() * 720 - 360).toFixed(0)}deg;animation-delay:${(Math.random() * 0.5).toFixed(2)}s;width:${6 + Math.random() * 6}px"></i>`).join('');
+    box.appendChild(f); setTimeout(() => f.remove(), 3200);
+  }
+  function closeReplay() {
+    if (!RP) return; rpPause(); clearTimeout(RP.callT); RP = null;
+    $('rp-modal').hidden = true; $('rp').innerHTML = ''; document.body.style.overflow = '';
+    const m = (location.hash || '').match(/^#rp-(\d{4})-/); if (m) history.replaceState(null, '', '#s-' + m[1]);
+  }
+  async function replayFor(y, wk, a, b) {
+    if (liveOk(LIVE) && LIVE.y === y && LIVE.wk === wk) {
+      const T = {}; D.live.machine.teams.forEach((t) => { T[t.key] = t.tid; });
+      const g = LIVE.games.find((x) => (x.h === T[a] && x.a === T[b]) || (x.h === T[b] && x.a === T[a]));
+      if (g) return liveSrc(g);
+    }
+    const i = rpIdx(y, wk); if (!i) return null;
+    if (!RP_FILES[i.file]) { try { RP_FILES[i.file] = await (await fetch('replays/' + i.file, { cache: 'no-cache' })).json(); } catch (e) { return null; } }
+    const g = RP_FILES[i.file].games.find((x) => (x.hk === a && x.ak === b) || (x.hk === b && x.ak === a)); if (!g) return null;
+    return { y, wk, hk: g.hk, ak: g.ak, hist: g.hist, moments: g.moments, hs: g.hs, as_: g.as_, hwin0: g.hwin0, final: true };
+  }
+  function liveSrc(g) {
+    const T = {}; D.live.machine.teams.forEach((t) => { T[t.tid] = t.key; });
+    const v = liveView().games.find((x) => x.h === g.h && x.a === g.a) || g;
+    const fin = v.status === 'final';
+    return { y: LIVE.y, wk: LIVE.wk, hk: T[g.h], ak: T[g.a], hist: g.hist, moments: g.moments, hwin0: g.hwin0, final: fin, hs: v.hs, as_: v.as_,
+      now: fin ? null : { t: Date.now() / 60000, hwin: v.hwin, hs: v.hs, as_: v.as_ } };
+  }
+  const liveHasReplay = (g) => g.status !== 'pre' && (g.hist || []).filter((x) => x[2] !== 'p').length >= 2;
+  document.addEventListener('click', async (e) => {
+    const b = e.target.closest('[data-replay]');
+    if (b) {
+      const p = b.dataset.replay.split(':'); let src = null;
+      if (p[0] === 'live' && liveOk(LIVE)) { const g = LIVE.games.find((x) => `${x.h}-${x.a}` === p[1]); if (g) src = liveSrc(g); }
+      else if (p[0] === 'arc') src = await replayFor(+p[1], +p[2], p[3], p[4]);
+      if (src) openReplay(src); return;
+    }
+    if (e.target.closest('[data-rp-close]') || e.target.id === 'rp-modal') closeReplay();
+  });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && RP) closeReplay(); });
+  let rpRz = 0; window.addEventListener('resize', () => { if (!RP) return; clearTimeout(rpRz); rpRz = setTimeout(() => { if (RP && Math.abs(($('rp-chart') || {}).clientWidth - RP.cw) > 4) rpLayout(); }, 120); });
+  function comebackHtml(y, wk) {
+    const i = rpIdx(y, wk); const c = i && i.comeback; if (!c || c.low >= 0.35 || !MK[c.winner] || !MK[c.loser]) return '';
+    return `<p class="rp-cb">🔥 <span><b>Comeback of the week:</b> ${esc(mgr(c.winner).short)} ${mgr(c.winner).short.includes(' ') ? 'were' : 'was'} down to ${pct(c.low)} (${esc(c.when)}) and beat ${esc(mgr(c.loser).short)}.</span><button type="button" class="rp-btn" data-replay="arc:${y}:${wk}:${c.winner}:${c.loser}">Watch it</button></p>`;
+  }
+
   // ------------------------------------------------------------- router
   function route() {
     const h = (location.hash || '#home').slice(1);
+    if (RP && !h.startsWith('rp-')) closeReplay();
     let tab = 'home', html = '', after = null;
     let m;
     if ((m = h.match(/^m-([a-z]+)$/))) { tab = 'managers'; html = views.manager(m[1]); }
     else if ((m = h.match(/^s-(\d{4})$/))) { const live_ = D.meta.cur && +m[1] === D.meta.cur.y && !seasonOf(+m[1]).done; tab = live_ ? 'now' : 'seasons'; html = views.season(+m[1]); after = () => seasonAfter(+m[1]); }
+    else if ((m = h.match(/^rp-(\d{4})-(\d{1,2})-([a-z]+)-([a-z]+)$/))) { const y = +m[1]; const live_ = D.meta.cur && y === D.meta.cur.y && !seasonOf(y).done; tab = live_ ? 'now' : 'seasons'; html = views.season(y); after = async () => { seasonAfter(y); const src = await replayFor(y, +m[2], m[3], m[4]); if (src) openReplay(src); }; }
     else if (h === 'machine') { tab = 'machine'; html = views.machine(); after = machineAfter; }
     else if ((m = h.match(/^news-(\d{4})-(\d{1,2})$/))) { tab = 'home'; html = newsView(+m[1], +m[2]); after = () => newsAfter(+m[1], +m[2]); }
     else if (h === 'history') { tab = 'seasons'; html = views.seasons(); after = () => { const t = $('timeline'); if (t) t.scrollIntoView(); }; }
@@ -2162,7 +2601,7 @@ footer { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block:
     KEYS = D.managers.map((m) => m.key);
     buildParts();
     if ('serviceWorker' in navigator && location.protocol === 'https:') { try { navigator.serviceWorker.register('sw.js'); } catch (e) {} }
-    await loadNews();
+    await Promise.all([loadNews(), loadReplays()]);
     if (D.meta.cur) { await pollLive(); setInterval(() => { if (!document.hidden) pollLive(); }, 60000); if (liveOk(LIVE)) tickFast(); setInterval(tickFast, 45000); document.addEventListener('visibilitychange', () => { if (!document.hidden) { pollLive(); tickFast(); } }); }
     shell();
     route();

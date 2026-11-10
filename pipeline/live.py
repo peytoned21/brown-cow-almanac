@@ -11,7 +11,7 @@ Usage:
         keep taking snapshots for up to 55 minutes while games are on, running the --after command after each change
   python3 pipeline/live.py LEAGUE_CONFIG OUT_JSON --from ESPN_WEEK_JSON [--now UNIX]    offline test
 """
-import collections, datetime, json, math, os, random, subprocess, sys, time
+import collections, datetime, json, math, os, random, re, subprocess, sys, time
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from fetch_season import make_get, B  # noqa: E402
 import nflbox  # noqa: E402
@@ -155,7 +155,8 @@ def team_side(side, sp, team_frac, box, scoring, players_out, slot_counts, scale
         pts += act; proj += act + rem; var += sd * sd * frac
         aid = p['id']
         players_out.append([aid, p.get('defaultPositionId') or 0, p.get('proTeamId') or 0, round(act, 2), round(prj, 1),
-                            nflbox.calc(box.get(aid), scoring) if aid > 0 else 0, p.get('fullName') or '', round(sd, 2)])
+                            nflbox.calc(box.get(aid), scoring) if aid > 0 else 0, p.get('fullName') or '', round(sd, 2),
+                            {k: v for k, v in (box.get(aid) or {}).items() if v} if aid > 0 else {}])
     return dict(pts=round(pts, 2), proj=round(proj, 1), var=round(var, 2), left=left, playing=playing, started=started)
 
 
@@ -213,18 +214,107 @@ def snapshot(cfg, D, wk_data, events, boxes, scoring, now, slot_counts=None):
 
 
 def add_history(L, old, now):
-    """Each game keeps its win-chance path for the week: [[minutes since epoch, home win chance, 'p' if before kickoff], ...]."""
+    """Each game keeps its path for the week: [[minutes since epoch, home win chance, 'p' before kickoff or '', home pts, away pts], ...]."""
     prev = {}
     if old and old.get('y') == L['y'] and old.get('wk') == L['wk']:
         prev = {f"{g['h']}-{g['a']}": g.get('hist') or [] for g in old.get('games', [])}
     t = int(now // 60)
     for g in L['games']:
         h = list(prev.get(f"{g['h']}-{g['a']}", []))
-        tag = ['p'] if g['status'] == 'pre' else []
-        if not h: h.append([t, g['hwin0'], 'p'])
-        if h[-1][1] != g['hwin'] or t - h[-1][0] >= 30 or (len(h[-1]) > 2) != bool(tag):
-            if g['status'] != 'final' or h[-1][1] != g['hwin']: h.append([t, g['hwin']] + tag)
-        g['hist'] = h[-500:]
+        tag = 'p' if g['status'] == 'pre' else ''
+        pt = [t, g['hwin'], tag, round(g['hs'], 2), round(g['as_'], 2)]
+        if not h: h.append([t, g['hwin0'], 'p', 0, 0])
+        last = h[-1]; ltag = last[2] if len(last) > 2 else ''
+        moved = last[1] != g['hwin'] or (len(last) > 4 and (last[3], last[4]) != (pt[3], pt[4]))
+        if moved or t - last[0] >= 30 or ltag != tag:
+            if g['status'] != 'final' or moved: h.append(pt)
+        g['hist'] = h[-1500:]
+
+
+# ---------------------------------------------------------------- big moments (for the matchup replay)
+MOMENT_PTS = 4.0          # a starter's score has to move this much between snapshots to count as a moment
+
+
+def _norm(s):
+    s = re.sub(r"[^a-z ]", ' ', (s or '').lower().replace("'", '').replace('.', ''))
+    s = re.sub(r'\b(jr|sr|ii|iii|iv|v)\b', ' ', s)
+    return ' '.join(s.split())
+
+
+def play_label(pl, name, pos, pro):
+    """How a scoring play reads from this player's side ('9-yd TD run'), or None if he wasn't in it."""
+    t = pl.get('text') or ''; low = t.lower(); yd = re.search(r'(\d+)\s*yd', low); yds = f"{yd.group(1)}-yd " if yd else ''
+    if pos == 16:                               # team defense / special teams
+        if pl.get('team') != pro: return None
+        k = (pl.get('kind') or '').lower() + ' ' + low
+        for key, lab in (('safety', 'Safety'), ('interception', yds + 'pick-six'), ('fumble', yds + 'fumble-return TD'),
+                         ('punt return', yds + 'punt-return TD'), ('kickoff return', yds + 'kick-return TD'), ('blocked', 'Blocked-kick TD')):
+            if key in k: return lab
+        return None
+    n = _norm(name)
+    if not n: return None
+    if _norm(t).startswith(n):
+        if 'field goal' in low: return f"{yds}field goal"
+        if 'pass from' in low: return f"{yds}TD catch"
+        if 'run' in low: return f"{yds}TD run"
+        if 'return' in low: return f"{yds}return TD"
+        return 'Touchdown'
+    m = re.search(r'pass from ([^(]+)', t, re.I)
+    if m and _norm(m.group(1)).startswith(n):
+        sc = re.match(r'^(.*?)\s+\d+\s*yd', t, re.I)
+        return f"{yds}TD pass" + (f" to {sc.group(1).split()[-1]}" if sc and sc.group(1).split() else '')
+    return None
+
+
+def stat_label(now, before):
+    """What a player did between two snapshots, from his box-score line ('3 catches, 61 yds')."""
+    d = {k: (now or {}).get(k, 0) - (before or {}).get(k, 0) for k in set(now or {}) | set(before or {})}
+    g = lambda k: d.get(k, 0); out = []
+    if g('fumLost') >= 1: out.append('Lost fumble')
+    if g('int') >= 1: out.append('Interception thrown' if g('int') == 1 else f"{g('int'):.0f} interceptions thrown")
+    tds = g('passTD') + g('rushTD') + g('recTD')
+    if tds >= 1: out.append('Touchdown' if tds == 1 else f'{tds:.0f} touchdowns')
+    if g('passYds') >= 15: out.append(f"{g('passYds'):.0f} passing yds")
+    if g('rec') >= 1 and g('recYds') >= 5: out.append(f"{g('rec'):.0f} catch{'es' if g('rec') > 1 else ''}, {g('recYds'):.0f} yds")
+    elif g('recYds') >= 10: out.append(f"{g('recYds'):.0f} receiving yds")
+    if g('rushYds') >= 10: out.append(f"{g('rushYds'):.0f} rushing yds")
+    if g('kickPts') >= 3: out.append('Field goal' if g('kickPts') < 6 else f"{g('kickPts'):.0f} kicking pts")
+    return ', '.join(out[:2])
+
+
+def add_moments(L, old, plays, now):
+    """Whenever a starter's score jumps (or drops) between snapshots, note who, by how much, what the play was, and how
+    the matchup's win chance moved: [[minute, 'h'|'a', playerId, pos, proTeam, name, points, home win after, home win change, label], ...]."""
+    same_wk = old and old.get('y') == L['y'] and old.get('wk') == L['wk']
+    prev = {f"{g['h']}-{g['a']}": g for g in (old or {}).get('games', [])} if same_wk else {}
+    old_rows = {t: {r[0]: r for r in rows} for t, rows in (old or {}).get('lineups', {}).items()} if same_wk else {}
+    used = {tuple(x) for x in (old or {}).get('usedPlays', [])} if same_wk else set()
+    stale = set((old or {}).get('seen1', [])) if same_wk else set()     # plays already on the board two snapshots ago
+    t = int(now // 60)
+    for g in L['games']:
+        key = f"{g['h']}-{g['a']}"; og = prev.get(key); ms = list((og or {}).get('moments') or [])
+        if og:
+            dwp = g['hwin'] - og['hwin']
+            for side, tid in (('h', g['h']), ('a', g['a'])):
+                for r in L['lineups'].get(str(tid), []):
+                    o = old_rows.get(str(tid), {}).get(r[0])
+                    if not o: continue
+                    dp = r[3] - o[3]
+                    if abs(dp) < MOMENT_PTS: continue
+                    lab = ''
+                    if dp > 0:
+                        for pl in reversed(plays.get(r[2], [])):
+                            if pl['id'] in stale or (r[0], pl['id']) in used: continue
+                            lb = play_label(pl, r[6], r[1], r[2])
+                            if lb: lab = lb; used.add((r[0], pl['id'])); break
+                    if not lab:
+                        lab = stat_label(r[8] if len(r) > 8 else {}, o[8] if len(o) > 8 else {})
+                    ms.append([t, side, r[0], r[1], r[2], r[6], round(dp, 1), round(g['hwin'], 3), round(dwp, 3), lab])
+        g['moments'] = ms[-120:]
+    seen = sorted({pl['id'] for ps in plays.values() for pl in ps})
+    L['usedPlays'] = sorted(used)[-600:]
+    L['seen1'] = (old or {}).get('seen0', []) if same_wk else []
+    L['seen0'] = seen
 
 
 def same(a, b):
@@ -262,20 +352,25 @@ def main():
             events = nflbox.scoreboard(y, wk)
         except Exception as e:
             print('scoreboard unavailable:', e); events = {}
-        boxes = {}
+        boxes = {}; plays = {}
         for eid, ev in events.items():
             if ev['state'] == 'pre': continue
-            if eid in final_boxes: boxes[eid] = final_boxes[eid]; continue
-            try:
-                boxes[eid] = nflbox.box(eid)
-                if ev['state'] == 'post': final_boxes[eid] = boxes[eid]
-            except Exception as e:
-                print('box score unavailable for', eid, e)
+            if eid not in final_boxes:
+                try:
+                    sm = nflbox.summary(eid)
+                    if ev['state'] == 'post': final_boxes[eid] = sm
+                except Exception as e:
+                    print('box score unavailable for', eid, e); continue
+            else:
+                sm = final_boxes[eid]
+            boxes[eid] = sm[0]
+            for tm in ev['teams']: plays[tm] = sm[1]
         wk_data = get(f'{league}?view=mMatchupScore&view=mBoxscore&view=mScoreboard&scoringPeriodId={wk}')
         L = snapshot(cfg, D, wk_data, events, boxes, scoring, now, slot_counts)
         if L:
             old = json.load(open(out_p)) if os.path.exists(out_p) else None
             add_history(L, old, now)
+            add_moments(L, old, plays, now)
             if old and same(old, L):
                 print(time.strftime('%H:%M:%S'), 'no change')
             else:
