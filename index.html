@@ -622,6 +622,33 @@ footer { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block:
 .auc-tip { position: absolute; z-index: 5; pointer-events: none; display: grid; gap: 2px; max-width: 240px; padding: 8px 10px; background: var(--sheet); border: 1px solid var(--rule); border-radius: 6px; box-shadow: 0 6px 18px -8px rgba(0,0,0,.35); font-size: 13px; }
 .yearbar button { font-family: var(--mono); font-size: 13px; border: 1px solid var(--rule); background: var(--sheet); color: var(--ink); padding: 6px 10px; border-radius: 4px; flex: 0 0 auto; cursor: pointer; }
 .yearbar button[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+
+/* ---- power ratings */
+.rt { display: grid; gap: 2px; padding: 8px 4px; }
+.rt-row { display: grid; grid-template-columns: 1.6em auto minmax(0, 1.1fr) minmax(0, 1.6fr) 4.2em 3.6em 92px; align-items: center; gap: 10px; padding: 7px 10px; border-radius: 8px; }
+.rt-row.me { background: color-mix(in srgb, var(--brass) 12%, transparent); }
+.rt-row .rk { font-family: var(--mono); font-size: 12px; color: var(--muted); text-align: right; }
+.rt-row .mono-badge { width: 30px; height: 30px; font-size: 12px; }
+.rt-who { min-width: 0; display: grid; }
+.rt-who a { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rt-who .sub { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rt-bar { position: relative; height: 14px; }
+.rt-bar::before { content: ""; position: absolute; left: 50%; top: -4px; bottom: -4px; width: 1px; background: var(--rule); }
+.rt-bar i { position: absolute; top: 0; height: 100%; border-radius: 3px; background: var(--tc); }
+.rt-bar i.neg { opacity: .55; }
+.rt-val { font-family: var(--display); font-weight: 900; font-size: 20px; text-align: right; font-variant-numeric: tabular-nums; }
+.rt-chg { font-family: var(--mono); font-size: 11px; text-align: right; }
+.rt-chg.up { color: var(--turf); } .rt-chg.dn { color: var(--loss); }
+.rt-row svg { display: block; }
+.rt-luck { display: inline-block; margin-left: 6px; font-family: var(--mono); font-size: 10px; letter-spacing: .05em; text-transform: uppercase; padding: 1px 6px; border-radius: 999px; border: 1px solid var(--rule); color: var(--muted); }
+.rt-head { display: grid; grid-template-columns: 1.6em auto minmax(0, 1.1fr) minmax(0, 1.6fr) 4.2em 3.6em 92px; gap: 10px; padding: 0 10px 4px; font-family: var(--mono); font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--rule); margin-bottom: 4px; }
+.rt-head span:nth-child(4) { display: flex; justify-content: space-between; }
+.rt-head .r { text-align: right; }
+.pv-spread { font-family: var(--mono); font-size: 11px; letter-spacing: .04em; color: var(--muted); }
+@media (max-width: 700px) {
+  .rt-row, .rt-head { grid-template-columns: 1.4em auto minmax(0, 1fr) 3.8em 3.2em; gap: 8px; }
+  .rt-row .rt-bar, .rt-row svg, .rt-head span:nth-child(4), .rt-head span:nth-child(7) { display: none; }
+}
 /* ---- matchup replay */
 .rp-btn { display: inline-flex; align-items: center; gap: 6px; font: inherit; font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; padding: 3px 10px 3px 8px; border-radius: 999px; border: 1px solid var(--ink); background: var(--ink); color: var(--paper); cursor: pointer; margin-left: auto; white-space: nowrap; }
 .rp-btn::before { content: ""; width: 0; height: 0; border-left: 7px solid currentColor; border-top: 4.5px solid transparent; border-bottom: 4.5px solid transparent; }
@@ -1151,12 +1178,12 @@ footer { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block:
     const P = L.preview, g0 = P.games[0], O = oddsBy();
     const side = (k, t, m, rec, p, win, st, top, feat) => `<div class="pv-side"><div class="pv-who">${badge(k)}<div><a class="mgr" href="#m-${k}">${esc(t)}</a><span class="sub">${esc(m)} · ${rec}</span></div></div><div class="pv-proj num">${f1(p)}</div><div class="pv-win">${Math.round(win * 100)}% win chance</div>${full !== false || feat ? `<p class="pv-stake">Win: <b>${pct(st.poWin)}</b> to make the playoffs. Lose: <b>${pct(st.poLose)}</b>.</p>` : ''}${top && (full !== false || feat) ? `<span class="sub">Top projected: ${esc(top[0])} (${esc(top[1])}) ${f1(top[2])}</span>` : ''}</div>`;
     const game = (g, feat) => `<article class="sheet pv${feat ? ' gotw' : ''}">${feat ? `<div class="pv-flag"><span class="eyebrow">Game of the Week</span><span class="sub">The biggest playoff swing of the week: the two teams' playoff odds move a combined ${Math.round(g.swing * 100)} points on the result</span></div>` : ''}
-      <div class="pv-grid">${side(g.hk, g.ht, g.hm, g.hrec, g.hp, g.hwin, g.hs, g.htop, feat)}<div class="pv-mid"><span class="pv-vs">vs</span><div class="pv-bar" role="img" aria-label="${Math.round(g.hwin * 100)} to ${Math.round((1 - g.hwin) * 100)} win chance"><i style="width:${Math.round(g.hwin * 100)}%;background:${COLORS[g.hk]}"></i><i style="width:${Math.round((1 - g.hwin) * 100)}%;background:${COLORS[g.ak]}"></i></div><span class="sub">All-time ${g.h2h[0]}–${g.h2h[1]}${g.h2h[2] ? '–' + g.h2h[2] : ''}</span></div>${side(g.ak, g.at, g.am, g.arec, g.ap, 1 - g.hwin, g.as_, g.atop, feat)}</div></article>`;
+      <div class="pv-grid">${side(g.hk, g.ht, g.hm, g.hrec, g.hp, g.hwin, g.hs, g.htop, feat)}<div class="pv-mid"><span class="pv-vs">vs</span><div class="pv-bar" role="img" aria-label="${Math.round(g.hwin * 100)} to ${Math.round((1 - g.hwin) * 100)} win chance"><i style="width:${Math.round(g.hwin * 100)}%;background:${COLORS[g.hk]}"></i><i style="width:${Math.round((1 - g.hwin) * 100)}%;background:${COLORS[g.ak]}"></i></div><span class="pv-spread">${Math.abs(g.hp - g.ap) < 0.5 ? 'Even' : `${esc(mgr(g.hp > g.ap ? g.hk : g.ak).short)} by ${f1(Math.abs(g.hp - g.ap))}`}</span><span class="sub">All-time ${g.h2h[0]}–${g.h2h[1]}${g.h2h[2] ? '–' + g.h2h[2] : ''}</span></div>${side(g.ak, g.at, g.am, g.arec, g.ap, 1 - g.hwin, g.as_, g.atop, feat)}</div></article>`;
     const rest = P.games.slice(1).sort((x, y) => (ME === y.hk || ME === y.ak) - (ME === x.hk || ME === x.ak));
     return `<section id="preview"><div class="sec-head"><div class="eyebrow">Week ${P.wk} · ESPN projections</div><h2>This week's matchups</h2></div>
       ${game(g0, true)}
       ${full === false ? `<div class="pv-list">${rest.map((g) => `<a class="sheet pv-row" href="#s-${D.meta.cur.y}"><span class="pv-l"><b>${esc(mgr(g.hk).short)}</b> <span class="num">${f1(g.hp)}</span></span><span class="pv-bar sm"><i style="width:${Math.round(g.hwin * 100)}%;background:${COLORS[g.hk]}"></i><i style="width:${Math.round((1 - g.hwin) * 100)}%;background:${COLORS[g.ak]}"></i></span><span class="pv-r"><span class="num">${f1(g.ap)}</span> <b>${esc(mgr(g.ak).short)}</b></span><span class="pv-pct num">${Math.round(g.hwin * 100)}–${Math.round((1 - g.hwin) * 100)}</span></a>`).join('')}</div>` : `<div class="pv-all">${rest.map((g) => game(g, false)).join('')}</div>`}
-      <p class="note">Projected score is the best lineup each team can set from ESPN's projections as of Tuesday, leaving out players ruled out. Win chance treats each team's score as uncertain by about ${Math.round(D.live.sd || 25)} points either way. Playoff odds come from 10,000 simulations of the rest of the season.</p></section>`;
+      <p class="note">Projected score is the best lineup each team can set from ESPN's projections, leaving out players on bye or ruled out, so it already counts NFL matchups and injuries. It updates a few times a day until kickoff. Win chance treats each team's score as uncertain by about ${Math.round(D.live.sd || 25)} points either way; checked against every week since 2020, ESPN's weekly projections call this week's games far better than season-long numbers do. Later weeks use the power ratings. Playoff odds come from 10,000 simulations of the rest of the season.</p></section>`;
   }
   function oddsChart(metric, focus) {
     const H = D.live && D.live.oddsHist; if (!H) return '';
@@ -1508,7 +1535,7 @@ footer { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block:
     return `${comebackHtml(r.y, r.wk)}<ul>${r.lines.map((l) => `<li>${esc(l)}</li>`).join('')}</ul><div class="scores">${r.games.map(([a, as_, b, bs]) => `<div class="sc"><span class="${as_ > bs ? 'w' : ''}">${esc(mgr(a).short)}</span><span class="num ${as_ > bs ? 'w' : ''}">${f2(as_)}</span><span class="${bs > as_ ? 'w' : ''}">${esc(mgr(b).short)}</span><span class="num ${bs > as_ ? 'w' : ''}">${f2(bs)}</span>${rpHas(r.y, r.wk, a, b) ? `<button type="button" class="rp-btn sm" data-replay="arc:${r.y}:${r.wk}:${a}:${b}">Replay</button>` : ''}</div>`).join('')}</div>`;
   }
 
-  const POWER_NOTE = "Power rankings are about this season only: all-play record (50%), the last three weeks of scoring (30%) and wins (20%). Early on, all-play is blended with last season's, and that fades as games are played; the league's history says last season is worth about as much as the first month. Playoff and title odds simulate the rest of the season 10,000 times from each team's scoring, with the same light nudge from last season. Career Elo, the all-seasons rating, lives on the manager pages.";
+  const POWER_NOTE = "Power rankings are about this season only: all-play record (50%), the last three weeks of scoring (30%) and wins (20%). Early on, all-play is blended with last season's, and that fades as games are played; the league's history says last season is worth about as much as the first month. Playoff and title odds simulate the rest of the season 10,000 times: ESPN's projections for this week, then each team's power rating. Career Elo, the all-seasons rating, lives on the manager pages.";
   function endsHtml() {
     if (!D.odds.length || D.odds[0].sacko == null) return '';
     const top = (f) => [...D.odds].sort((a, b) => b[f] - a[f]).slice(0, 4);
@@ -1527,7 +1554,7 @@ footer { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block:
     const P0 = D.power[D.power.length - 1]; if (!P0) return '';
     const P = limit ? { ...P0, rows: P0.rows.slice(0, limit) } : P0;
     const O = oddsBy();
-    return `<table><caption>Power rankings · Week ${P.wk}</caption><thead><tr><th class="r">#</th><th></th><th>Team</th><th class="r">W–L</th><th class="r hide-sm">Last 3</th>${withOdds ? '<th>Playoffs</th><th>Title</th>' : '<th class="r">All-play</th>'}</tr></thead><tbody>${P.rows.map((r) => `<tr><td class="r num">${r.rank}</td><td>${move(r.move)}</td><td class="tm-cell"><a class="mgr" href="#m-${r.key}">${esc(r.team)}</a><span class="sub">${esc(r.mgr)}</span>${O[r.key] ? statusChip(O[r.key].status) : ''}</td><td class="r num">${r.w}–${r.l}</td><td class="r num hide-sm">${f1(r.form)}</td>${withOdds ? `<td>${pbar(O[r.key].po)}</td><td>${pbar(O[r.key].title)}</td>` : `<td class="r num">${p3(r.allplay)}</td>`}</tr>`).join('')}</tbody></table>`;
+    return `<table><caption>Power rankings · Week ${P.wk}</caption><thead><tr><th class="r">#</th><th></th><th>Team</th><th class="r">W–L</th><th class="r" title="Power rating: points per week vs an average team">Rating</th><th class="r hide-sm">Last 3</th>${withOdds ? '<th>Playoffs</th><th>Title</th>' : '<th class="r">All-play</th>'}</tr></thead><tbody>${P.rows.map((r) => `<tr><td class="r num">${r.rank}</td><td>${move(r.move)}</td><td class="tm-cell"><a class="mgr" href="#m-${r.key}">${esc(r.team)}</a><span class="sub">${esc(r.mgr)}</span>${O[r.key] ? statusChip(O[r.key].status) : ''}</td><td class="r num">${r.w}–${r.l}</td><td class="r num">${r.rating != null ? sgn(r.rating) : ''}</td><td class="r num hide-sm">${f1(r.form)}</td>${withOdds ? `<td>${pbar(O[r.key].po)}</td><td>${pbar(O[r.key].title)}</td>` : `<td class="r num">${p3(r.allplay)}</td>`}</tr>`).join('')}</tbody></table>`;
   }
 
   // ------------------------------------------------------------- shell
@@ -1868,10 +1895,11 @@ footer { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block:
         <div class="sheet lore" id="lore">${loreHtml(lore, s.y)}</div></section>`;
     P.MX = !s.done && D.live && D.live.machine && D.live.machine.y === s.y && D.live.machine.games.length ? `<a class="sheet mx-promo" href="#machine"><span class="eyebrow">Tool</span><b>Playoff machine</b><span class="sub">Pick every game left and watch the seeds, odds and bracket change.</span><span class="mx-go">Open →</span></a>` : '';
     P.PW = !s.done && D.power.length ? `<section><div class="sec-head"><div class="eyebrow">Through week ${s.played}</div><h2>Power rankings</h2></div><div class="sheet tbl">${powerTable(false)}</div>${endsHtml()}<p class="note">${POWER_NOTE}</p></section>` : '';
+    P.RT = !s.done && D.power.length ? ratingsHtml() : '';
     const iss = NEWS.filter((x) => x.y === s.y);
     P.NW = iss.length ? `<section><div class="sec-head"><div class="eyebrow">${esc(LG.paper)}</div><h2>The paper</h2></div><div class="pp-more" style="margin:0">${iss.map((x) => `<a href="#news-${x.y}-${x.wk}"><b>Week ${x.wk}</b> ${esc(x.title)}</a>`).join('')}</div></section>` : '';
     const order = s.done ? ['T', 'ST', 'AW', 'DV', 'PO', 'RC', 'SL', 'CH', 'DR', 'WK', 'NW', 'TR', 'LO']
-      : ['T', 'PV', 'MX', 'NW', 'PW', 'OD', 'AW', 'ST', 'DV', 'SL', 'RC', 'WK', ...(s.rounds.length ? ['PO'] : []), 'DR', 'TR', 'LO'];
+      : ['T', 'PV', 'MX', 'NW', 'PW', 'RT', 'OD', 'AW', 'ST', 'DV', 'SL', 'RC', 'WK', ...(s.rounds.length ? ['PO'] : []), 'DR', 'TR', 'LO'];
     return ybar + order.map((k) => P[k]).join('\n');
   };
   function loreHtml(list, y) {
@@ -2186,6 +2214,30 @@ footer { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block:
       <div class="grid2"><div class="sheet pad" style="display:grid;gap:10px"><h3 class="auc-h">Where the money goes</h3>${bar}</div>
         <div style="display:grid;gap:14px">${best ? card('Best bargain', [1], smoney(best.surp), `${esc(best.player)} <span class="chip">${esc(best.pos)}</span>`, `${slink(best.y)} · paid $${best.bid}, worth $${best.fair}`, () => '') : ''}${worst ? card('Worst overpay', [1], smoney(worst.surp), `${esc(worst.player)} <span class="chip">${esc(worst.pos)}</span>`, `${slink(worst.y)} · paid $${worst.bid}, worth $${worst.fair}`, () => '') : ''}</div></div>
       ${m.guys.length ? `<div class="sheet tbl"><table><caption>Their guys · bought three times or more</caption><thead><tr><th>Player</th><th>Seasons and prices</th></tr></thead><tbody>${m.guys.map((g) => `<tr><td><b>${esc(g.player)}</b> <span class="chip">${esc(g.pos)}</span></td><td class="wrapcell num">${g.buys.map(([y, p]) => `${y} $${p}`).join(' · ')}</td></tr>`).join('')}</tbody></table></div>` : ''}</section>`;
+  }
+
+
+  // ------------------------------------------------------------- power ratings
+  const RATING_NOTE = "The power rating is points per week better or worse than an average team, this season only. It is 70% the lineup ESPN projects each team to field (its last few weeks and this one, so it reacts to trades, injuries and byes right away) and 30% what each team has actually scored all season. The gap between two ratings is the expected margin when they meet. Checked against every week since 2020, it predicted games better than season scoring or Elo did. The playoff odds run on it.";
+  function ratingsHtml() {
+    const W = D.power; if (!W || !W.length) return '';
+    const cur = W[W.length - 1], prev = W.length > 1 ? W[W.length - 2] : null;
+    if (cur.rows[0].rating == null) return '';
+    const rows = [...cur.rows].sort((a, b) => b.rating - a.rating);
+    const mx = Math.max(8, ...rows.map((r) => Math.abs(r.rating)));
+    const rec = [...cur.rows].sort((a, b) => b.w - a.w || b.allplay - a.allplay); const recRank = {}; rec.forEach((r, i) => { recRank[r.key] = i + 1; });
+    const hist = (k) => W.map((w) => (w.rows.find((r) => r.key === k) || {}).rating).filter((v) => v != null);
+    const spk = (k) => { const h = hist(k); if (h.length < 2) return '<span></span>'; const w = 92, ht = 26, lo = -mx, hi = mx; const xs = (i) => (i / (h.length - 1)) * (w - 4) + 2, ys = (v) => ht - 2 - ((Math.max(lo, Math.min(hi, v)) - lo) / (hi - lo)) * (ht - 4);
+      return `<svg width="${w}" height="${ht}" viewBox="0 0 ${w} ${ht}" aria-hidden="true"><line x1="0" x2="${w}" y1="${ys(0)}" y2="${ys(0)}" stroke="var(--rule)" stroke-dasharray="2 3"/><polyline points="${h.map((v, i) => `${xs(i).toFixed(1)},${ys(v).toFixed(1)}`).join(' ')}" fill="none" stroke="${COLORS[k]}" stroke-width="1.8" stroke-linejoin="round"/><circle cx="${xs(h.length - 1)}" cy="${ys(h[h.length - 1])}" r="2.6" fill="${COLORS[k]}"/></svg>`; };
+    const row = (r, i) => {
+      const p = prev && prev.rows.find((x) => x.key === r.key); const ch = p && p.rating != null ? r.rating - p.rating : 0;
+      const w = (Math.abs(r.rating) / mx) * 50; const luck = recRank[r.key] - (i + 1);
+      const tag = luck <= -4 ? '<span class="rt-luck" title="Record is much better than the rating">Lucky</span>' : luck >= 4 ? '<span class="rt-luck" title="Record is much worse than the rating">Unlucky</span>' : '';
+      return `<div class="rt-row${meValid() && ME === r.key ? ' me' : ''}" style="--tc:${COLORS[r.key]}"><span class="rk">${i + 1}</span>${badge(r.key)}<span class="rt-who"><a class="mgr" href="#m-${r.key}">${esc(mgr(r.key).short)}</a><span class="sub">${r.w}–${r.l}${tag} · roster ${sgn(r.rRoster)}, results ${sgn(r.rResults)}</span></span><span class="rt-bar" aria-hidden="true"><i class="${r.rating < 0 ? 'neg' : ''}" style="${r.rating >= 0 ? `left:50%;width:${w}%` : `right:50%;width:${w}%`}"></i></span><span class="rt-val" style="color:${r.rating >= 0 ? 'var(--ink)' : 'var(--muted)'}">${sgn(r.rating)}</span><span class="rt-chg ${ch >= 0.5 ? 'up' : ch <= -0.5 ? 'dn' : 'muted'}">${Math.abs(ch) >= 0.5 ? (ch > 0 ? '▲' : '▼') + Math.abs(ch).toFixed(1) : '–'}</span>${spk(r.key)}</div>`;
+    };
+    return `<section id="ratings"><div class="sec-head"><div class="eyebrow">Through week ${cur.wk} · points per week vs an average team</div><h2>Power ratings</h2></div>
+      <div class="sheet rt"><div class="rt-head"><span></span><span></span><span>Team</span><span><span>Worse</span><span>Better</span></span><span class="r">Rating</span><span class="r">Week</span><span>Trend</span></div>${rows.map(row).join('')}</div>
+      <p class="note">${RATING_NOTE}</p></section>`;
   }
 
   // ------------------------------------------------------------- matchup replay

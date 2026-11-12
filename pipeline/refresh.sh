@@ -15,6 +15,8 @@ for cfg in leagues/*.json; do
     echo "$season is already final."
   elif ! python3 pipeline/fetch_season.py "$cfg" "$season"; then
     echo "::error::$name: ESPN fetch failed (cookies expired?)"; failed=1; echo "::endgroup::"; continue
+  else
+    python3 pipeline/fetch_proj.py "$cfg" "$season" > /dev/null || echo "::warning::$name: ESPN projections not updated"
   fi
   if [ -z "$(git status --porcelain "$dir/raw")" ] && [ "${FORCE:-false}" != "true" ]; then
     echo "No new ESPN data."

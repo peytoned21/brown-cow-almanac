@@ -932,6 +932,45 @@ if CUR:
             v = [(sum(1 for o, ov in ss.items() if o != pt and ov < ss[pt]) + 0.5 * sum(1 for o, ov in ss.items() if o != pt and ov == ss[pt])) / (len(ss) - 1) for ss in pw.values() if pt in ss]
             prior_ap[t] = st.mean(v); prior_rel[t] = st.mean([ss[pt] for ss in pw.values() if pt in ss]) / pl - 1
     PRIOR_WEEKS = 4; CARRY = 0.2; AP_K = 13.4; AP_C = 0.29
+
+    # ---- power rating: this season only, in points per week better or worse than an average team.
+    # Backtested on every week of 2020-26 (Brown Cow) and 2024-26 (AGS), predicting games one to five weeks out with
+    # only what was known at the time. ESPN's projections of each team's lineup were the best single guide; a
+    # season-long reading of actual results (a Kalman filter on weekly scores, sd 28, tiny weekly drift) added a
+    # little; 70/30 was as good as any mix. Scaled (x0.57) so the difference between two ratings is the expected
+    # margin, with each team's score uncertain by about 24 points.
+    R_Q, R_P0, R_SIG, R_ESPN, R_SCALE = 1.0, 100.0, 28.0, 0.7, 0.57
+    try:
+        PROJ_Y = json.load(open(os.path.join(RAW, 'proj', f'{y}.json')))
+    except (OSError, ValueError):
+        PROJ_Y = {}
+    def espn_dev(w):
+        pw = PROJ_Y.get(str(w))
+        if not pw: return None
+        tot = {int(t): sum(e[2] or 0 for e in ents if e[1] not in (20, 21)) for t, ents in pw.items()}
+        if any(t not in tot for t in tids) or not any(tot.values()): return None
+        m_ = st.mean(tot[t] for t in tids); return {t: tot[t] - m_ for t in tids}
+    up_dev = None
+    up_ = s.get('upcoming')
+    if up_ and up_.get('mp') == played + 1 and played + 1 <= reg:
+        pj = {int(t_): optimal([[e[0], e[1], e[2], e[3]] for e in ents if e[4] not in ('OUT', 'INJURY_RESERVE', 'SUSPENSION')], s['settings']['slots']) for t_, ents in up_['teams'].items()}
+        if all(t in pj for t in tids):
+            m_ = st.mean(pj[t] for t in tids); up_dev = {t: pj[t] - m_ for t in tids}
+    km = {t: 0.0 for t in tids}; kv = {t: R_P0 for t in tids}; rating_at = {}
+    for asof in range(0, played + 1):
+        if asof:
+            wg = [g for g in s['g'] if g['tier'] == 0 and g['mp'] == asof]
+            if wg:
+                wmean = st.mean([x for g in wg for x in (g['hs'], g['as_'])])
+                for g in wg:
+                    for t, sc in ((g['h'], g['hs']), (g['a'], g['as_'])):
+                        vp = kv[t] + R_Q ** 2; kg = vp / (vp + R_SIG ** 2); km[t] += kg * ((sc - wmean) - km[t]); kv[t] = (1 - kg) * vp
+        ev = [d_ for d_ in (espn_dev(asof - 1), espn_dev(asof), up_dev if asof == played else espn_dev(asof + 1)) if d_]
+        E_ = {t: st.mean(d_[t] for d_ in ev) for t in tids} if ev else None
+        rating_at[asof] = {t: dict(r=R_SCALE * ((R_ESPN * E_[t] + (1 - R_ESPN) * km[t]) if E_ else km[t]),
+                                   roster=R_SCALE * R_ESPN * E_[t] if E_ else 0.0,
+                                   results=R_SCALE * ((1 - R_ESPN) * km[t] if E_ else km[t]),
+                                   pm=R_SCALE * math.sqrt(kv[t])) for t in tids}
     for wk in range(1, played + 1):
         reg_g = [g for g in s['g'] if g['tier'] == 0 and g['mp'] <= wk]
         ap = collections.defaultdict(float); n = collections.Counter(); W = collections.Counter(); sc = collections.defaultdict(list)
@@ -955,7 +994,9 @@ if CUR:
         score = {t: 0.5 * za[t] + 0.3 * zf[t] + 0.2 * zw[t] for t in tids}
         order = sorted(tids, key=lambda t: -score[t])
         power.append(dict(wk=wk, rows=[dict(tid=t, key=s['fk'][t], mgr=s['sl'][t], team=s['tm'][t]['name'], rank=i + 1, score=round(score[t], 2),
-                                            allplay=round(ap[t] / n[t], 3), elo=round(E[s['fk'][t]]), prior=round(prior_ap[t], 3) if t in prior_ap else None, priorWt=round(a_, 2), form=round(st.mean(sc[t][-3:]), 1), w=W[t], l=wk - W[t]) for i, t in enumerate(order)]))
+                                            allplay=round(ap[t] / n[t], 3), elo=round(E[s['fk'][t]]), prior=round(prior_ap[t], 3) if t in prior_ap else None, priorWt=round(a_, 2), form=round(st.mean(sc[t][-3:]), 1), w=W[t], l=wk - W[t],
+                                            rating=round(rating_at[wk][t]['r'], 1), rRoster=round(rating_at[wk][t]['roster'], 1), rResults=round(rating_at[wk][t]['results'], 1), rPm=round(rating_at[wk][t]['pm'], 1),
+                                            rRank=1 + sum(1 for o in tids if rating_at[wk][o]['r'] > rating_at[wk][t]['r'])) for i, t in enumerate(order)]))
     for i, r in enumerate(power[-1]['rows'] if power else []):
         prev = next((p['rank'] for p in power[-2]['rows'] if p['tid'] == r['tid']), None) if len(power) > 1 else None
         r['move'] = (prev - r['rank']) if prev else 0
@@ -975,8 +1016,9 @@ if CUR:
                 elif g['as_'] > g['hs']: W0[g['a']] += 1
                 else: W0[g['h']] += .5; W0[g['a']] += .5
         allsc = [x for v in tsc.values() for x in v]
-        lmu = st.mean(allsc); lsd = st.pstdev(allsc) or 25
-        mu = {t: (sum(tsc[t]) + PRIOR_WEEKS * lmu * (1 + CARRY * prior_rel.get(t, 0))) / (len(tsc[t]) + PRIOR_WEEKS) for t in tids}
+        lmu = st.mean(allsc) if allsc else 110.0; lsd = st.pstdev(allsc) if len(allsc) > 1 else 26.0
+        RA = rating_at.get(asof) or rating_at[max(rating_at)]
+        mu = {t: lmu + RA[t]['r'] for t in tids}      # each team's expected score in a future week: league average + power rating
         future = [(mp, h, a) for mp, h, hs, a, as_, tier, win in s['games'] if tier == 'NONE' and asof < mp <= reg]
         H0 = collections.Counter(); G0 = collections.Counter()
         for g in s['g']:

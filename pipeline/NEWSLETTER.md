@@ -38,6 +38,7 @@ Use 4–6 sections, with 1–3 short paragraphs each. Aim for 450–650 words in
 - Every claim comes from the fact sheet. Don't invent players' stats, quotes, injuries, trades or history. If the fact sheet doesn't say something, don't say it.
 - Numbers: scores to one decimal, odds as whole percents, records as 8–0. Only use numbers that appear in the fact sheet. You may convert a probability to a percent, and you may give the change in a team's playoff odds from last week.
 - When `thisWeek.comebackOfTheWeek` is there, it's usually the lead or close to it: the winner's lowest win chance, and when (from the game-day replay). `thisWeek.biggestSwingPlays` lists the single plays that moved a matchup most; name the player and the play as given ("Bijan Robinson's 57-yd TD run") and the swing in win chance as a whole percent. When `replayLink` is there, you may tell readers the replays are on the site.
+- `powerRatings` is the league's best guess at who is actually good, in points per week vs an average team. The interesting stories are where it disagrees with the record (a 9–0 team rated third, a 2–7 team rated fourth). Quote ratings to one decimal with a sign (+5.7).
 - Look ahead to next week: the Game of the Week, what's at stake in the playoff race, and an all-time series when it's lopsided or tied.
 - No emoji in the issue. One emoji at most in the GroupMe teaser.
 - Avoid clichés: "statement win", "when the dust settled", "it's anyone's game", "buckle up". Avoid stacked adjectives, and don't use rhetorical questions to open sections.
