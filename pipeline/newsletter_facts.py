@@ -64,6 +64,9 @@ facts = dict(
     thisWeek=dict(results=games, recapLines=rec.get('lines', []), comebackOfTheWeek=comeback, biggestSwingPlays=swings,
                   replayLink=f"{CFG['site']['url']}#s-{y}" if ri else None),
     standings=[dict(manager=who(r['key']), team=r['team'], w=r['w'], l=r['l'], pointsFor=r['pf']) for r in sorted(S['rows'], key=lambda r: (-r['w'], -r['pf']))],
+    historicPace=[dict(manager=who(g['key']), record=f"{g['w']}–{g['l']}", allTimeRankIfItEndedNow=g['allRank'], outOfTeamSeasons=D['greatest']['n'],
+                       dominance=g['dom'], weeks=g['wks']) for g in (D.get('greatest') or {}).get('live', [])],
+    historicPaceNote='Dominance compares each team-season to its own league; a partial season swings more than a full one.',
     powerRatings=[dict(manager=who(r['key']), rating=r['rating'], fromRoster=r['rRoster'], fromResults=r['rResults'], record=f"{r['w']}–{r['l']}")
                   for r in sorted(P, key=lambda r: -r['rating'])] if P and P[0].get('rating') is not None else [],
     powerRatingsNote='Points per week better or worse than an average team: 70% ESPN-projected lineup, 30% season results. The gap between two ratings is the expected margin.',
