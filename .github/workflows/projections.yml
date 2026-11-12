@@ -1,0 +1,44 @@
+name: ESPN projections
+
+# Pulls ESPN's weekly player projections for past weeks into <league dir>/raw/proj/<year>.json, so the power rating
+# can be checked against them. Run by hand with the seasons to fetch.
+on:
+  workflow_dispatch:
+    inputs:
+      years:
+        description: 'Seasons to fetch, space-separated'
+        default: '2026'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: refresh
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Fetch projections
+        env:
+          ESPN_S2: ${{ secrets.ESPN_S2 }}
+          ESPN_SWID: ${{ secrets.ESPN_SWID }}
+        run: |
+          for cfg in leagues/*.json; do
+            for y in ${{ inputs.years }}; do
+              python3 pipeline/fetch_proj.py "$cfg" "$y" || echo "::warning::$cfg $y: no projections"
+            done
+          done
+      - name: Commit
+        run: |
+          git config user.name "almanac-bot"; git config user.email "almanac-bot@users.noreply.github.com"
+          git add -A '*/raw/proj/*.json' 'raw/proj/*.json' 2>/dev/null || git add -A
+          git diff --cached --quiet && echo "Nothing new." && exit 0
+          git commit -q -m "ESPN projections: ${{ inputs.years }}"
+          git pull -q --rebase -X theirs && git push -q
