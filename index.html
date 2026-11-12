@@ -624,6 +624,8 @@ footer { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block:
 .yearbar button[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
 
 
+.tset-bar { margin: 0 0 12px; }
+.tset-p > .sheet:first-child, .tset-p > .lede:first-child { margin-top: 0; }
 /* ---- greatest teams */
 .gt-hero { position: relative; overflow: hidden; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 6px 28px; padding: 26px 28px 22px; border-radius: var(--r); background: var(--ink); color: var(--paper); isolation: isolate; }
 .gt-hero::before { content: ""; position: absolute; inset: 0; z-index: -1; background: radial-gradient(70% 120% at 0% 0%, color-mix(in srgb, var(--tc) 55%, transparent), transparent 65%), radial-gradient(60% 90% at 100% 100%, color-mix(in srgb, var(--brass) 30%, transparent), transparent 70%); opacity: .75; }
@@ -1702,7 +1704,6 @@ footer { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block:
       const lastKey = `${cur.y}-${cur.played}`;
       html += matchupsHtml(false).replace('<div id="live-slot">', '<div id="live-slot" data-full="false">');
       html += paperTeaserHtml();
-      if (D.live && D.live.machine && D.live.machine.games.length) html += `<a class="sheet mx-promo" href="#machine"><span class="eyebrow">Tool</span><b>Playoff machine</b><span class="sub">Pick every game left in ${D.live.machine.y} and watch the seeds, odds and bracket change.</span><span class="mx-go">Open →</span></a>`;
       html += `<section><div class="sec-head"><div class="eyebrow">${cur.y} season · through Week ${cur.played}</div><h2>This season</h2><a href="#s-${cur.y}" class="eyebrow">Everything on ${cur.y} →</a></div>
         <div class="sheet tbl">${powerTable(true, 5)}<div class="more-row"><a href="#s-${cur.y}">All ${cur.rows.length} teams, odds, finishes and schedule luck →</a></div></div>
         ${endsHtml()}
@@ -1711,7 +1712,6 @@ footer { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block:
     const LR = legacyRanks(LW_DEFAULT, false), top5 = [...D.managers].sort((a, b) => LR[a.key] - LR[b.key]).slice(0, 5);
     html += `<section><div class="sec-head"><div class="eyebrow">Legacy points, all seasons</div><h2>All-time top five</h2><a href="#managers" class="eyebrow">Full ranking &amp; build your own →</a></div><div class="sheet"><ol class="goat-list">${top5.map((m, i) => { const p = PARTS[m.key]; return `<li class="goat-row${i === 0 ? ' top' : ''}"><span class="gr">${i + 1}</span>${badge(m.key)}<div class="gm"><div class="gn">${mlink(m.key)}</div><div class="gbits"><span class="chip">${p.t} ${p.t === 1 ? 'title' : 'titles'}</span><span class="chip">${p.po} playoffs</span>${p.ru ? `<span class="chip">${p.ru} 2nd</span>` : ''}</div></div><span class="gs num">${legacy(m.key, LW_DEFAULT, false)}</span></li>`; }).join('')}</ol></div></section>`;
     html += `<section><div class="sec-head"><div class="eyebrow">Quick hits</div><h2>Did you know</h2><a href="#records" class="eyebrow">Record book →</a></div><div class="cards">${facts.join('')}</div></section>`;
-    html += `<section><div class="sec-head"><div class="eyebrow">Every year in one line</div><h2>Seasons</h2><a href="#seasons" class="eyebrow">All seasons →</a></div>${seasonCards(6)}</section>`;
     return html;
   };
 
@@ -1729,11 +1729,10 @@ footer { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block:
   }
 
   views.managers = function () {
-    return `<section id="goat"><div class="sec-head"><div class="eyebrow">Who's the best ever?</div><h2>The all-time ranking</h2><button class="btn ghost" type="button" data-compose="goat">Add your take</button></div>
+    return `<section id="goat"><div class="sec-head"><div class="eyebrow">Who's the best ever?</div><h2>The all-time ranking</h2></div>
       <p class="lede">Legacy points reward deep playoff runs and punish last-place finishes, across every completed season. Don't like the formula? Move the sliders until you come out on top. Your settings stay on your device.</p>
-      <div class="sheet goat-ctl" id="goatctl"></div><div class="sheet goat-board" id="goatboard"></div></section>
+      ${tabset([['Ranking', '<div class="sheet goat-ctl" id="goatctl"></div><div class="sheet goat-board" id="goatboard"></div>'], ['Full table', `<div class="sheet tbl" id="alltime"></div><p class="note">Legacy points use the default formula: title 10, runner-up 5, semifinal loss 3, playoff trip 2, best regular-season record 2, last place −2. Regular-season records are ESPN's; playoff record counts winners-bracket games only. Tap a column to sort.</p>`]])}</section>
       <section><div class="sec-head"><div class="eyebrow">${D.meta.founded} – present</div><h2>Managers</h2></div><p class="lede">Every seat in the league, with its trophies and its Elo trend. Pick one for the full career page.</p>${managerCards()}</section>
-      <section><div class="sec-head"><h2>All-time standings</h2></div><div class="sheet tbl" id="alltime"></div><p class="note">Legacy points use the default formula: title 10, runner-up 5, semifinal loss 3, playoff trip 2, best regular-season record 2, last place −2. Regular-season records are ESPN's; playoff record counts winners-bracket games only. Tap a column to sort.</p></section>
       <section><div class="sec-head"><div class="eyebrow">Settle it</div><h2>Head to head</h2></div><a class="sheet mx-promo" href="#compare"><span class="eyebrow">Tool</span><b>Compare any two managers</b><span class="sub">Titles, playoff trips, Elo, luck, lineups and every game they've played each other, side by side.</span><span class="mx-go">Open →</span></a></section>
       ${rivalriesHtml()}`;
   };
@@ -1931,7 +1930,7 @@ footer { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block:
     const sk = D.sacko.find((x) => x.y === s.y);
     const trades = D.trades.filter((t) => t.y === s.y);
     const weekKeys = Object.keys(D.recaps).filter((k) => D.recaps[k].y === s.y).sort((a, b) => D.recaps[a].wk - D.recaps[b].wk);
-    const oddsSec = !s.done && D.odds.length ? `<section><div class="sec-head"><div class="eyebrow">10,000 simulations</div><h2>Odds</h2></div><div class="sheet tbl"><table><thead><tr><th>Team</th><th class="r">W–L</th><th class="r hide-sm">Proj. wins</th><th class="r hide-sm" title="Remaining schedule, 1 = hardest">Sched.</th>${LG_DIV() ? '<th class="hide-sm">Division</th>' : ''}${LG_BYE() ? '<th class="hide-sm">Bye</th>' : ''}<th>Playoffs</th><th class="hide-sm">Final</th><th>Title</th>${LG.losersLadder ? '<th class="r hide-sm">Sacko</th>' : ''}</tr></thead><tbody>${D.odds.map((o) => `<tr><td class="tm-cell"><a class="mgr" href="#m-${o.key}">${esc(o.team)}</a><span class="sub">${esc(o.mgr)}</span>${statusChip(o.status)}</td><td class="r num">${o.w}–${o.l}</td><td class="r num hide-sm">${f1(o.projW)}</td><td class="r num hide-sm">${o.sosRank ? '#' + o.sosRank : '—'}</td>${LG_DIV() ? `<td class="hide-sm">${pbar(o.div)}</td>` : ''}${LG_BYE() ? `<td class="hide-sm">${pbar(o.bye)}</td>` : ''}<td>${pbar(o.po)}</td><td class="hide-sm">${pbar(o.final)}</td><td>${pbar(o.title)}</td>${LG.losersLadder ? `<td class="r num hide-sm">${o.sacko != null ? pct(o.sacko) : '—'}</td>` : ''}</tr>`).join('')}</tbody></table></div><p class="note">Each remaining game is simulated from both teams' average score so far, pulled toward the league average because ${s.played} weeks is a small sample, with a light nudge from last season. Next week uses ESPN projections. ${LG_DIV() ? `Division winners take seeds 1–${LG_DIV()} and ${NUMW[LG_PO() - LG_DIV()] || LG_PO() - LG_DIV()} wildcards follow, by record` : (D.live && D.live.machine && D.live.machine.pw ? `The top ${LG_PO() - D.live.machine.pw} records make the playoffs and the last spot goes to the highest scorer among everyone else` : `The top ${LG_PO()} records make the playoffs`)}; ${LG.tiebreak === 'points' ? 'ties go to total points scored' : 'ties go to head-to-head when the tied teams have all played each other equally, otherwise points'}.${LG.losersLadder ? ' The Sacko is simulated through the losers\' ladder.' : ''} Sched. ranks each team's remaining opponents by average score (#1 is the hardest). Clinched and eliminated badges appear only when no remaining result can change them.</p></section>
+    const oddsSec = !s.done && D.odds.length ? `<section><div class="sec-head"><div class="eyebrow">10,000 simulations</div><h2>Odds</h2></div><div class="sheet tbl"><table><thead><tr><th>Team</th><th class="r">W–L</th><th class="r hide-sm">Proj. wins</th><th class="r hide-sm" title="Remaining schedule, 1 = hardest">Sched.</th>${LG_DIV() ? '<th class="hide-sm">Division</th>' : ''}${LG_BYE() ? '<th class="hide-sm">Bye</th>' : ''}<th>Playoffs</th><th class="hide-sm">Final</th><th>Title</th>${LG.losersLadder ? '<th class="r hide-sm">Sacko</th>' : ''}</tr></thead><tbody>${D.odds.map((o) => `<tr><td class="tm-cell"><a class="mgr" href="#m-${o.key}">${esc(o.team)}</a><span class="sub">${esc(o.mgr)}</span>${statusChip(o.status)}</td><td class="r num">${o.w}–${o.l}</td><td class="r num hide-sm">${f1(o.projW)}</td><td class="r num hide-sm">${o.sosRank ? '#' + o.sosRank : '—'}</td>${LG_DIV() ? `<td class="hide-sm">${pbar(o.div)}</td>` : ''}${LG_BYE() ? `<td class="hide-sm">${pbar(o.bye)}</td>` : ''}<td>${pbar(o.po)}</td><td class="hide-sm">${pbar(o.final)}</td><td>${pbar(o.title)}</td>${LG.losersLadder ? `<td class="r num hide-sm">${o.sacko != null ? pct(o.sacko) : '—'}</td>` : ''}</tr>`).join('')}</tbody></table></div><p class="note">Next week is simulated from ESPN's projections for each team's best lineup; every week after that from each team's power rating (70% ESPN-projected lineup, 30% this season's results). Nothing carries over from past seasons. ${LG_DIV() ? `Division winners take seeds 1–${LG_DIV()} and ${NUMW[LG_PO() - LG_DIV()] || LG_PO() - LG_DIV()} wildcards follow, by record` : (D.live && D.live.machine && D.live.machine.pw ? `The top ${LG_PO() - D.live.machine.pw} records make the playoffs and the last spot goes to the highest scorer among everyone else` : `The top ${LG_PO()} records make the playoffs`)}; ${LG.tiebreak === 'points' ? 'ties go to total points scored' : 'ties go to head-to-head when the tied teams have all played each other equally, otherwise points'}.${LG.losersLadder ? ' The Sacko is simulated through the losers\' ladder.' : ''} Sched. ranks each team's remaining opponents by average score (#1 is the hardest). Clinched and eliminated badges appear only when no remaining result can change them.</p></section>
       <section><div class="sec-head"><h2>Odds over time</h2></div>${oddsChartBlock('oc-season')}</section>${finishHtml()}` : '';
     const P = {};
     P.T = `      <section class="page-title"><div class="crumbs"><a href="#seasons">Seasons</a><span>/</span><span>${s.y}</span>${shareBtn('s/' + s.y + '/')}</div><h2>${s.y}</h2><p class="headline">${esc(s.headline)}</p><div class="facts muted"><span>${fmt}</span>${s.trades ? `<span>${s.trades} trade${s.trades === 1 ? '' : 's'}</span>` : ''}</div></section>`;
@@ -1958,8 +1957,16 @@ footer { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block:
     P.RT = !s.done && D.power.length ? ratingsHtml() : '';
     const iss = NEWS.filter((x) => x.y === s.y);
     P.NW = iss.length ? `<section><div class="sec-head"><div class="eyebrow">${esc(LG.paper)}</div><h2>The paper</h2></div><div class="pp-more" style="margin:0">${iss.map((x) => `<a href="#news-${x.y}-${x.wk}"><b>Week ${x.wk}</b> ${esc(x.title)}</a>`).join('')}</div></section>` : '';
-    const order = s.done ? ['T', 'ST', 'AW', 'DV', 'PO', 'RC', 'SL', 'CH', 'DR', 'WK', 'NW', 'TR', 'LO']
-      : ['T', 'PV', 'MX', 'NW', 'PW', 'RT', 'OD', 'AW', 'ST', 'DV', 'SL', 'RC', 'WK', ...(s.rounds.length ? ['PO'] : []), 'DR', 'TR', 'LO'];
+    // one section per question: where do things stand, who gets in, who's actually good
+    const stTitle = s.done ? 'Final standings' : 'Standings';
+    P.STX = `<section id="standings"><div class="sec-head"><h2>${stTitle}</h2></div>${tabset([['Table', secInner(P.ST)], ['Divisions', secInner(P.DV)], ['The race', secInner(P.RC)]])}</section>`;
+    if (!s.done && D.odds.length) {
+      const parts = oddsSec.split(/(?=<section)/);
+      P.ODX = `<section id="odds"><div class="sec-head"><div class="eyebrow">10,000 simulations of the rest of the season</div><h2>Playoff odds</h2>${P.MX ? '<a href="#machine" class="eyebrow">Playoff machine →</a>' : ''}</div>${tabset([['Odds', secInner(parts[0])], ['Over time', secInner(parts[1])], ['Every finish', secInner(parts.slice(2).join(''))]])}</section>`;
+    }
+    if (P.PW) P.PWX = `<section id="power"><div class="sec-head"><div class="eyebrow">Through week ${s.played}</div><h2>Power</h2></div>${tabset([['Rankings', secInner(P.PW)], ['Ratings', secInner(P.RT)]])}</section>`;
+    const order = s.done ? ['T', 'STX', 'PO', 'CH', 'AW', 'WK', 'NW', 'SL', 'DR', 'TR']
+      : ['T', 'PV', 'STX', 'ODX', 'PWX', 'AW', 'WK', 'NW', 'SL', ...(s.rounds.length ? ['PO'] : []), 'DR', 'TR'];
     return ybar + order.map((k) => P[k]).join('\n');
   };
   function loreHtml(list, y) {
@@ -2020,22 +2027,20 @@ footer { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block:
       R.divOdd.length ? card('Worst record to win a division', R.divOdd, wl(R.divOdd[0].w, R.divOdd[0].l), mlink(R.divOdd[0].key, R.divOdd[0].mgr), `${slink(R.divOdd[0].y)}`, (x) => `<li><span>${esc(x.mgr)} · ${x.y}</span><span class="num">${wl(x.w, x.l)}</span></li>`) : '',
       R.missed.length ? card('Best record to miss the playoffs', R.missed, wl(R.missed[0].w, R.missed[0].l), mlink(R.missed[0].key, R.missed[0].mgr), `${slink(R.missed[0].y)} · ${f1(R.missed[0].pf)} points.${LG.notes.missedTail}`, (x) => `<li><span>${esc(x.mgr)} · ${x.y}</span><span class="num">${wl(x.w, x.l)}</span></li>`) : '',
     ]]);
-    return greatestHtml() + `<section><div class="sec-head"><div class="eyebrow">For the plaque and the group chat</div><h2>Record book</h2></div><p class="lede">${LG.notes.recordsLede}</p></section>` +
+    return greatestHtml() + dynastiesHtml() + `<section><div class="sec-head"><div class="eyebrow">For the plaque and the group chat</div><h2>Record book</h2></div><p class="lede">${LG.notes.recordsLede}</p></section>` +
       groups.map(([t, cs]) => `<section><h3 class="group-title">${t}</h3><div class="cards">${cs.join('')}</div></section>`).join('') + upsetsSackoHtml() +
       `<p class="note">Career records (close-game record, early and late season, playoff exits as a favorite) are on the <a href="#stats">Stats</a> page.</p>`;
   };
 
   views.stats = function () {
     const ms = D.managers;
-    let h = `<section><div class="sec-head"><div class="eyebrow">Under the hood</div><h2>Power &amp; luck</h2></div>
+    let h = `<section><div class="sec-head"><div class="eyebrow">Careers, all seasons</div><h2>Career power &amp; luck</h2></div>
       <div class="note" style="display:grid;gap:6px"><p><b>Elo</b> is a running power rating: everyone started at 1,500, beating strong teams counts more, playoff games count 50% more, and ratings drift a quarter of the way back to 1,500 each offseason. <b>All-play</b> is your record if you played every team every week; <b>luck</b> is actual wins minus all-play wins. <b>Swing</b> is how much your weekly score moves, as a share of the league average${LG.notes.pprEra}. <b>Clutch</b> compares playoff scoring to your own regular-season average.</p></div>
       <div class="sheet tbl" id="powertbl"></div></section>`;
     h += `<section><div class="sec-head"><div class="eyebrow">When it matters</div><h2>Clutch &amp; timing</h2></div><p class="lede">Close games are decided by under 10 points (per week in the two-week playoff rounds). Early is Weeks 1–${LG.earlyWeeks} of the regular season, late is Week ${LG.earlyWeeks + 1} on. A favorite is one of the two best regular-season records among playoff teams; an early exit is losing your first playoff game. Favorites have won ${D.favTitles[0]} of ${D.favTitles[1]} titles.</p><div class="sheet tbl" id="clutchtbl"></div></section>`;
     h += `<section><div class="sec-head"><div class="eyebrow">What if</div><h2>Schedule swap</h2></div><p class="lede">Every season replayed 12 ways per team: your real scores against each other manager's schedule. The averages show the record your scoring deserved, and how often it makes the playoffs with everyone else's record held fixed.</p><div class="sheet tbl" id="swaptbl"></div></section>`;
     h += `<section><div class="sec-head"><div class="eyebrow">${rangeText(D.meta.benchYears)}</div><h2>Lineups &amp; front office</h2></div><div class="sheet tbl" id="fotbl"></div><p class="note">Efficiency is points scored divided by the best possible lineup from the same roster. Self-inflicted losses are games the best lineup would have won. Draft rating averages each year's draft score (0 is average).</p></section>`;
     const fins = (e) => e.finishes.map((n) => n === 1 ? '<b class="stars">1st</b>' : ord(n)).join(', ');
-    const eraT = (cap, list) => `<div class="sheet tbl"><table><caption>${cap}</caption><thead><tr><th>Manager</th><th>Years</th><th class="r">All-play</th><th class="r">W–L</th><th>Finishes</th></tr></thead><tbody>${list.map((e) => `<tr><td>${mlink(e.key, e.mgr)}</td><td class="num">${e.start}–${yy(e.end)}</td><td class="r num">${p3(e.allpct)}</td><td class="r num">${wl(e.w, e.l)}</td><td>${fins(e)}</td></tr>`).join('')}</tbody></table></div>`;
-    h += `<section><div class="sec-head"><div class="eyebrow">Three-year windows</div><h2>Dynasties</h2></div><p class="lede">Ranked by all-play winning percentage over three straight seasons, so a run counts only if the scoring backed it up. Each manager's best run is shown once.</p><div class="grid2">${eraT('Best three-year runs', D.records.eras)}${eraT('Darkest three-year runs', D.records.dark)}</div></section>`;
     const tc = D.tradeCounts; const tot = Object.values(tc).reduce((a, b) => a + b, 0);
     h += `<section><div class="sec-head"><div class="eyebrow">${tot} trades in ${D.seasons.length} seasons</div><h2>Trades</h2></div><p class="lede">This is not a trading league. ESPN keeps the details only for recent seasons, so these are the trades that can be rebuilt from weekly rosters, scored by what each side's new players produced as starters afterward.</p>${D.trades.length ? `<div class="sheet tbl"><table><tbody>${D.trades.map(tradeRow).join('')}</tbody></table></div>` : ''}<p class="note">Trades per season: ${Object.entries(tc).filter(([, n]) => n).map(([y, n]) => `${y} (${n})`).join(', ')}.</p></section>`;
     return h;
@@ -2278,6 +2283,21 @@ footer { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block:
 
 
 
+
+  // ------------------------------------------------------------- tab sets: several views of one thing in one section
+  const secInner = (h) => String(h || '').trim().replace(/^<section[^>]*>\s*<div class="sec-head">[\s\S]*?<\/h2>[\s\S]*?<\/div>/, '').replace(/<\/section>\s*$/, '');
+  function tabset(items) {
+    const it = items.filter((x) => x && x[1] && String(x[1]).trim()); if (!it.length) return '';
+    if (it.length === 1) return it[0][1];
+    return `<div class="tset"><div class="wkbar tset-bar" role="group">${it.map(([l], i) => `<button type="button" aria-pressed="${i === 0}" data-ti="${i}">${l}</button>`).join('')}</div>${it.map(([, h], i) => `<div class="tset-p" data-tp="${i}"${i ? ' hidden' : ''}>${h}</div>`).join('')}</div>`;
+  }
+  document.addEventListener('click', (e) => {
+    const b = e.target.closest('.tset-bar [data-ti]'); if (!b) return;
+    const t = b.closest('.tset'); const i = b.dataset.ti;
+    t.querySelectorAll(':scope > .tset-bar [data-ti]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+    t.querySelectorAll(':scope > .tset-p').forEach((x) => { x.hidden = x.dataset.tp !== i; });
+  });
+
   // ------------------------------------------------------------- greatest teams of all time
   function zStrip(z, k, opts) {
     const o = opts || {}, n = z.length, W = o.w || 280, H = o.h || 36, gap = n > 10 ? 2 : 3, bw = (W - gap * (n - 1)) / n, cap = 2.4, mid = H / 2;
@@ -2295,6 +2315,13 @@ footer { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block:
     if (e.kind === 'po') return long ? 'Made the playoffs.' : 'Playoffs';
     const r = { final: 'the final', semi: 'the semifinals', qf: 'the first round' }[e.kind];
     return long ? `Lost ${r} to ${m(e.opp)}, ${f2(e.os)}–${f2(e.ms)}.` : { final: 'Lost final', semi: 'Lost semis', qf: 'Lost 1st round' }[e.kind];
+  }
+  function dynastiesHtml() {
+    const fins = (e) => e.finishes.map((n) => n === 1 ? '<b class="stars">1st</b>' : ord(n)).join(', ');
+    let h = '';
+    const eraT = (cap, list) => `<div class="sheet tbl"><table><caption>${cap}</caption><thead><tr><th>Manager</th><th>Years</th><th class="r">All-play</th><th class="r">W–L</th><th>Finishes</th></tr></thead><tbody>${list.map((e) => `<tr><td>${mlink(e.key, e.mgr)}</td><td class="num">${e.start}–${yy(e.end)}</td><td class="r num">${p3(e.allpct)}</td><td class="r num">${wl(e.w, e.l)}</td><td>${fins(e)}</td></tr>`).join('')}</tbody></table></div>`;
+    h += `<section><div class="sec-head"><div class="eyebrow">Three-year windows</div><h2>Dynasties</h2></div><p class="lede">Ranked by all-play winning percentage over three straight seasons, so a run counts only if the scoring backed it up. Each manager's best run is shown once.</p><div class="grid2">${eraT('Best three-year runs', D.records.eras)}${eraT('Darkest three-year runs', D.records.dark)}</div></section>`;
+    return h;
   }
   function greatestHtml() {
     const G = D.greatest; if (!G || !G.top || !G.top.length) return '';
