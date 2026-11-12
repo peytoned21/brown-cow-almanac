@@ -1194,6 +1194,62 @@ legend_by = collections.defaultdict(list)
 for (k, pid), (pts, n, yrs) in legend.items():
     nm = names.get(pid, ['?', '', 0, 0])
     legend_by[k].append(dict(player=nm[0], pos=nm[1], pts=round(pts, 1), starts=n, years=sorted(yrs)))
+# ---------------------------------------------------------------- greatest teams of all time
+# Every team-season measured against its own league, so eras, league sizes and scoring rules compare fairly.
+# Dominance: how far above that week's league average a team scored, in units of that week's spread, averaged over
+# the regular season. All-play: the share of the league it outscored each week. Checked on every playoff team: neither
+# week-to-week consistency nor late-season form told champions apart once dominance was known, so both are left out.
+SO = {x['y']: x for x in season_out}
+great = []; ref_sd = None
+for s_ in seasons:
+    y = s_['y']; reg = s_['settings']['reg']; live_ = bool(CUR) and s_ is CUR
+    reg_g = [g for g in s_['g'] if g['tier'] == 0 and g['mp'] <= reg and (g['hs'] or g['as_'])]
+    if live_: reg_g = [g for g in reg_g if g['mp'] <= s_['played']]
+    weeks = sorted({g['mp'] for g in reg_g})
+    if not weeks or (live_ and len(weeks) < 5): continue
+    zs = collections.defaultdict(list); apw = collections.defaultdict(float); sds = []
+    for w in weeks:
+        ss = {}
+        for g in reg_g:
+            if g['mp'] == w: ss[g['h']] = g['hs']; ss[g['a']] = g['as_']
+        m_ = st.mean(ss.values()); sd_ = st.pstdev(ss.values()) or 1; sds.append(sd_)
+        for t, v in ss.items():
+            zs[t].append(round((v - m_) / sd_, 2))
+            apw[t] += (sum(1 for o, ov in ss.items() if o != t and ov < v) + 0.5 * sum(1 for o, ov in ss.items() if o != t and ov == v)) / (len(ss) - 1)
+    if s_['done']: ref_sd = st.mean(sds)
+    so = SO[y]; rowby = {r['tid']: r for r in so['rows']}
+    for t, z in zs.items():
+        r = rowby[t]; end = None
+        if s_['done']:
+            if r['rank'] == 1: end = dict(kind='champ')
+            elif not r['seed'] or r['seed'] > s_['settings']['po']: end = dict(kind='missed')
+            else:
+                n_ = len(so['rounds'])
+                for i, rg in enumerate(so['rounds']):
+                    for g in rg:
+                        if t in (g['h'], g['a']) and g['win'] != t:
+                            o = g['a'] if g['h'] == t else g['h']
+                            end = dict(kind='final' if i == n_ - 1 else 'semi' if i == n_ - 2 else 'qf', opp=s_['fk'][o],
+                                       ms=round(g['hs'] if g['h'] == t else g['as_'], 2), os=round(g['as_'] if g['h'] == t else g['hs'], 2))
+                end = end or dict(kind='po')
+        great.append(dict(y=y, key=s_['fk'][t], mgr=s_['sl'][t], team=r['team'], w=r['w'], l=r['l'], t=r['t'], rank=r['rank'] if s_['done'] else None,
+                          dom=round(st.mean(z), 3), ap=round(apw[t] / len(z), 3), z=z, live=live_, end=end, wks=len(z)))
+done_great = sorted([g for g in great if not g['live']], key=lambda g: -g['dom'])
+for i, g in enumerate(done_great): g['allRank'] = i + 1
+for g in great:
+    if g['live']: g['allRank'] = 1 + sum(1 for x in done_great if x['dom'] > g['dom'])
+pick = lambda g: {k: v for k, v in g.items()}
+greatest = dict(
+    n=len(done_great), refSd=round(ref_sd or 25, 1),
+    top=[pick(g) for g in done_great[:20]],
+    live=sorted([pick(g) for g in great if g['live'] and g['allRank'] <= 20], key=lambda g: g['allRank']),
+    champs=[pick(g) for g in done_great if g['end'] and g['end']['kind'] == 'champ'],
+    heartbreak=[pick(g) for g in done_great if g['end'] and g['end']['kind'] != 'champ'][:10],
+)
+best_dom = {}
+for g in done_great:
+    if g['key'] not in best_dom: best_dom[g['key']] = dict(y=g['y'], dom=g['dom'], rank=g['allRank'], team=g['team'])
+
 managers = []
 for k in keys:
     m = M[k]
@@ -1233,7 +1289,7 @@ for k in keys:
                    best=max(dd, key=lambda d: d['z'])['y'] if dd else None, worst=min(dd, key=lambda d: d['z'])['y'] if dd else None),
         tx=dict(acq=tx_by[k][0], drops=tx_by[k][1], trades=tx_by[k][2] // 1),
         legends=leg, pickups=sorted([p for p in pickups if p['key'] == k], key=lambda p: -p['pts'])[:5], rival=rival_k, victim=victim[0] if victim else None, nemesis=nemesis[0] if nemesis else None,
-        bestSeason=best_season, worstSeason=worst_season,
+        bestSeason=best_season, worstSeason=worst_season, bestDom=best_dom.get(k),
         close=close[k], early=split[k][0], late=split[k][1],
         choke=dict(fav=choke[k]['fav'], early=choke[k]['early'], titles=choke[k]['titles'], years=choke[k]['years'], exits=choke[k]['exits']),
     ))
@@ -1281,7 +1337,7 @@ out = dict(
               cur=dict(y=CUR['y'], week=CUR['played']) if CUR else None, nSeasons=len(seasons), nDone=len(done),
               lineupYears=[s['y'] for s in seasons if s['weeks']], benchYears=[s['y'] for s in seasons if s['tx']],
               topSeedTitles=top_seed_titles),
-    managers=managers, h2h=H, seasons=season_out, records=records, rivalries=riv[:12], lopsided=lopsided,
+    managers=managers, h2h=H, seasons=season_out, records=records, greatest=greatest, rivalries=riv[:12], lopsided=lopsided,
     upsets=sorted(upsets, key=lambda u: -(u['wseed'] - u['lseed'])), sacko=sacko, trades=trades, tradeCounts=trade_counts,
     timeline=timeline, divNames=div_names, **({'auction': auction} if auction else {}),
     curLuck=sorted([x for x in season_luck if not x['done']], key=lambda x: -x['luck']),
