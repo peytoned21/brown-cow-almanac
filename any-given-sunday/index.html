@@ -831,7 +831,13 @@ footer { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block:
 @keyframes rpfall { to { transform: translate(var(--dx), 640px) rotate(var(--rot)); opacity: 0; } }
 @media (max-width: 600px) {
   .rp-modal { padding: 0; place-items: end stretch; }
-  .rp { width: 100%; max-height: 100dvh; min-height: 100dvh; border-radius: 0; padding: 14px 14px calc(14px + env(safe-area-inset-bottom, 0px)); gap: 12px; align-content: start; }
+  .rp { width: 100%; max-height: 100dvh; min-height: 100dvh; border-radius: 0; padding: 0 14px calc(14px + env(safe-area-inset-bottom, 0px)); gap: 12px; align-content: start; }
+  .rp-top { position: sticky; top: 0; z-index: 6; margin: 0 -14px; padding: calc(10px + env(safe-area-inset-top, 0px)) 14px 10px; background: color-mix(in srgb, var(--sheet) 92%, transparent); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+  .rp-top > div:first-child { min-width: 0; }
+  .rp-top .eyebrow { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .rp-top h3 { font-size: 24px; }
+  .rp-x { width: 44px; height: 44px; font-size: 24px; }
+  .rp-top .share-btn { min-height: 44px; padding: 0 14px; flex: 0 0 auto; }
   .rp-side .mono-badge { width: 40px; height: 40px; font-size: 16px; }
   .rp-who b { font-size: 13px; }
   .rp-vs { width: 28px; height: 28px; font-size: 12px; }
@@ -2422,7 +2428,7 @@ footer { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block:
 
   // One matchup, seen from the left team: ME's team goes on the left when it's in the game.
   function rpBuild(src) {
-    const flip = meValid() && ME === src.ak;
+    const flip = !!(meValid() && ME === src.ak);
     const Lk = flip ? src.ak : src.hk, Rk = flip ? src.hk : src.ak;
     const raw = (src.hist || []).filter((x) => x && x.length >= 2);
     const pre = raw.filter((x) => x[2] === 'p'), game = raw.filter((x) => x[2] !== 'p');
