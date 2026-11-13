@@ -294,7 +294,7 @@ def add_moments(L, old, plays, now):
     for g in L['games']:
         key = f"{g['h']}-{g['a']}"; og = prev.get(key); ms = list((og or {}).get('moments') or [])
         if og:
-            dwp = g['hwin'] - og['hwin']
+            dwp = g['hwin'] - og['hwin'] if og.get('status') != 'pre' else 0.0   # first live snapshot: the jump from the pre-game estimate isn't one play's doing
             for side, tid in (('h', g['h']), ('a', g['a'])):
                 for r in L['lineups'].get(str(tid), []):
                     o = old_rows.get(str(tid), {}).get(r[0])
