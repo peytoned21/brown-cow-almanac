@@ -1,8 +1,8 @@
 name: Live scores
 
 # Before kickoff (Wed–Sun mornings): one snapshot a few times a day as projections change.
-# During NFL game windows: one job per hour that takes a live snapshot for every league every 2 minutes while games
-# are on (and stops early when they aren't). Snapshots go to the `live` branch, overwritten each time, so game days
+# During NFL game windows: a job takes a live snapshot for every league every 2 minutes while games are on, and
+# before it ends starts the next one if games are still on or coming up (GitHub's own schedule can run hours late). Snapshots go to the `live` branch, overwritten each time, so game days
 # add no history to main and don't rebuild the site. The site reads them from raw.githubusercontent.com and keeps
 # scores moving in between from ESPN's public box scores.
 on:
@@ -19,11 +19,12 @@ on:
   workflow_dispatch:
     inputs:
       minutes:
-        description: 'How long to keep taking snapshots'
-        default: '56'
+        description: 'How long to keep taking snapshots (minutes)'
+        default: '330'
 
 permissions:
   contents: write
+  actions: write
 
 concurrency:
   group: live
@@ -32,7 +33,7 @@ concurrency:
 jobs:
   live:
     runs-on: ubuntu-latest
-    timeout-minutes: 65
+    timeout-minutes: 350
     steps:
       - uses: actions/checkout@v4
 
@@ -51,6 +52,19 @@ jobs:
           rm -rf live-out/.git
           for cfg in leagues/*.json; do
             slug=$(python3 -c "import json; print(json.load(open('$cfg'))['site']['slug'])")
-            python3 pipeline/live.py "$cfg" "live-out/$slug.json" --loop "${{ inputs.minutes || '56' }}" --every 120 --after pipeline/push_live.sh &
+            python3 pipeline/live.py "$cfg" "live-out/$slug.json" --loop "${{ inputs.minutes || '330' }}" --every 120 --after pipeline/push_live.sh &
           done
           wait
+
+      # GitHub's schedule can run hours late or skip runs on busy Sundays, so while games are on (or about to be) the
+      # job starts its own next run. A run started this way (workflow_dispatch) is allowed to trigger another.
+      - name: Keep going while games are on
+        if: always()
+        timeout-minutes: 250
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          wait=$(python3 pipeline/live_next.py 7)
+          if [ "$wait" = "no" ]; then echo "No games on or coming up; stopping."; exit 0; fi
+          if [ "$wait" -gt 0 ]; then echo "Next kickoff is a while off; waiting $((wait / 60)) minutes."; sleep "$wait"; fi
+          gh workflow run live.yml -R "$GITHUB_REPOSITORY" -f minutes=330 && echo "Started the next run."

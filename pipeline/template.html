@@ -2413,7 +2413,7 @@ footer { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block:
     const base = pre.length ? pre[pre.length - 1][1] : (src.hwin0 != null ? src.hwin0 : game[0][1]);
     push(game[0][0] - 1, base, 0, 0);
     game.forEach((x) => { if (x.length > 4) { hs = x[3]; as_ = x[4]; } push(Math.max(x[0], pts[pts.length - 1].t), x[1], hs, as_); });
-    if (src.now) { const lt = pts[pts.length - 1].t; push(Math.max(lt + 1, Math.min(src.now.t, lt + 10)), src.now.hwin, src.now.hs, src.now.as_); }
+    if (src.now) { const lt = pts[pts.length - 1].t; push(Math.max(lt + 1, Math.min(src.now.t, lt + 10)), src.now.hwin, src.now.hs, src.now.as_); pts[pts.length - 1].now = true; }
     if (src.final) { const l = pts[pts.length - 1]; const h = src.hs, a = src.as_; push(l.t + 1, h > a ? 1 : a > h ? 0 : 0.5, h, a); }
     const mo = (src.moments || []).map((m) => {
       const who = (m[1] === 'h') !== flip ? 'L' : 'R', wl = flip ? 1 - m[7] : m[7], dwl = flip ? -m[8] : m[8];
@@ -2426,33 +2426,29 @@ footer { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block:
   // Time on the x axis only counts while games are on: the dead hours between Thursday night and Sunday morning
   // shrink to a sliver, so the chart reads as Thursday | Sunday morning | 1pm | 4pm | night | Monday.
   function rpAxis(R, gap) {
-    const ts = R.pts.map((p) => p.t); let segs = []; let s = ts[0], e = ts[0];
-    ts.slice(1).forEach((t) => { if (t - e > 50) { segs.push([s, e]); s = t; } e = t; }); segs.push([s, e]);
-    segs = segs.filter(([a, b]) => b - a >= 12); if (!segs.length) segs = [[ts[0], ts[ts.length - 1]]];
-    segs[0][0] = Math.min(segs[0][0], ts[0]); segs[segs.length - 1][1] = Math.max(segs[segs.length - 1][1], ts[ts.length - 1]);
-    const GAP = segs.length > 1 ? Math.min(0.035, 0.25 / segs.length) : 0, dur = (sg) => Math.max(1, sg[1] - sg[0]);
-    const act = segs.reduce((x, sg) => x + dur(sg), 0), room = 1 - GAP * (segs.length - 1);
-    const st = []; let x = 0; segs.forEach((sg) => { st.push(x); x += (dur(sg) / act) * room + GAP; });
-    const wd = segs.map((sg) => (dur(sg) / act) * room);
-    const X = (t) => {
-      for (let i = 0; i < segs.length; i++) {
-        const [a, b] = segs[i];
-        if (t <= b || i === segs.length - 1) {
-          if (t >= a) return Math.min(1, st[i] + Math.min(1, (t - a) / dur(segs[i])) * wd[i]);
-          if (i === 0) return 0;
-          const pb = segs[i - 1][1]; return st[i] - GAP + ((t - pb) / Math.max(1, a - pb)) * GAP;
-        }
-      }
-      return 1;
-    };
+    // Stretches of time when the matchup was actually moving (scores or win chance changing, snapshots a few minutes
+    // apart) get real width; everything in between (overnight, Friday, Saturday, halftime-free dead air) shrinks to a sliver.
+    const P = R.pts, n = P.length, t0 = P[0].t, tN = P[n - 1].t;
+    const live = [];
+    for (let i = 1; i < n; i++) { const a = P[i - 1], b = P[i]; if (!b.now && b.t - a.t <= 20 && (b.w !== a.w || b.sl !== a.sl || b.sr !== a.sr || b.t - a.t <= 6)) live.push([a.t, b.t]); }
+    const segs = [];
+    live.forEach(([a, b]) => { const l = segs[segs.length - 1]; if (l && a - l[1] <= 45) l[1] = Math.max(l[1], b); else segs.push([a, b]); });
+    const keep = segs.filter(([a, b]) => b - a >= 20);
+    const pieces = []; let cur = t0;
+    keep.forEach(([a, b]) => { if (a > cur) pieces.push({ a: cur, b: a, gap: true }); pieces.push({ a: Math.max(a, cur), b, gap: false }); cur = b; });
+    if (tN > cur || !pieces.length) pieces.push({ a: cur, b: Math.max(tN, cur + 1), gap: !!keep.length });
+    const gaps = pieces.filter((p) => p.gap).length, act = pieces.filter((p) => !p.gap).reduce((x, p) => x + Math.max(1, p.b - p.a), 0);
+    const GAP = gaps ? Math.min(0.03, 0.2 / gaps) : 0, room = 1 - GAP * gaps;
+    let x = 0; pieces.forEach((p) => { p.x = x; p.w = p.gap ? GAP : (Math.max(1, p.b - p.a) / Math.max(1, act)) * room; x += p.w; });
+    if (!keep.length) { pieces.forEach((p) => { p.w = Math.max(1, p.b - p.a) / Math.max(1, tN - t0); }); let xx = 0; pieces.forEach((p) => { p.x = xx; xx += p.w; }); }
+    const X = (t) => { for (const p of pieces) if (t <= p.b || p === pieces[pieces.length - 1]) return Math.max(0, Math.min(1, p.x + Math.max(0, Math.min(1, (t - p.a) / Math.max(1e-9, p.b - p.a))) * p.w)); return 1; };
     const ticks = [], mg = gap || 0.085; const add = (t, lab) => { const xx = X(t); if (ticks.every((k) => Math.abs(k.x - xx) > mg) && xx < 1 - mg * 0.9) ticks.push({ x: xx, lab }); };
-    segs.forEach(([a, b]) => {
-      if (b - a < 40 && segs.length > 1) return;
+    pieces.filter((p) => !p.gap).forEach(({ a, b }) => {
       add(a, clockOf(a));
       if (b - a > 300) for (let t = a + 60; t < b - 40; t += 1) { const d = new Date(t * 60000); if (d.getMinutes() === 0 && [13, 16, 20].includes(d.getHours())) add(t, clockOf(t)); }
     });
     ticks.push({ x: 1, lab: R.final ? 'Final' : 'Now', end: true });
-    return { X, segs, st, wd, GAP, ticks };
+    return { X, pieces, dividers: pieces.filter((p) => p.gap && p.x > 0.001 && p.x + p.w < 0.999).map((p) => p.x + p.w / 2), ticks };
   }
 
   let RP = null;
@@ -2521,7 +2517,7 @@ footer { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block:
     const pk = rpPick(RP.R, A); RP.pins = pk.pins; RP.feed = pk.feed;
     const line = (f) => RP.P.map((p, i) => `${i ? 'L' : 'M'}${PX(p.x).toFixed(1)},${PY(f(p.w)).toFixed(1)}`).join('');
     const grid = [0, .25, .5, .75, 1].map((v) => `<line x1="${pl}" x2="${cw - pr}" y1="${PY(v)}" y2="${PY(v)}"${v === 0.5 ? ' class="mid"' : ''}/><text x="${pl - 8}" y="${PY(v) + 4}" text-anchor="end">${v * 100}%</text>`).join('');
-    const segl = A.segs.slice(1).map((sg, i) => { const x = PX(A.st[i + 1] - A.GAP / 2); return `<line class="seg" x1="${x}" x2="${x}" y1="${pt}" y2="${ch - pb}"/>`; }).join('');
+    const segl = A.dividers.map((d) => { const x = PX(d); return `<line class="seg" x1="${x}" x2="${x}" y1="${pt}" y2="${ch - pb}"/>`; }).join('');
     const xt = A.ticks.map((k) => `<text class="x" x="${PX(k.x)}" y="${ch - 8}"${k.end ? ' text-anchor="end" style="text-anchor:end"' : ''}>${esc(k.lab)}</text>`).join('');
     const id = 'rpc' + Math.random().toString(36).slice(2, 7);
     el.innerHTML = `<svg width="${cw}" height="${ch}" viewBox="0 0 ${cw} ${ch}" role="img" aria-label="Win chance for each team through the week">
@@ -2571,8 +2567,9 @@ footer { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block:
     }
   }
   function rpTime(x) {
-    const A = RP.A; x = Math.max(0, Math.min(1, x)); for (let i = 0; i < A.segs.length; i++) { const [a, b] = A.segs[i]; if (x <= A.st[i] + A.wd[i] || i === A.segs.length - 1) { if (x >= A.st[i] || i === 0) return a + Math.max(0, Math.min(1, (x - A.st[i]) / Math.max(1e-9, A.wd[i]))) * (b - a); const pb = A.segs[i - 1][1]; return pb + ((x - (A.st[i] - A.GAP)) / A.GAP) * (a - pb); } }
-    return A.segs[A.segs.length - 1][1];
+    const ps = RP.A.pieces; x = Math.max(0, Math.min(1, x));
+    for (const p of ps) if (x <= p.x + p.w || p === ps[ps.length - 1]) return p.a + Math.max(0, Math.min(1, (x - p.x) / Math.max(1e-9, p.w))) * (p.b - p.a);
+    return ps[ps.length - 1].b;
   }
   function rpCall(m) {
     const c = $('rp-call'); if (!c || !m) return;
