@@ -5,7 +5,10 @@ name: Weekly refresh
 # newsletter (see post.yml).
 on:
   schedule:
-    - cron: '49 13 * 9-12,1 2'   # Tuesdays, Sept–Jan (8:49 ET in winter, 9:49 ET in summer time)
+    # Tuesdays, Sept–Jan: overnight, when GitHub's schedule is least backed up (a weekday-morning run came 7 hours
+    # late). Each attempt only commits if ESPN has something new, so the later ones are a safety net.
+    - cron: '23 7,9,11 * 9-12,1 2'   # about 2:23, 4:23 and 6:23 ET
+    - cron: '49 13 * 9-12,1 2'       # about 8:49 ET, last try before the newsletter
   workflow_dispatch:
     inputs:
       force:

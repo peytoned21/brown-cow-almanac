@@ -379,7 +379,7 @@ def main():
                 if after: subprocess.run(after, shell=True, check=False)
         on_now = any(ev['state'] == 'in' for ev in events.values())
         soon = any(ev['state'] == 'pre' and ev.get('date') and
-                   0 <= (datetime.datetime.fromisoformat(ev['date'].replace('Z', '+00:00')).timestamp() - time.time()) < 5400
+                   -1800 <= (datetime.datetime.fromisoformat(ev['date'].replace('Z', '+00:00')).timestamp() - time.time()) < 5400
                    for ev in events.values())
         if time.time() + every > loop_until or not (on_now or soon):
             break
