@@ -5,7 +5,7 @@ name: Post to GroupMe
 # A league posts only if its GroupMe bot secret is set, and at most once per week.
 on:
   schedule:
-    - cron: '31 16 * 9-12,1 2'   # Tuesdays ~11:31 ET: fallback recap
+    - cron: '31 14 * 9-12,1 2'   # Tuesdays ~9:31 ET: plain stats recap, only if the newsletter didn't post
   workflow_dispatch:
     inputs:
       league:
