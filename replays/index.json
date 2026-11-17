@@ -1,6 +1,44 @@
 [
  {
   "y": 2026,
+  "wk": 10,
+  "file": "2026-w10.json",
+  "games": [
+   [
+    "edwards",
+    "taliaferro"
+   ],
+   [
+    "copp",
+    "yang"
+   ],
+   [
+    "dejarnette",
+    "jones"
+   ],
+   [
+    "barry",
+    "brown"
+   ],
+   [
+    "olsen",
+    "foxhall"
+   ],
+   [
+    "mccarthy",
+    "maxey"
+   ]
+  ],
+  "comeback": {
+   "winner": "jones",
+   "loser": "dejarnette",
+   "low": 0.188,
+   "at": 29913202,
+   "when": "Sun 8:22pm"
+  }
+ },
+ {
+  "y": 2026,
   "wk": 9,
   "file": "2026-w09.json",
   "games": [
