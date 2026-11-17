@@ -42,6 +42,8 @@ def message(D):
         fav, p = (g['hk'], g['hwin']) if g['hwin'] >= 0.5 else (g['ak'], 1 - g['hwin'])
         parts.append(f"Game of the Week {pv['wk']}: {MK[g['hk']]['short']} vs {MK[g['ak']]['short']} ({MK[fav]['short']} {round(p * 100)}% to win; "
                      f"{round(g['swing'] * 100)} points of playoff odds on the line)")
+    if D.get('watch'):
+        parts.append('Record watch: ' + ' '.join(w['text'].replace('Record book: ', '') for w in D['watch'][:2]))
     lab = {'div': 'clinched the division', 'po': 'clinched a playoff spot', 'out': 'eliminated'}
     cl = [f"{MK[o['key']]['short']} {lab[o['status']]}" for o in D.get('odds', []) if o.get('status') in lab]
     if cl:

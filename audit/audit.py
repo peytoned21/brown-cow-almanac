@@ -503,6 +503,49 @@ if PWC:
     M_ = (D.get('live') or {}).get('machine')
     if M_ and M_['y'] >= PWC['from']: check('machine carries the points wildcard', M_.get('pw') == PWC['spots'], M_.get('pw'))
 
+# ---------- 25. wrapped cards: each manager's season recomputed from the raw regular-season games
+WR = D.get('wrapped') or {}
+for y, g in sorted(games.items()):
+    if not g: continue
+    r = raw[y]; fk_ = {t['id']: fr(t['owners']) for t in r['teams']}
+    sc = collections.defaultdict(list)   # tid -> [(pts, wk, opp pts)]
+    for mp, h, hs, a, as_, tier, win in g: sc[h].append((hs, mp, as_)); sc[a].append((as_, mp, hs))
+    byw = collections.defaultdict(list)
+    for tid, lst in sc.items():
+        for pts, mp, o in lst: byw[mp].append((pts, tid))
+    tops = collections.Counter(tid for v in byw.values() if len(v) > 1 for pts, tid in v if pts == max(v)[0])
+    pf_rank = [t['id'] for t in sorted(r['teams'], key=lambda t: -t['pf'])]
+    check(f'{y} wrapped covers every team', set((WR.get(str(y)) or {}).keys()) == {fk_[t] for t in sc}, sorted((WR.get(str(y)) or {}).keys()))
+    for tid, lst in sc.items():
+        c = (WR.get(str(y)) or {}).get(fk_[tid])
+        if not c: continue
+        nm_ = f'{y} wrapped {fk_[tid]}'
+        check(f'{nm_} best week', abs(max(lst)[0] - c['best']['pts']) < 0.01, (max(lst), c['best']))
+        check(f'{nm_} worst week', abs(min(lst)[0] - c['worst']['pts']) < 0.01, (min(lst), c['worst']))
+        check(f'{nm_} weeks', len(lst) == c['weeks'], (len(lst), c['weeks']))
+        check(f'{nm_} top-score weeks', tops[tid] == c['tops'], (tops[tid], c['tops']))
+        t_ = next(t for t in r['teams'] if t['id'] == tid)
+        check(f'{nm_} record and points', (c['w'], c['l']) == (t_['w'], t_['l']) and abs(c['pf'] - t_['pf']) < 0.06, (c['w'], c['l'], c['pf']))
+        check(f'{nm_} scoring rank', c['pfRank'] == pf_rank.index(tid) + 1 or sum(1 for t in r['teams'] if t['pf'] == t_['pf']) > 1, (c['pfRank'], pf_rank.index(tid) + 1))
+        wins_ = [(p - o, mp) for p, mp, o in lst if p > o]
+        if wins_: check(f'{nm_} biggest win', abs(max(wins_)[0] - (c['bigWin']['pts'] - c['bigWin']['opts'])) < 0.01, (max(wins_), c.get('bigWin')))
+
+# ---------- 26. record watch: unbeaten starts and scoring pace re-derived for the season in progress
+cur_y = (D['meta'].get('cur') or {}).get('y')
+if cur_y and games.get(cur_y):
+    r = raw[cur_y]; fk_ = {t['id']: fr(t['owners']) for t in r['teams']}
+    W_ = {w['code'] + ':' + w['key']: w['text'] for w in D.get('watch') or []}
+    for t in r['teams']:
+        mine = sorted([(mp, (hs > as_) if h == t['id'] else (as_ > hs)) for mp, h, hs, a, as_, tier, win in games[cur_y] if t['id'] in (h, a)])
+        unbeaten = all(w for _, w in mine)
+        txt = W_.get('start:' + fk_[t['id']])
+        check(f"watch: unbeaten start {t['name']}", bool(txt) == (unbeaten and len(mine) >= 5) and (not txt or f' {len(mine)}–0' in txt), (len(mine), unbeaten, txt))
+        txt = W_.get('ppg:' + fk_[t['id']])
+        gp = t['w'] + t['l'] + t['t']
+        if txt and gp: check(f"watch: scoring pace {t['name']}", f"{t['pf'] / gp:.1f} points a game" in txt, (round(t['pf'] / gp, 1), txt))
+    for s_ in D['seasons']:
+        if s_['y'] == cur_y: check('provisional draft grades cover every team', not s_['draft'] or len(s_['draftGrades']) == len(r['teams']), len(s_['draftGrades']))
+
 print(f'PASSED {passes}, FAILED {len(fails)}')
 for f in fails[:80]: print(' -', f)
 sys.exit(1 if fails else 0)

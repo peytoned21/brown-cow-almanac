@@ -5,7 +5,7 @@ History sites for two ESPN fantasy football leagues, built from one shared pipel
 - **Brown Cow 3.0** (since 2012): https://peytoned21.github.io/brown-cow-almanac/
 - **Any Given Sunday** (since 2014): https://peytoned21.github.io/brown-cow-almanac/any-given-sunday/
 
-Each site covers every season, manager, record and rivalry. During the season it adds live game-day scores, playoff odds and a playoff machine. Both can be added to a phone's home screen, and pages you've already viewed open without signal.
+Each site covers every season, manager, record and rivalry. Every manager also gets a "wrapped" page for each season (`#w-<year>-<manager>`): record, best and worst weeks, luck, team MVP, best pickup, draft steal and bench points. During the season it adds live game-day scores, playoff odds and a playoff machine. Both can be added to a phone's home screen, and pages you've already viewed open without signal.
 
 ## Layout
 
@@ -21,6 +21,7 @@ Each site covers every season, manager, record and rivalry. During the season it
 | `pipeline/cards.py`, `cards/card.html` | Link-preview images and the share pages under `s/` and `m/` |
 | `pipeline/live.py`, `pipeline/nflbox.py` | Game-day snapshots: live scores, projected finals, win chances, live playoff odds |
 | `pipeline/groupme.py`, `pipeline/summary.py` | The weekly recap for GroupMe and the run summary |
+| `watch` in `data.json` | Record watch: records and milestones in reach this week, as checked sentences. The home page, the newsletter fact sheet and the GroupMe recap all read it |
 | `pipeline/refresh.sh` | The weekly refresh for every league |
 
 ## Automation

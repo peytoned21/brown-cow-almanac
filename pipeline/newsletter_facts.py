@@ -75,6 +75,8 @@ facts = dict(
     luck=[dict(manager=who(x['key']), wins=x['w'], winsDeserved=x['exp'], luck=x['luck']) for x in (D.get('curLuck') or [])],
     playoffOdds=odds,
     nextWeek=nxt,
+    recordWatch=[w['text'] for w in (D.get('watch') or [])],
+    recordWatchNote='Records and milestones in reach right now. Each line is already a checked sentence; quote its numbers as they stand.',
     seasonAwardsRace=[dict(award=a['title'], leader=a['mgr'], value=a['value'], detail=a['detail']) for a in (D.get('awards', {}).get(str(y), {}).get('list') or [])],
     allTimeRivalries=[dict(a=who(r['a']), b=who(r['b']), aWins=r['w'], bWins=r['l'], games=r['n'], playoffMeetings=r['po']) for r in D.get('rivalries', [])[:8]],
     allTimeTitles={who(m['key']): m['titles'] for m in D['managers'] if m['titles']},

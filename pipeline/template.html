@@ -517,7 +517,7 @@ tr.is-me { box-shadow: none !important; }
 .wp-mid { stroke: var(--rule); stroke-width: 1; stroke-dasharray: 3 3; vector-effect: non-scaling-stroke; }
 .wp-line { fill: none; stroke: var(--ink); stroke-width: 2; vector-effect: non-scaling-stroke; }
 .wp figcaption { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 10.5px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
-@media (max-width: 600px) { .me-btn span:not(.mono-badge) { display: none; } .me-btn { padding: 3px; } .me-btn:not(:has(.mono-badge)) span { display: inline; padding: 0 8px; } }
+@media (max-width: 600px) { .me-btn span:not(.mono-badge) { display: none; } .me-btn { padding: 3px; } }
 
 .share-btn { margin-left: auto; font: inherit; font-size: 12.5px; border: 1px solid var(--rule); background: var(--sheet); color: var(--ink); border-radius: 999px; padding: 3px 11px; cursor: pointer; }
 .share-btn:hover { border-color: var(--brass); color: var(--brass); }
@@ -849,6 +849,67 @@ footer { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block:
   .rp-call .what { font-size: 16px; }
   .rp-list { height: auto; max-height: none; } .rp-empty { min-height: 0; }
 }
+
+/* Phone pass: the tab bar, tables that don't fit, sections that fold, the game-day order */
+.mono-badge.q { background: var(--sheet-2); color: var(--muted); border: 1px dashed var(--faint); }
+.me-prompt .me-open { display: none; }
+.fold-ic { display: none; }
+.fold-hd { cursor: pointer; padding-right: 30px; position: relative; -webkit-tap-highlight-color: transparent; }
+.fold-hd .fold-ic { display: block; position: absolute; right: 4px; bottom: 12px; width: 10px; height: 10px; border-right: 2.5px solid var(--ink); border-bottom: 2.5px solid var(--ink); transform: rotate(-135deg); transition: transform .15s; }
+h3.fold-hd { border-bottom: 1px solid var(--rule); padding-bottom: 10px; margin-top: 0; }
+h3.fold-hd .fold-ic { bottom: 13px; width: 8px; height: 8px; border-width: 2px; }
+.foldable.fold > .fold-hd .fold-ic { transform: rotate(45deg); bottom: 17px; }
+.foldable.fold > :not(.fold-hd) { display: none !important; }
+.foldable.fold > .sec-head { border-bottom-width: 1px; padding-bottom: 12px; }
+.foldable.fold > .sec-head::after { display: none; }
+.foldable.fold > .sec-head h2 { font-size: 24px; }
+.foldable.fold > .sec-head .eyebrow { display: none; }
+main:has(> .foldable) { gap: 22px; }
+@media (max-width: 900px) {
+  .tbl.is-wide::after, .scroll-x.is-wide::after { content: "Swipe for more →"; position: sticky; left: 0; display: block; width: max-content; padding: 6px 12px 8px; font-family: var(--mono); font-size: 11px; letter-spacing: .06em; color: var(--muted); }
+}
+@media (max-width: 600px) {
+  td { white-space: normal; }
+  td.num, td.r, td.c, td:has(> .chip:only-child) { white-space: nowrap; }
+  th, td { padding: 8px 6px; }
+  th:first-child, td:first-child { padding-left: 10px; } th:last-child, td:last-child { padding-right: 10px; }
+  .wrapcell { min-width: 0; }
+  .tbl.is-wide table th:first-child:not(.r):not(.c), .tbl.is-wide table td:first-child:not(.r):not(.c):not(.num) { position: sticky; left: 0; z-index: 1; background: var(--sheet); box-shadow: 1px 0 0 var(--rule); min-width: 104px; max-width: 136px; }
+  .tbl.is-wide tbody tr:hover td:first-child:not(.r):not(.c):not(.num) { background: var(--sheet-2); }
+  th { letter-spacing: .04em; font-size: 10.5px; }
+  .me-prompt { grid-template-columns: minmax(0, 1fr) auto; align-items: center; }
+  .me-prompt .me-chips { display: none; }
+  .me-prompt .me-open { display: inline-flex; }
+}
+/* What you need, record watch */
+.yw-need { display: grid; gap: 6px; }
+.yw-need ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+.yw-need li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; align-items: baseline; background: var(--sheet); border: 1px solid var(--rule); border-radius: 8px; padding: 9px 12px; font-size: 14px; }
+.yw-need li.own { border-color: color-mix(in srgb, var(--mc) 60%, var(--rule)); }
+.yw-need .d { font-family: var(--mono); font-size: 12.5px; color: var(--turf); white-space: nowrap; }
+.watch { padding: 14px 16px; display: grid; gap: 8px; margin-top: 14px; border-left: 4px solid var(--brass); }
+.watch ul { margin: 0; padding-left: 18px; display: grid; gap: 5px; }
+/* Wrapped: one manager's season as a stack of cards */
+.wr { max-width: 580px; margin: 0 auto; width: 100%; display: grid; gap: 12px; }
+.wr-nav { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.wr-nav select { width: auto; flex: 1 1 120px; }
+.wr-hero { border-radius: 10px; padding: 26px 22px 22px; color: var(--room-ink); background: radial-gradient(130% 150% at 0% 0%, var(--room-2), var(--room) 70%); display: grid; gap: 10px; border-top: 6px solid var(--mc); }
+.wr-hero .eyebrow { color: var(--plate-ink); }
+.wr-hero h2 { font-family: var(--poster); font-weight: 400; font-size: clamp(38px, 11vw, 62px); text-transform: uppercase; line-height: .92; overflow-wrap: anywhere; }
+.wr-hero .wr-rec { font-family: var(--display); font-weight: 900; font-size: 58px; line-height: 1; color: var(--plate-ink); }
+.wr-hero .sub { color: var(--room-muted); font-size: 14px; }
+.wr-hero .wr-line { font-size: 16px; font-weight: 600; }
+.wr-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 420px) { .wr-grid { grid-template-columns: 1fr; } }
+.wr-card { padding: 16px 18px; display: grid; gap: 4px; align-content: start; }
+.wr-card .v { font-family: var(--display); font-weight: 900; font-size: 42px; line-height: 1; color: var(--brass); overflow-wrap: anywhere; }
+.wr-card .v.sm { font-size: 30px; }
+.wr-card .t { font-weight: 600; font-size: 15.5px; }
+.wr-links { display: flex; flex-wrap: wrap; gap: 6px; }
+.wr-links a { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; border: 1px solid var(--rule); background: var(--sheet); border-radius: 999px; padding: 3px 11px 3px 3px; text-decoration: none; }
+.wr-links a .mono-badge { width: 24px; height: 24px; font-size: 10px; }
+.wr-links a { flex: 0 0 auto; }
+@media (max-width: 600px) { .wr-links { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin-right: -16px; padding-right: 16px; } .wr-links::-webkit-scrollbar { display: none; } }
 </style>
 {{CSS}}
 <header class="mast" id="mast">
@@ -977,7 +1038,7 @@ footer { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block:
   const meValid = () => ME && ME !== '-' && MK[ME];
   function meTid() { if (!meValid() || !D.live || !D.live.machine) return null; const t = D.live.machine.teams.find((x) => x.key === ME); return t ? t.tid : null; }
   function setMe(k) { ME = k; try { localStorage.setItem(ME_STORE, k); } catch (e) {} closeMe(); meButton(); route(); }
-  function meButton() { const b = $('me-btn'); if (!b || !D) return; b.hidden = false; b.innerHTML = meValid() ? `${badge(ME)}<span>${esc(MK[ME].short)}</span>` : '<span>Pick your team</span>'; }
+  function meButton() { const b = $('me-btn'); if (!b || !D) return; b.hidden = false; b.innerHTML = meValid() ? `${badge(ME)}<span>${esc(MK[ME].short)}</span>` : '<span class="mono-badge q" aria-hidden="true">?</span><span>Pick your team</span>'; b.setAttribute('aria-label', meValid() ? `Your team: ${MK[ME].short}. Change` : 'Pick your team'); }
   function openMe() {
     const cur = D.live && D.live.machine ? D.live.machine.teams.map((t) => t.key) : D.managers.map((m) => m.key);
     $('me-list').innerHTML = [...D.managers].filter((m) => cur.includes(m.key)).sort((a, b) => a.short.localeCompare(b.short))
@@ -1015,13 +1076,39 @@ footer { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block:
     }
     const tile = (k, v, sub) => `<div class="yw-t"><span class="k">${k}</span><span class="v num">${v}</span>${sub ? `<span class="sub">${sub}</span>` : ''}</div>`;
     return `<section class="yw"><div class="sheet yw-in" style="--mc:${COLORS[ME]}"><div class="yw-head">${badge(ME, 1)}<div><span class="eyebrow">Your week</span><h2>${esc(MK[ME].team)}</h2><span class="sub">${esc(MK[ME].name)} · <button type="button" class="linklike" data-me-open>change</button></span></div></div>
-      ${mu}<div class="yw-tiles">${tile('Record', `${me.w}–${me.l}`)}${P ? tile('Power rank', `#${P.rank}`, P.move ? `${P.move > 0 ? '▲' : '▼'}${Math.abs(P.move)} this week` : '') : ''}${O.po != null ? tile('Playoffs', pct(O.po)) : ''}${O.title != null ? tile('Title', pct(O.title)) : ''}</div>
-      <div class="yw-links"><a href="#machine">Your playoff machine →</a><a href="#m-${ME}">Your career page →</a></div></div></section>`;
+      ${mu}${needHtml()}<div class="yw-tiles">${tile('Record', `${me.w}–${me.l}`)}${P ? tile('Power rank', `#${P.rank}`, P.move ? `${P.move > 0 ? '▲' : '▼'}${Math.abs(P.move)} this week` : '') : ''}${O.po != null ? tile('Playoffs', pct(O.po)) : ''}${O.title != null ? tile('Title', pct(O.title)) : ''}</div>
+      <div class="yw-links"><a href="#machine">Your playoff machine →</a><a href="#m-${ME}">Your career page →</a>${D.wrapped && D.wrapped[D.meta.cur.y] && D.wrapped[D.meta.cur.y][ME] ? `<a href="#w-${D.meta.cur.y}-${ME}">Your ${D.meta.cur.y} so far →</a>` : ''}</div></div></section>`;
+  }
+  // What this week means for your team: your own game, then the other games ranked by how much they move your odds.
+  // Uses the playoff machine's simulation. Once the playoffs are locked up it switches to the bye (or the top seed).
+  let NEED_MEMO = ['', ''];
+  function needHtml() {
+    const tid = meTid(); if (tid == null) return '';
+    const M = D.live.machine; if (!M.games.length) return '';
+    const O = oddsBy()[ME] || {}; if (O.po == null) return '';
+    if (O.po <= 0.005 || O.status === 'out') return `<div class="yw-need"><span class="eyebrow">What you need</span><p class="sub">The playoffs are out of reach. Every game left is for pride${LG.losersLadder ? ' and for staying out of the Sacko' : ''}.</p></div>`;
+    const locked = O.po >= 0.995 || O.status === 'po' || O.status === 'div';
+    const metric = !locked ? 'po' : LG_BYE() ? 'bye' : 'top', what = !locked ? 'Playoffs' : LG_BYE() ? 'A first-round bye' : 'The top seed', unit = !locked ? 'playoff odds' : LG_BYE() ? 'bye odds' : 'top-seed odds';
+    const wk = Math.min(...M.games.map((g) => g[0])), picks = {};
+    if (liveOk(LIVE)) liveView().games.forEach((g) => { if (g.status === 'final' && g.hs !== g.as_) { const mg = M.games.find((x) => x[0] === wk && ((x[1] === g.h && x[2] === g.a) || (x[1] === g.a && x[2] === g.h))); if (mg) picks[mKey(mg)] = (g.hs > g.as_) === (mg[1] === g.h) ? 'h' : 'a'; } });
+    const memo = ME + '|' + metric + '|' + JSON.stringify(picks);
+    if (NEED_MEMO[0] === memo) return NEED_MEMO[1];
+    const E = mEngine(), S = mSim(E, 3000, tid, picks, metric);
+    const L = S.lev.filter((l) => l && M.games[l.i][0] === wk);
+    const own = L.find((l) => M.games[l.i][1] === tid || M.games[l.i][2] === tid);
+    const rest = L.filter((l) => l !== own && Math.abs(l.d) >= 0.03).sort((a, b) => Math.abs(b.d) - Math.abs(a.d)).slice(0, 3);
+    const li = [];
+    if (own) { const g = M.games[own.i], home = g[1] === tid, w = home ? own.pH : own.pA, l = home ? own.pA : own.pH; li.push(`<li class="own"><span><b>Beat ${esc(mShort(E, home ? g[2] : g[1]))}.</b> ${what}: ${pct(w)} with a win, ${pct(l)} with a loss.</span><span class="d">${Math.round(Math.abs(w - l) * 100)} pts</span></li>`); }
+    rest.forEach((l) => { const g = M.games[l.i], f = l.d > 0 ? g[1] : g[2], o = l.d > 0 ? g[2] : g[1]; li.push(`<li><span>Root for <b>${esc(mShort(E, f))}</b> over ${esc(mShort(E, o))}.</span><span class="d">+${Math.round(Math.abs(l.d) * 100)} pts</span></li>`); });
+    const html = li.length ? `<div class="yw-need"><span class="eyebrow">What you need · Week ${wk}</span><ul>${li.join('')}</ul><span class="sub">Points of ${unit}, from 3,000 runs of the rest of the season.${rest.length ? '' : own ? ' No other game this week moves your odds by 3 points.' : ''}</span></div>`
+      : `<div class="yw-need"><span class="eyebrow">What you need · Week ${wk}</span><p class="sub">${locked ? `${what} is already settled either way; nothing this week changes it.` : 'No game this week moves your odds by 3 points.'}</p></div>`;
+    NEED_MEMO = [memo, html];
+    return html;
   }
   function mePromptHtml() {
     if (ME) return '';
     const keys = D.live && D.live.machine ? D.live.machine.teams.map((t) => t.key) : D.managers.map((m) => m.key);
-    return `<section class="me-prompt sheet"><div><b>Which team is yours?</b><span class="sub">Your matchup, odds and rows go first everywhere.</span></div><div class="me-chips">${keys.map((k) => `<button type="button" class="me-chip" data-me="${k}">${badge(k)}<span>${esc(MK[k].short)}</span></button>`).join('')}<button type="button" class="me-chip ghost" data-me="-">Just browsing</button></div></section>`;
+    return `<section class="me-prompt sheet"><div><b>Which team is yours?</b><span class="sub">Your matchup, odds and rows go first everywhere.</span></div><button type="button" class="btn me-open" data-me-open>Pick</button><div class="me-chips">${keys.map((k) => `<button type="button" class="me-chip" data-me="${k}">${badge(k)}<span>${esc(MK[k].short)}</span></button>`).join('')}<button type="button" class="me-chip ghost" data-me="-">Just browsing</button></div></section>`;
   }
   function renderTicker() {
     const t = $('ticker'); if (!t) return;
@@ -1226,7 +1313,7 @@ footer { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block:
   function redrawLive() {
     const slot = document.getElementById('live-slot'); if (slot && liveOk(LIVE)) animSwap(slot, liveHtml(slot.dataset.full !== 'false'));
     const yw = document.querySelector('#view .yw'); if (yw) animSwap(yw, yourWeekHtml(), true);
-    renderTicker(); markMe();
+    renderTicker(); markMe(); mastState(); fitTables();
   }
   async function pollLive() {
     try {
@@ -1287,9 +1374,13 @@ footer { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block:
       box.querySelector('.oc-svg').innerHTML = oddsChart(m, f);
     });
   }
+  function watchHtml() {
+    const W = D.watch || []; if (!W.length || !D.meta.cur) return '';
+    return `<article class="sheet watch"><span class="eyebrow">Record watch · through Week ${D.meta.cur.week}</span><ul>${W.map((w) => `<li>${esc(w.text)}</li>`).join('')}</ul><a class="sub" href="#records">The record book →</a></article>`;
+  }
   function awardsHtml(y, race) {
     const A = D.awards && D.awards[y]; if (!A || !A.list.length) return '';
-    return `<section><div class="sec-head"><div class="eyebrow">${race ? `Through Week ${seasonOf(y).played} · final when the season ends` : 'The hardware'}</div><h2>${race ? 'Awards race' : 'Season awards'}</h2></div><div class="awards">${A.list.map((a) => `<article class="sheet award"><span class="eyebrow">${esc(a.title)}</span><span class="aw-v num">${esc(a.value)}</span>${mlink(a.key, a.mgr)}<span class="sub">${esc(a.detail)}</span></article>`).join('')}</div></section>`;
+    return `<section><div class="sec-head"><div class="eyebrow">${race ? `Through Week ${seasonOf(y).played} · final when the season ends` : 'The hardware'}</div><h2>${race ? 'Awards race' : 'Season awards'}</h2></div>${race ? watchHtml() : ''}<div class="awards">${A.list.map((a) => `<article class="sheet award"><span class="eyebrow">${esc(a.title)}</span><span class="aw-v num">${esc(a.value)}</span>${mlink(a.key, a.mgr)}<span class="sub">${esc(a.detail)}</span></article>`).join('')}</div></section>`;
   }
 
   // ------------------------------------------------------------- playoff machine
@@ -1352,7 +1443,7 @@ footer { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block:
     return { W, PF, H, Wp, Lp, rem, unpicked, ...mSeeds(E, W, PF, H) };
   }
   function mRng(seed) { let a = seed >>> 0; return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
-  function mSim(E, N, focusTid, picksOverride) {
+  function mSim(E, N, focusTid, picksOverride, metric) {
     const picksMap = picksOverride || MCH.picks;
     const R = mRng(20261013), sd = E.M.sd, games = E.M.games, G = games.length;
     const gauss = () => { let u = 0; while (!u) u = R(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * R()); };
@@ -1381,7 +1472,7 @@ footer { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block:
       if (sd_.length === 6) { const q1 = winGame(sd_[2], sd_[5]), q2 = winGame(sd_[3], sd_[4]); s1 = winGame(sd_[0], q2); s2 = winGame(sd_[1], q1); }
       else { s1 = winGame(sd_[0], sd_[3]); s2 = winGame(sd_[1], sd_[2]); }
       cnt[s1].final++; cnt[s2].final++; cnt[winGame(s1, s2)].title++;
-      const inPo = sd_.includes(focusTid);
+      const fi = sd_.indexOf(focusTid), inPo = metric === 'bye' ? fi > -1 && fi < 2 : metric === 'top' ? fi === 0 : fi > -1;
       kN[fw]++; if (inPo) kP[fw]++;
       for (let i = 0; i < G; i++) if (!picks[i]) { levN[i][res[i]]++; if (inPo) levP[i][res[i]]++; }
     }
@@ -1619,7 +1710,7 @@ footer { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block:
     const P0 = D.power[D.power.length - 1]; if (!P0) return '';
     const P = limit ? { ...P0, rows: P0.rows.slice(0, limit) } : P0;
     const O = oddsBy();
-    return `<table><caption>Power rankings · Week ${P.wk}</caption><thead><tr><th class="r">#</th><th></th><th>Team</th><th class="r">W–L</th><th class="r" title="Power rating: points per week vs an average team">Rating</th><th class="r hide-sm">Last 3</th>${withOdds ? '<th>Playoffs</th><th>Title</th>' : '<th class="r">All-play</th>'}</tr></thead><tbody>${P.rows.map((r) => `<tr><td class="r num">${r.rank}</td><td>${move(r.move)}</td><td class="tm-cell"><a class="mgr" href="#m-${r.key}">${esc(r.team)}</a><span class="sub">${esc(r.mgr)}</span>${O[r.key] ? statusChip(O[r.key].status) : ''}</td><td class="r num">${r.w}–${r.l}</td><td class="r num">${r.rating != null ? sgn(r.rating) : ''}</td><td class="r num hide-sm">${f1(r.form)}</td>${withOdds ? `<td>${pbar(O[r.key].po)}</td><td>${pbar(O[r.key].title)}</td>` : `<td class="r num">${p3(r.allplay)}</td>`}</tr>`).join('')}</tbody></table>`;
+    return `<table><caption>Power rankings · Week ${P.wk}</caption><thead><tr><th class="r">#</th><th></th><th>Team</th><th class="r">W–L</th><th class="r${withOdds ? ' hide-sm' : ''}" title="Power rating: points per week vs an average team">Rating</th><th class="r hide-sm">Last 3</th>${withOdds ? '<th>Playoffs</th><th>Title</th>' : '<th class="r">All-play</th>'}</tr></thead><tbody>${P.rows.map((r) => `<tr><td class="r num">${r.rank}</td><td>${move(r.move)}</td><td class="tm-cell"><a class="mgr" href="#m-${r.key}">${esc(r.team)}</a><span class="sub">${esc(r.mgr)}</span>${O[r.key] ? statusChip(O[r.key].status) : ''}</td><td class="r num">${r.w}–${r.l}</td><td class="r num${withOdds ? ' hide-sm' : ''}">${r.rating != null ? sgn(r.rating) : ''}</td><td class="r num hide-sm">${f1(r.form)}</td>${withOdds ? `<td>${pbar(O[r.key].po)}</td><td>${pbar(O[r.key].title)}</td>` : `<td class="r num">${p3(r.allplay)}</td>`}</tr>`).join('')}</tbody></table>`;
   }
 
   // ------------------------------------------------------------- shell
@@ -1710,7 +1801,7 @@ footer { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block:
       html += paperTeaserHtml();
       html += `<section><div class="sec-head"><div class="eyebrow">${cur.y} season · through Week ${cur.played}</div><h2>This season</h2><a href="#s-${cur.y}" class="eyebrow">Everything on ${cur.y} →</a></div>
         <div class="sheet tbl">${powerTable(true, 5)}<div class="more-row"><a href="#s-${cur.y}">All ${cur.rows.length} teams, odds, finishes and schedule luck →</a></div></div>
-        ${endsHtml()}
+        ${endsHtml()}${watchHtml()}
         <article class="sheet recap" style="margin-top:14px"><span class="eyebrow">Week ${cur.played} recap</span>${recapHtml(lastKey)}</article></section>`;
     }
     const LR = legacyRanks(LW_DEFAULT, false), top5 = [...D.managers].sort((a, b) => LR[a.key] - LR[b.key]).slice(0, 5);
@@ -1821,7 +1912,7 @@ footer { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block:
         ${card('Roster churn', [1], m.tx.acq, 'adds all-time', `${m.tx.trades} trade${m.tx.trades === 1 ? '' : 's'} made`, () => '')}
         ${picks.length ? card('Best waiver pickup', picks, f1(picks[0].pts), `${esc(picks[0].player)} <span class="chip">${esc(picks[0].pos)}</span>`, `${picks[0].y} · added Week ${picks[0].wk} · ${picks[0].starts} starts`, (p) => `<li><span>${esc(p.player)} · ${p.y}</span><span class="num">${f1(p.pts)}</span></li>`) : ''}
       </div>${myTrades.length ? `<div class="sheet tbl"><table><caption>Trades</caption><tbody>${myTrades.map(tradeRow).join('')}</tbody></table></div>` : ''}</section>
-      ${auctionProfile(k)}<section><div class="sec-head"><h2>Season by season</h2></div><div class="sheet tbl"><table><thead><tr><th>Year</th><th>Team</th><th class="r">W–L</th><th class="r">PF</th><th class="r">Finish</th><th></th></tr></thead><tbody>${[...m.seasons].reverse().map((y) => { const r = status(y), s = seasonOf(y); return `<tr><td class="num">${slink(y)}</td><td>${esc(r.team)}</td><td class="r num">${wl(r.w, r.l, r.t)}</td><td class="r num">${f1(r.pf)}</td><td class="r num">${s.done ? ord(r.rank) : '—'}</td><td>${statusChips(r, s)}</td></tr>`; }).join('')}</tbody></table></div>
+      ${auctionProfile(k)}<section><div class="sec-head"><h2>Season by season</h2></div><div class="sheet tbl"><table><thead><tr><th>Year</th><th>Team</th><th class="r">W–L</th><th class="r">PF</th><th class="r">Finish</th><th></th></tr></thead><tbody>${[...m.seasons].reverse().map((y) => { const r = status(y), s = seasonOf(y); return `<tr><td class="num">${slink(y)}</td><td>${esc(r.team)}</td><td class="r num">${wl(r.w, r.l, r.t)}</td><td class="r num">${f1(r.pf)}</td><td class="r num">${s.done ? ord(r.rank) : '—'}</td><td>${statusChips(r, s)}${D.wrapped && D.wrapped[y] && D.wrapped[y][k] ? ` <a class="chip" href="#w-${y}-${k}">Wrapped</a>` : ''}</td></tr>`; }).join('')}</tbody></table></div>
         <p class="note">Team names over the years: ${[...new Set(m.teamNames.map((x) => x[1]))].map(esc).join(' · ')}</p></section>`;
     return html;
   };
@@ -1839,7 +1930,7 @@ footer { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block:
   }
   function tradeRow(t) {
     const side = (x) => `${mlink(x.key, x.mgr)} got ${x.got.map((g) => `<b>${esc(g[0])}</b>`).join(' + ')} <span class="muted">(${f1(x.pts)} pts after)</span>`;
-    return `<tr><td class="num">${slink(t.y)} · Wk ${t.wk}</td><td class="wrapcell">${side(t.a)}<br>${side(t.b)}</td><td>${mgr(t.winner).short} won it</td></tr>`;
+    return `<tr><td class="num">${slink(t.y)} · Wk ${t.wk}</td><td class="wrapcell">${side(t.a)}<br>${side(t.b)}</td><td>${esc(mgr(t.winner).short)} ${seasonOf(t.y) && !seasonOf(t.y).done ? `${/&/.test(mgr(t.winner).short) ? 'lead' : 'leads'} so far` : 'won it'}</td></tr>`;
   }
 
   function goat() {
@@ -1937,7 +2028,7 @@ footer { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block:
     const oddsSec = !s.done && D.odds.length ? `<section><div class="sec-head"><div class="eyebrow">10,000 simulations</div><h2>Odds</h2></div><div class="sheet tbl"><table><thead><tr><th>Team</th><th class="r">W–L</th><th class="r hide-sm">Proj. wins</th><th class="r hide-sm" title="Remaining schedule, 1 = hardest">Sched.</th>${LG_DIV() ? '<th class="hide-sm">Division</th>' : ''}${LG_BYE() ? '<th class="hide-sm">Bye</th>' : ''}<th>Playoffs</th><th class="hide-sm">Final</th><th>Title</th>${LG.losersLadder ? '<th class="r hide-sm">Sacko</th>' : ''}</tr></thead><tbody>${D.odds.map((o) => `<tr><td class="tm-cell"><a class="mgr" href="#m-${o.key}">${esc(o.team)}</a><span class="sub">${esc(o.mgr)}</span>${statusChip(o.status)}</td><td class="r num">${o.w}–${o.l}</td><td class="r num hide-sm">${f1(o.projW)}</td><td class="r num hide-sm">${o.sosRank ? '#' + o.sosRank : '—'}</td>${LG_DIV() ? `<td class="hide-sm">${pbar(o.div)}</td>` : ''}${LG_BYE() ? `<td class="hide-sm">${pbar(o.bye)}</td>` : ''}<td>${pbar(o.po)}</td><td class="hide-sm">${pbar(o.final)}</td><td>${pbar(o.title)}</td>${LG.losersLadder ? `<td class="r num hide-sm">${o.sacko != null ? pct(o.sacko) : '—'}</td>` : ''}</tr>`).join('')}</tbody></table></div><p class="note">Next week is simulated from ESPN's projections for each team's best lineup; every week after that from each team's power rating (70% ESPN-projected lineup, 30% this season's results). Nothing carries over from past seasons. ${LG_DIV() ? `Division winners take seeds 1–${LG_DIV()} and ${NUMW[LG_PO() - LG_DIV()] || LG_PO() - LG_DIV()} wildcards follow, by record` : (D.live && D.live.machine && D.live.machine.pw ? `The top ${LG_PO() - D.live.machine.pw} records make the playoffs and the last spot goes to the highest scorer among everyone else` : `The top ${LG_PO()} records make the playoffs`)}; ${LG.tiebreak === 'points' ? 'ties go to total points scored' : 'ties go to head-to-head when the tied teams have all played each other equally, otherwise points'}.${LG.losersLadder ? ' The Sacko is simulated through the losers\' ladder.' : ''} Sched. ranks each team's remaining opponents by average score (#1 is the hardest). Clinched and eliminated badges appear only when no remaining result can change them.</p></section>
       <section><div class="sec-head"><h2>Odds over time</h2></div>${oddsChartBlock('oc-season')}</section>${finishHtml()}` : '';
     const P = {};
-    P.T = `      <section class="page-title"><div class="crumbs"><a href="#seasons">Seasons</a><span>/</span><span>${s.y}</span>${shareBtn('s/' + s.y + '/')}</div><h2>${s.y}</h2><p class="headline">${esc(s.headline)}</p><div class="facts muted"><span>${fmt}</span>${s.trades ? `<span>${s.trades} trade${s.trades === 1 ? '' : 's'}</span>` : ''}</div></section>`;
+    P.T = `      <section class="page-title"><div class="crumbs"><a href="#seasons">Seasons</a><span>/</span><span>${s.y}</span>${shareBtn('s/' + s.y + '/')}</div><h2>${s.y}</h2><p class="headline">${esc(s.headline)}</p><div class="facts muted"><span>${fmt}</span>${s.trades ? `<span>${s.trades} trade${s.trades === 1 ? '' : 's'}</span>` : ''}</div>${wrappedLinks(s.y)}</section>`;
     P.ST = `      <section><div class="sec-head"><h2>${s.done ? 'Final standings' : 'Standings'}</h2></div><div class="sheet tbl"><table><thead><tr><th class="r">${s.done ? 'Finish' : '#'}</th><th>Team</th><th class="r">W–L</th><th class="r">PF</th><th class="r">PA</th><th></th></tr></thead><tbody>${s.rows.map((r, i) => `<tr><td class="r num">${s.done ? r.rank : i + 1}</td><td class="tm-cell"><a class="mgr" href="#m-${r.key}">${esc(r.team)}</a><span class="sub">${esc(r.mgr)}</span></td><td class="r num">${wl(r.w, r.l, r.t)}</td><td class="r num">${f1(r.pf)}</td><td class="r num">${f1(r.pa)}</td><td>${statusChips(r, s)}</td></tr>`).join('')}</tbody></table></div></section>`;
     P.PV = `      ${!s.done ? matchupsHtml(true) : ''}`;
     P.OD = `      ${oddsSec}`;
@@ -1950,8 +2041,13 @@ footer { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block:
         <div class="sheet tbl"><table><caption>${esc(champ.team)} · title-game lineup</caption><thead><tr><th>Player</th><th class="r">Pts</th></tr></thead><tbody>${s.champRoster.map((p) => `<tr><td><b>${esc(p[0])}</b> <span class="chip">${esc(p[1])}</span></td><td class="r num">${p[2] == null ? '' : f1(p[2])}</td></tr>`).join('')}</tbody></table>${s.champRoster[0] && s.champRoster[0][2] == null ? '<p class="note pad">ESPN has no weekly lineups for this season, so this is the end-of-season roster.</p>' : ''}</div>
         <div style="display:grid;gap:14px">${s.champMvp ? card('Title-team MVP', [1], f1(s.champMvp[2]), `${esc(s.champMvp[0])} <span class="chip">${esc(s.champMvp[1])}</span>`, `Most points as a starter for ${esc(champ.team)}`, () => '') : ''}
         ${sk ? card('The Sacko', [1], wl(sk.w, sk.l), mlink(sk.key, sk.mgr), `${esc(sk.team)} finished last${sk.game ? `, losing the last-place game to ${esc(sk.game.opp)} ${f1(sk.game.os)}–${f1(sk.game.ms)}` : ''}`, () => '') : ''}</div></div></section>` : ''}`;
-    P.DR = `      ${draft.length ? `<section><div class="sec-head"><h2>The draft</h2></div><div class="grid2"><div class="sheet tbl"><table><caption>${draft.length && draft[0].bid != null ? `Top ${draft.length} prices` : 'Rounds 1–2'}</caption><thead><tr><th class="r">${draft.length && draft[0].bid != null ? 'Price' : 'Pick'}</th><th>Player</th>${draft.length && draft[0].bid != null ? '<th class="r">Worth</th>' : ''}<th class="r">Pts</th><th class="r">Value</th></tr></thead><tbody>${draft.map((d) => `<tr><td class="r num">${d.bid != null ? '$' + d.bid : d.pick}</td><td><b>${esc(d.player)}</b> <span class="chip">${esc(d.pos)}${d.posRank ? ' ' + d.posRank : ''}</span>${d.keeper ? ' <span class="chip">Keeper</span>' : ''}<span class="sub">${esc(d.mgr)}</span></td>${d.bid != null ? `<td class="r num">$${d.fair}</td>` : ''}<td class="r num">${f1(d.pts)}</td><td class="r num ${s.done ? (d.val > 0 ? 'pos' : 'neg') : ''}">${s.done ? sgn(d.val, 0) : '—'}</td></tr>`).join('')}</tbody></table></div>
-        ${grades.length ? `<div class="sheet tbl"><table><caption>Draft grades</caption><thead><tr><th>Manager</th><th class="c">Grade</th><th class="r">${draft.length && draft[0].bid != null ? 'Pts above price' : 'Pts above pick'}</th><th class="r">Finish</th></tr></thead><tbody>${grades.map((g) => `<tr><td>${mlink(g.key, g.mgr)}</td><td class="c"><span class="chip ${g.grade === 'A' ? 'champ' : g.grade === 'F' ? 'last' : g.grade === 'B' ? 'po' : ''}">${g.grade}</span></td><td class="r num">${sgn(g.val, 0)}</td><td class="r num">${ord(g.rank)}</td></tr>`).join('')}</tbody></table></div>` : '<div class="sheet empty">Grades arrive when the season ends.</div>'}</div><p class="note">Value is a player's season points minus the average of ${draft.length && draft[0].bid != null ? 'players bought at a similar price' : 'picks taken near the same spot'} that year. Position rank (e.g. RB 3) is where he finished at his position.</p></section>` : ''}`;
+    P.DR = `      ${draft.length ? `<section><div class="sec-head"><h2>The draft</h2></div><div class="grid2"><div class="sheet tbl"><table><caption>${draft.length && draft[0].bid != null ? `Top ${draft.length} prices` : 'Rounds 1–2'}</caption><thead><tr><th class="r">${draft.length && draft[0].bid != null ? 'Price' : 'Pick'}</th><th>Player</th>${draft.length && draft[0].bid != null ? '<th class="r">Worth</th>' : ''}<th class="r">Pts</th><th class="r">Value</th></tr></thead><tbody>${draft.map((d) => `<tr><td class="r num">${d.bid != null ? '$' + d.bid : d.pick}</td><td><b>${esc(d.player)}</b> <span class="chip">${esc(d.pos)}${d.posRank ? ' ' + d.posRank : ''}</span>${d.keeper ? ' <span class="chip">Keeper</span>' : ''}<span class="sub">${esc(d.mgr)}</span></td>${d.bid != null ? `<td class="r num">$${d.fair}</td>` : ''}<td class="r num">${f1(d.pts)}</td><td class="r num ${d.val > 0 ? 'pos' : 'neg'}">${s.done || d.pts ? sgn(d.val, 0) : '—'}</td></tr>`).join('')}</tbody></table></div>
+        ${grades.length ? `<div class="sheet tbl"><table><caption>${s.done ? 'Draft grades' : `Draft grades so far · through Week ${s.played}`}</caption><thead><tr><th>Manager</th><th class="c">Grade</th><th class="r">${draft.length && draft[0].bid != null ? 'Pts above price' : 'Pts above pick'}</th>${s.done ? '<th class="r">Finish</th>' : ''}</tr></thead><tbody>${grades.map((g) => `<tr><td>${mlink(g.key, g.mgr)}</td><td class="c"><span class="chip ${g.grade === 'A' ? 'champ' : g.grade === 'F' ? 'last' : g.grade === 'B' ? 'po' : ''}">${g.grade}</span></td><td class="r num">${sgn(g.val, 0)}</td>${s.done ? `<td class="r num">${ord(g.rank)}</td>` : ''}</tr>`).join('')}</tbody></table></div>` : '<div class="sheet empty">Grades arrive once games have been played.</div>'}</div><p class="note">Value is a player's season points minus the average of ${draft.length && draft[0].bid != null ? 'players bought at a similar price' : 'picks taken near the same spot'} that year. Position rank (e.g. RB 3) is where he ${s.done ? 'finished' : 'stands'} at his position.${s.done ? '' : ' Grades for a season in progress use points so far, so an injured early pick drags a grade down until he is back.'}</p></section>` : ''}`;
+    const pk = s.pickups || [], pkT = s.pickupTeams || [];
+    P.WV = pk.length ? `<section><div class="sec-head"><div class="eyebrow">${s.done ? 'Adds that mattered' : `Through Week ${s.played}`}</div><h2>Waiver wire</h2></div><div class="grid2">
+        <div class="sheet tbl"><table><caption>Best pickups</caption><thead><tr><th>Player</th><th class="r">Added</th><th class="r">Starts</th><th class="r">Pts</th></tr></thead><tbody>${pk.map((x) => `<tr><td><b>${esc(x.player)}</b> <span class="chip">${esc(x.pos)}</span><span class="sub">${esc(x.mgr)}</span></td><td class="r num">Wk ${x.wk}</td><td class="r num">${x.starts}</td><td class="r num">${f1(x.pts)}</td></tr>`).join('')}</tbody></table></div>
+        <div class="sheet tbl"><table><caption>Points from pickups, by team</caption><thead><tr><th>Manager</th><th class="r">Pickups started</th><th class="r">Pts</th></tr></thead><tbody>${pkT.map((x) => `<tr><td>${mlink(x.key, x.mgr)}</td><td class="r num">${x.n}</td><td class="r num">${f1(x.pts)}</td></tr>`).join('')}</tbody></table></div></div>
+        <p class="note">Points a pickup scored in that team's starting lineup after being added from waivers or free agency. Bench points don't count.</p></section>` : '';
     P.WK = `      ${weekKeys.length ? `<section><div class="sec-head"><h2>Week by week</h2></div><div class="wkbar" id="wkbar" role="group" aria-label="Choose a week">${weekKeys.map((k) => `<button type="button" data-k="${k}" aria-pressed="${k === weekKeys[weekKeys.length - 1]}">${esc(D.recaps[k].po ? D.recaps[k].label.replace('Quarterfinals', 'QF').replace('Semifinals', 'SF') : 'Wk ' + D.recaps[k].wk)}</button>`).join('')}</div><article class="sheet recap" id="recapbox"><span class="eyebrow" id="recaplabel">${esc(D.recaps[weekKeys[weekKeys.length - 1]].label)}</span><div id="recapbody">${recapHtml(weekKeys[weekKeys.length - 1])}</div></article></section>` : ''}`;
     P.TR = `      ${trades.length ? `<section><div class="sec-head"><h2>Trades</h2></div><div class="sheet tbl"><table><tbody>${trades.map(tradeRow).join('')}</tbody></table></div></section>` : ''}`;
     P.LO = `      <section id="lore-sec"${db || comments ? '' : ' hidden'}><div class="sec-head"><div class="eyebrow">League lore</div><h2>The story of ${s.y}</h2><button class="btn ghost" type="button" data-compose="lore-sec" hidden>Add your take</button></div>
@@ -1969,8 +2065,8 @@ footer { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block:
       P.ODX = `<section id="odds"><div class="sec-head"><div class="eyebrow">10,000 simulations of the rest of the season</div><h2>Playoff odds</h2>${P.MX ? '<a href="#machine" class="eyebrow">Playoff machine →</a>' : ''}</div>${tabset([['Odds', secInner(parts[0])], ['Over time', secInner(parts[1])], ['Every finish', secInner(parts.slice(2).join(''))]])}</section>`;
     }
     if (P.PW) P.PWX = `<section id="power"><div class="sec-head"><div class="eyebrow">Through week ${s.played}</div><h2>Power</h2></div>${tabset([['Rankings', secInner(P.PW)], ['Ratings', secInner(P.RT)]])}</section>`;
-    const order = s.done ? ['T', 'STX', 'PO', 'CH', 'AW', 'WK', 'NW', 'SL', 'DR', 'TR']
-      : ['T', 'PV', 'STX', 'ODX', 'PWX', 'AW', 'WK', 'NW', 'SL', ...(s.rounds.length ? ['PO'] : []), 'DR', 'TR'];
+    const order = s.done ? ['T', 'STX', 'PO', 'CH', 'AW', 'WK', 'NW', 'SL', 'DR', 'WV', 'TR']
+      : ['T', 'PV', 'STX', 'ODX', 'PWX', 'AW', 'WK', 'NW', 'SL', ...(s.rounds.length ? ['PO'] : []), 'DR', 'WV', 'TR'];
     return ybar + order.map((k) => P[k]).join('\n');
   };
   function loreHtml(list, y) {
@@ -2174,6 +2270,43 @@ footer { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block:
       <section><div class="sec-head"><h2>Team names</h2></div><div class="names">${names}</div></section>`;
   }
 
+  // ------------------------------------------------------------- wrapped: one manager's season on one page
+  views.wrapped = function (y, k) {
+    const W = D.wrapped && D.wrapped[y], c = W && W[k], s = seasonOf(y); if (!c || !s || !MK[k]) return notFound();
+    const m = MK[k], first = m.short.split(' & ').length > 1 ? m.short : m.short.split(' ')[0], poss = first + (first.endsWith('s') ? '’' : '’s');
+    const many = /&/.test(m.short), was = many ? 'were' : 'was';
+    const wk = (n) => `Week ${n}`, opp = (o) => esc(shortName(o));
+    const cards = [];
+    const add = (eyebrow, v, t, sub, sm) => cards.push(`<article class="sheet wr-card"><span class="eyebrow">${eyebrow}</span><span class="v num${sm ? ' sm' : ''}">${v}</span><span class="t">${t}</span>${sub ? `<span class="sub">${sub}</span>` : ''}</article>`);
+    add('Points', f1(c.pf), `${ord(c.pfRank)} of ${c.n} in scoring`, `${f1(c.pf / Math.max(1, c.weeks))} a game${c.tops ? ` · top score of the week ${c.tops === 1 ? 'once' : c.tops + ' times'}` : ''}${c.lows ? ` · low score ${c.lows === 1 ? 'once' : c.lows + ' times'}` : ''}`);
+    if (c.luck != null) add('Luck', sgn(c.luck), c.luck >= 0.75 ? 'The schedule helped' : c.luck <= -0.75 ? 'The schedule hurt' : 'About what the points earned', `Scored like a ${f1(c.exp)}-win team and ${c.done ? 'finished with' : 'has'} ${c.w}`);
+    add('Best week', f1(c.best.pts), `${wk(c.best.wk)} ${c.best.won ? 'over' : 'in a loss to'} ${opp(c.best.opp)}`);
+    add('Worst week', f1(c.worst.pts), `${wk(c.worst.wk)} ${c.worst.won ? 'and still beat' : 'against'} ${opp(c.worst.opp)}`);
+    if (c.bigWin) add('Biggest win', '+' + f1(c.bigWin.pts - c.bigWin.opts), `${wk(c.bigWin.wk)} over ${opp(c.bigWin.opp)}`, `${f1(c.bigWin.pts)}–${f1(c.bigWin.opts)}`);
+    if (c.closeLoss) add('The one that got away', '−' + f1(c.closeLoss.opts - c.closeLoss.pts), `${wk(c.closeLoss.wk)} against ${opp(c.closeLoss.opp)}`, `${f1(c.closeLoss.pts)}–${f1(c.closeLoss.opts)}`);
+    if (c.mvp) add('Team MVP', esc(c.mvp.player), `${f1(c.mvp.pts)} points in ${c.mvp.starts} starts`, esc(c.mvp.pos), true);
+    if (c.pickup) add('Best pickup', esc(c.pickup.player), `${f1(c.pickup.pts)} points as a starter`, `Added ${wk(c.pickup.wk)} · ${esc(c.pickup.pos)}`, true);
+    if (c.steal && c.steal.val > 0) add('Draft steal', esc(c.steal.player), `${s.draft[0] && s.draft[0].bid != null ? 'Price tier' : 'Round'} ${c.steal.rd} · ${sgn(c.steal.val, 0)} points against the slot`, c.draftGrade ? `Draft grade${c.done ? '' : ' so far'}: ${c.draftGrade}` : '', true);
+    if (c.bust && c.bust.val < 0) add('Draft regret', esc(c.bust.player), `${s.draft[0] && s.draft[0].bid != null ? 'Price tier' : 'Round'} ${c.bust.rd} · ${sgn(c.bust.val, 0)} points against the slot`, '', true);
+    if (c.bench) add('Left on the bench', f1(c.bench.left), `Worst: ${f1(c.bench.worst)} points in ${wk(c.bench.wk)}`, c.bench.cost ? `${c.bench.cost} ${c.bench.cost === 1 ? 'loss' : 'losses'} the best lineup would have won` : 'It never cost a game');
+    const fin = c.done ? (c.finish === 1 ? 'Champions.' : c.finish === 2 ? 'Runner-up.' : c.finish === c.n ? `Last place. The Sacko ${was} earned.` : `Finished ${ord(c.finish)} of ${c.n}${c.playoffs ? ', in the playoffs' : ''}.`) : `Through Week ${s.played}.`;
+    const ys = Object.keys(D.wrapped).filter((yy) => D.wrapped[yy][k]).sort((a, b) => b - a);
+    return `<div class="wr" style="--mc:${COLORS[k]}">
+      <div class="crumbs"><a href="#m-${k}">${esc(m.name)}</a><span>/</span><a href="#s-${y}">${y}</a><span>/</span><span>Wrapped</span>${shareBtn('#w-' + y + '-' + k)}</div>
+      <section class="wr-hero"><span class="eyebrow">${esc(D.meta.league)} · ${y}${c.done ? '' : ' so far'}</span><h2>${esc(poss)} ${y}</h2><span class="sub">${esc(c.team)}</span><span class="wr-rec num">${wl(c.w, c.l, c.t)}</span><span class="wr-line">${fin}</span></section>
+      <div class="wr-grid">${cards.join('')}</div>
+      <div class="wr-nav"><select id="wr-y" aria-label="Season">${ys.map((yy) => `<option value="${yy}"${+yy === +y ? ' selected' : ''}>${yy}</option>`).join('')}</select><select id="wr-k" aria-label="Manager">${Object.keys(W).sort((a, b) => MK[a].short.localeCompare(MK[b].short)).map((kk) => `<option value="${kk}"${kk === k ? ' selected' : ''}>${esc(MK[kk].short)}</option>`).join('')}</select></div>
+      <p class="note">Regular-season games. Luck is real wins minus the wins those scores would earn against the whole league each week.${c.done ? '' : ' The season is still going, so every card can change.'}</p></div>`;
+  };
+  function wrappedAfter() {
+    const go = () => { const y = $('wr-y').value, k = $('wr-k').value; location.hash = `w-${y}-${D.wrapped[y][k] ? k : Object.keys(D.wrapped[y])[0]}`; };
+    ['wr-y', 'wr-k'].forEach((id) => { const el = $(id); if (el) el.addEventListener('change', go); });
+  }
+  function wrappedLinks(y) {
+    const W = D.wrapped && D.wrapped[y]; if (!W) return '';
+    const s = seasonOf(y);
+    return `<div class="wr-links"><span class="eyebrow" style="align-self:center;margin-right:4px">Wrapped</span>${s.rows.filter((r) => W[r.key]).map((r) => `<a href="#w-${y}-${r.key}">${badge(r.key)}<span>${esc(MK[r.key].short)}</span></a>`).join('')}</div>`;
+  }
   function notFound() { return `<section class="sheet empty">That page doesn't exist. <a href="#home">Go home</a>.</section>`; }
 
   // ------------------------------------------------------------- auction market (leagues with auction drafts)
@@ -2300,6 +2433,7 @@ footer { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block:
     const t = b.closest('.tset'); const i = b.dataset.ti;
     t.querySelectorAll(':scope > .tset-bar [data-ti]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
     t.querySelectorAll(':scope > .tset-p').forEach((x) => { x.hidden = x.dataset.tp !== i; });
+    fitTables();
   });
 
   // ------------------------------------------------------------- greatest teams of all time
@@ -2692,18 +2826,61 @@ footer { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block:
     else if ((m = h.match(/^rp-(\d{4})-(\d{1,2})-([a-z]+)-([a-z]+)$/))) { const y = +m[1]; const live_ = D.meta.cur && y === D.meta.cur.y && !seasonOf(y).done; tab = live_ ? 'now' : 'seasons'; html = views.season(y); after = async () => { seasonAfter(y); const src = await replayFor(y, +m[2], m[3], m[4]); if (src) openReplay(src); }; }
     else if (h === 'machine') { tab = 'machine'; html = views.machine(); after = machineAfter; }
     else if ((m = h.match(/^news-(\d{4})-(\d{1,2})$/))) { tab = 'home'; html = newsView(+m[1], +m[2]); after = () => newsAfter(+m[1], +m[2]); }
-    else if (h === 'history') { tab = 'seasons'; html = views.seasons(); after = () => { const t = $('timeline'); if (t) t.scrollIntoView(); }; }
+    else if (h === 'history') { tab = 'seasons'; html = views.seasons(); after = () => { const t = $('timeline'); if (t) { unfold(t); t.scrollIntoView(); } }; }
+    else if ((m = h.match(/^w-(\d{4})-([a-z]+)$/))) { tab = 'managers'; html = views.wrapped(+m[1], m[2]); after = wrappedAfter; }
     else if ((m = h.match(/^compare(?:-([a-z]+)-([a-z]+))?$/))) { tab = 'managers'; html = views.compare(m[1], m[2]); after = compareAfter; }
     else if (views[h] && !['manager', 'season', 'history', 'compare'].includes(h)) { tab = h; html = views[h](); if (h === 'managers') after = () => { allTimeTable($('alltime')); goat(); };  if (h === 'stats') after = statsTables; if (h === 'auction') after = auctionAfter; }
     else { html = notFound(); }
     $('view').innerHTML = html;
     document.querySelectorAll('#tabs a').forEach((a) => a.setAttribute('aria-current', a.dataset.tab === tab ? 'page' : 'false'));
-    $('mast').classList.toggle('compact', tab !== 'home');
+    CUR_TAB = tab; mastState();
+    foldSections();
     if (after) after();
-    jumpBar(); markMe(); renderTicker(); meButton();
+    jumpBar(); markMe(); renderTicker(); meButton(); fitTables();
     wireCompose();
     const cur = document.querySelector('#tabs a[aria-current="page"]'); if (cur && cur.scrollIntoView) try { cur.scrollIntoView({ block: 'nearest', inline: 'nearest' }); } catch (e) {}
   }
+  // On a phone the long pages open as a list of headings: the first two sections are open and the rest unfold on a tap.
+  // What you opened is remembered for the visit. Wider screens never fold.
+  let CUR_TAB = 'home';
+  const PHONE = window.matchMedia('(max-width: 700px)');
+  const gameOn = () => liveOk(LIVE) && LIVE.games.some((g) => g.status === 'live' || g.status === 'paused');
+  function mastState() { $('mast').classList.toggle('compact', CUR_TAB !== 'home' || (PHONE.matches && gameOn())); }
+  const foldKey = () => 'almanac-open:' + LG.slug + ':' + (location.hash || '#home').replace(/^#rp-(\d{4}).*/, '#s-$1').replace(/^#history$/, '#seasons');
+  function foldSections() {
+    if (!PHONE.matches) return;
+    if (!/^(s-\d{4}|rp-\d{4}-.*|m-[a-z]+|records|stats|managers|seasons|history|auction)$/.test((location.hash || '#home').slice(1))) return;
+    const secs = [...$('view').children].filter((el) => el.tagName === 'SECTION' && !el.classList.contains('page-title') && !el.hidden && el.querySelector(':scope > .sec-head h2, :scope > h3.group-title'));
+    if (secs.length < 4) return;
+    let open = null; try { open = JSON.parse(sessionStorage.getItem(foldKey()) || 'null'); } catch (e) {}
+    secs.forEach((el, i) => {
+      const hd = el.querySelector(':scope > .sec-head, :scope > h3.group-title'), name = (hd.querySelector('h2') || hd).textContent.trim();
+      hd.classList.add('fold-hd');
+      const shut = Array.isArray(open) ? !open.includes(name) : i >= 2;
+      el.classList.add('foldable'); el.classList.toggle('fold', shut); el.dataset.fold = name;
+      hd.setAttribute('role', 'button'); hd.tabIndex = 0; hd.setAttribute('aria-expanded', String(!shut));
+      hd.insertAdjacentHTML('beforeend', '<span class="fold-ic" aria-hidden="true"></span>');
+    });
+  }
+  function setFold(el, shut) {
+    el.classList.toggle('fold', shut); el.querySelector(':scope > .fold-hd').setAttribute('aria-expanded', String(!shut));
+    try { sessionStorage.setItem(foldKey(), JSON.stringify([...document.querySelectorAll('#view > .foldable:not(.fold)')].map((x) => x.dataset.fold))); } catch (e) {}
+    if (!shut) fitTables();
+  }
+  function unfold(el) { const sec = el && el.closest('.foldable.fold'); if (sec) setFold(sec, false); }
+  document.addEventListener('click', (e) => {
+    const hd = e.target.closest('.foldable > .fold-hd'); if (!hd || e.target.closest('a, button, select, input')) return;
+    setFold(hd.parentElement, !hd.parentElement.classList.contains('fold'));
+  });
+  document.addEventListener('keydown', (e) => {
+    if ((e.key !== 'Enter' && e.key !== ' ') || !e.target.matches || !e.target.matches('.foldable > .fold-hd')) return;
+    e.preventDefault(); setFold(e.target.parentElement, !e.target.parentElement.classList.contains('fold'));
+  });
+  // A table wider than its sheet keeps its first column in place and says it can be swiped.
+  function fitTables() {
+    document.querySelectorAll('#view .tbl, #view .scroll-x').forEach((t) => { t.classList.remove('is-wide'); if (t.clientWidth && t.scrollWidth > t.clientWidth + 4) t.classList.add('is-wide'); });
+  }
+  let fitT = 0; window.addEventListener('resize', () => { clearTimeout(fitT); fitT = setTimeout(() => { fitTables(); mastState(); }, 150); });
   function jumpBar() {
     const view = $('view');
     const secs = [...view.children].filter((el) => el.tagName === 'SECTION' && !el.classList.contains('page-title') && !el.hidden && el.querySelector(':scope > .sec-head h2, :scope > h3.group-title'));
@@ -2712,7 +2889,7 @@ footer { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block:
     const items = secs.map((el, i) => { const hd = el.querySelector(':scope > .sec-head h2, :scope > h3.group-title'); if (!el.id) el.id = 'sec-' + i; return [el.id, hd.textContent.trim()]; });
     const nav = document.createElement('nav'); nav.className = 'jump'; nav.setAttribute('aria-label', 'On this page');
     nav.innerHTML = `<span class="eyebrow">On this page</span>` + items.map(([id, t]) => `<button type="button" data-jump="${id}">${esc(t)}</button>`).join('');
-    nav.addEventListener('click', (e) => { const b = e.target.closest('[data-jump]'); if (b) $(b.dataset.jump).scrollIntoView({ behavior: 'smooth', block: 'start' }); });
+    nav.addEventListener('click', (e) => { const b = e.target.closest('[data-jump]'); if (b) { unfold($(b.dataset.jump)); $(b.dataset.jump).scrollIntoView({ behavior: 'smooth', block: 'start' }); } });
     const pt = view.querySelector(':scope > .page-title');
     if (pt) pt.after(nav); else if (intro) intro.after(nav); else secs[0].before(nav);
   }
