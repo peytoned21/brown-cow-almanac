@@ -21,21 +21,22 @@ def _utc(ts):
     return datetime.datetime.fromtimestamp(ts, datetime.timezone.utc).replace(tzinfo=None)
 
 
-def weekly_history(get, lg, sp, ids):
-    """Actual points for each of the last few weeks (the roster views only carry the current week and season)."""
-    ids = list(ids)
+def weekly_history(get, lg, sp):
+    """Actual points for each of the last three weeks, for every player rostered anywhere in the league that week
+    (from the box scores; the roster views only carry the current week and the season)."""
     for w in range(max(1, sp - 3), sp):
-        for i in range(0, len(ids), 50):
-            filt = {'players': {'filterIds': {'value': ids[i:i + 50]}, 'limit': 50}}
-            try:
-                d = get(f'{lg}?view=kona_player_info&scoringPeriodId={w}', {'x-fantasy-filter': json.dumps(filt)})
-            except Exception:
+        try:
+            d = get(f'{lg}?view=mBoxscore&view=mMatchupScore&scoringPeriodId={w}')
+        except Exception:
+            continue
+        for m in d.get('schedule') or []:
+            if m.get('matchupPeriodId') != w:
                 continue
-            for e in d.get('players') or []:
-                p = e['player']
-                for st in p.get('stats') or []:
-                    if st.get('statSourceId') == 0 and st.get('statSplitTypeId') == 1 and st.get('scoringPeriodId') == w:
-                        WEEKLY.setdefault(p['id'], {})[w] = round(st.get('appliedTotal') or 0, 1)
+            for side in (m.get('home'), m.get('away')):
+                for e in ((side or {}).get('rosterForCurrentScoringPeriod') or {}).get('entries') or []:
+                    for st in e['playerPoolEntry']['player'].get('stats') or []:
+                        if st.get('scoringPeriodId') == w and st.get('statSourceId') == 0 and st.get('appliedTotal') is not None:
+                            WEEKLY.setdefault(e['playerId'], {})[w] = round(st['appliedTotal'], 1)
 
 
 def stat(p, sp, source, split):
@@ -207,7 +208,7 @@ def main():
     tx.sort(key=lambda x: x['when'], reverse=True)
 
     ids = [e['playerId'] for t in (me, teams.get(opp_id)) if t for e in (t.get('roster') or {}).get('entries') or []] + list(fa)
-    weekly_history(get, lg, sp, ids)
+    weekly_history(get, lg, sp)
     for pid, r in fa.items():
         r['last3'] = [WEEKLY.get(pid, {}).get(w, r['last3'][j] if j < len(r['last3']) else None) for j, w in enumerate(range(max(1, sp - 3), sp))]
     my_roster = roster(me, sp)
