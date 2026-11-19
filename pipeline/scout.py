@@ -24,18 +24,18 @@ def _utc(ts):
 def weekly_history(get, lg, sp, ids):
     """Actual points for each of the last few weeks (the roster views only carry the current week and season)."""
     ids = list(ids)
-    for i in range(0, len(ids), 50):
-        filt = {'players': {'filterIds': {'value': ids[i:i + 50]}, 'limit': 50,
-                            'filterStatsForTopScoringPeriodIds': {'value': 5, 'additionalValue': []}}}
-        try:
-            d = get(f'{lg}?view=kona_playercard&scoringPeriodId={sp}', {'x-fantasy-filter': json.dumps(filt)})
-        except Exception:
-            continue
-        for e in d.get('players') or []:
-            p = e['player']
-            for st in p.get('stats') or []:
-                if st.get('statSourceId') == 0 and st.get('statSplitTypeId') == 1 and st.get('scoringPeriodId'):
-                    WEEKLY.setdefault(p['id'], {})[st['scoringPeriodId']] = round(st.get('appliedTotal') or 0, 1)
+    for w in range(max(1, sp - 3), sp):
+        for i in range(0, len(ids), 50):
+            filt = {'players': {'filterIds': {'value': ids[i:i + 50]}, 'limit': 50}}
+            try:
+                d = get(f'{lg}?view=kona_player_info&scoringPeriodId={w}', {'x-fantasy-filter': json.dumps(filt)})
+            except Exception:
+                continue
+            for e in d.get('players') or []:
+                p = e['player']
+                for st in p.get('stats') or []:
+                    if st.get('statSourceId') == 0 and st.get('statSplitTypeId') == 1 and st.get('scoringPeriodId') == w:
+                        WEEKLY.setdefault(p['id'], {})[w] = round(st.get('appliedTotal') or 0, 1)
 
 
 def stat(p, sp, source, split):
