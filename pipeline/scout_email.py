@@ -43,7 +43,7 @@ def actions(items):
     for a in items:
         c, lab = LEVEL.get(a.get('level', 'soon'), LEVEL['soon'])
         rows += (f'<tr><td style="padding:8px 0;border-bottom:1px solid {LINE};vertical-align:top;width:64px">'
-                 f'<span style="font:700 10px Arial,sans-serif;color:#fff;background:{c};padding:2px 6px;border-radius:3px">{lab}</span></td>'
+                 f'<table cellpadding="0" cellspacing="0"><tr><td bgcolor="{c}" style="background:{c};padding:2px 6px;border-radius:3px;font:700 10px Arial,sans-serif;color:#ffffff">{lab}</td></tr></table></td>'
                  f'<td style="padding:8px 0;border-bottom:1px solid {LINE};font:15px/1.4 Arial,sans-serif;color:{INK}">'
                  f'<b>{e(a.get("league"))}</b> · {e(a.get("text"))}'
                  + (f'<div style="font:12px Arial,sans-serif;color:{MUTED}">{e(a["by"])}</div>' if a.get('by') else '') + '</td></tr>')
@@ -57,8 +57,8 @@ def league(L):
            + (f' · {e(L["record"])}' if L.get('record') else '') + '</div></td></tr>')
     m = L.get('matchup')
     if m:
-        out += (f'<tr><td style="padding:10px 20px 0"><table width="100%" cellpadding="0" cellspacing="0" style="background:{BG};border-radius:6px">'
-                f'<tr><td style="padding:10px 12px;font:12px Arial,sans-serif;color:{MUTED}">{e(m.get("label", "Projected"))} vs {e(m.get("opp"))}'
+        out += (f'<tr><td style="padding:10px 20px 0"><table width="100%" cellpadding="0" cellspacing="0" style="border-radius:6px">'
+                f'<tr><td bgcolor="{BG}" style="background:{BG};padding:10px 12px;font:12px Arial,sans-serif;color:{MUTED}">{e(m.get("label", "Projected"))} vs {e(m.get("opp"))}'
                 f'<div style="font:700 22px Arial,sans-serif;color:{INK}">{e(m.get("me"))} <span style="color:{MUTED};font-weight:400">–</span> {e(m.get("them"))}</div>'
                 + (f'<div style="font:13px Arial,sans-serif;color:{INK}">{e(m["note"])}</div>' if m.get('note') else '') + '</td></tr></table></td></tr>')
     if L.get('lineup'):
@@ -90,8 +90,8 @@ def league(L):
 
 
 def render(d):
-    body = (f'<tr><td style="background:{BROWN};padding:20px;color:#fff">'
-            f'<div style="font:12px Arial,sans-serif;letter-spacing:.08em;text-transform:uppercase;opacity:.8">Team scout · {e(d.get("title"))}</div>'
+    body = (f'<tr><td bgcolor="{BROWN}" style="background:{BROWN};padding:20px;color:#ffffff">'
+            f'<div style="font:12px Arial,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#e9dccf">Team scout · {e(d.get("title"))}</div>'
             f'<div style="font:700 22px/1.3 Georgia,serif;margin-top:6px">{e(d.get("headline"))}</div></td></tr>')
     if d.get('actions'):
         body += section('Today’s to-do', actions(d['actions']))
@@ -102,8 +102,8 @@ def render(d):
     body += (f'<tr><td style="padding:20px;font:12px Arial,sans-serif;color:{MUTED}">'
              f'{e(d.get("footer", "Suggestions only; nothing was changed on ESPN."))}</td></tr>')
     return (f'<!DOCTYPE html><html><body style="margin:0;background:{BG}">'
-            f'<table width="100%" cellpadding="0" cellspacing="0" style="background:{BG}"><tr><td align="center" style="padding:12px">'
-            f'<table width="100%" cellpadding="0" cellspacing="0" style="max-width:620px;background:{CARD};border-radius:8px;overflow:hidden">'
+            f'<table width="100%" cellpadding="0" cellspacing="0" bgcolor="{BG}" style="background:{BG}"><tr><td align="center" style="padding:12px">'
+            f'<table width="100%" cellpadding="0" cellspacing="0" bgcolor="{CARD}" style="max-width:620px;background:{CARD};border-radius:8px;overflow:hidden">'
             f'{body}</table></td></tr></table></body></html>')
 
 

@@ -114,3 +114,7 @@ out, send nothing. Call send_message once; never resend because a call was slow 
   season: send nothing.
 - If the scout run fails, still send the email with what you can (almanac, news), and say at the top that ESPN
   roster data couldn't be pulled.
+
+After sending, read the sent message back (get_message) and check its HTML still contains `bgcolor="#5b3a29"` (the
+header color). Gmail keeps bgcolor attributes but strips some CSS; if the header color is gone, say so in the summary
+(don't resend).
