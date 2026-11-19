@@ -14,6 +14,28 @@ from fetch_season import B, POS, make_get  # noqa: E402
 
 SLOT = {0: 'QB', 2: 'RB', 3: 'RB/WR', 4: 'WR', 5: 'WR/TE', 6: 'TE', 7: 'OP', 16: 'D/ST', 17: 'K', 20: 'BE', 21: 'IR', 23: 'FLEX'}
 PRO = {}  # proTeamId -> abbrev, filled from the schedule
+WEEKLY = {}  # playerId -> {scoringPeriod: actual points}, filled by weekly_history()
+
+
+def _utc(ts):
+    return datetime.datetime.fromtimestamp(ts, datetime.timezone.utc).replace(tzinfo=None)
+
+
+def weekly_history(get, lg, sp, ids):
+    """Actual points for each of the last few weeks (the roster views only carry the current week and season)."""
+    ids = list(ids)
+    for i in range(0, len(ids), 50):
+        filt = {'players': {'filterIds': {'value': ids[i:i + 50]}, 'limit': 50,
+                            'filterStatsForTopScoringPeriodIds': {'value': 5, 'additionalValue': []}}}
+        try:
+            d = get(f'{lg}?view=kona_playercard&scoringPeriodId={sp}', {'x-fantasy-filter': json.dumps(filt)})
+        except Exception:
+            continue
+        for e in d.get('players') or []:
+            p = e['player']
+            for st in p.get('stats') or []:
+                if st.get('statSourceId') == 0 and st.get('statSplitTypeId') == 1 and st.get('scoringPeriodId'):
+                    WEEKLY.setdefault(p['id'], {})[st['scoringPeriodId']] = round(st.get('appliedTotal') or 0, 1)
 
 
 def stat(p, sp, source, split):
@@ -30,12 +52,12 @@ def player_row(p, sp, extra=None):
         'team': PRO.get(p.get('proTeamId'), p.get('proTeamId')), 'injury': p.get('injuryStatus') or 'ACTIVE',
         'proj': stat(p, sp, 1, 1), 'actual': stat(p, sp, 0, 1),
         'season': stat(p, 0, 0, 0), 'restOfSeasonProj': stat(p, 0, 1, 0),
-        'last3': [stat(p, w, 0, 1) for w in range(max(1, sp - 3), sp)],
+        'last3': [WEEKLY.get(p['id'], {}).get(w, stat(p, w, 0, 1)) for w in range(max(1, sp - 3), sp)],
         'owned': round(own.get('percentOwned') or 0, 1), 'ownedChange': round(own.get('percentChange') or 0, 1),
         'started': round(own.get('percentStarted') or 0, 1),
     }
     if p.get('lastNewsDate'):
-        row['lastNews'] = datetime.datetime.utcfromtimestamp(p['lastNewsDate'] / 1000).strftime('%Y-%m-%dT%H:%MZ')
+        row['lastNews'] = _utc(p['lastNewsDate'] / 1000).strftime('%Y-%m-%dT%H:%MZ')
     if extra:
         row.update(extra)
     return row
@@ -97,7 +119,7 @@ def main():
     for t in (sched.get('settings') or {}).get('proTeams') or []:
         for g in (t.get('proGamesByScoringPeriod') or {}).get(str(sp)) or []:
             key = g.get('id')
-            games[key] = {'kickoff': datetime.datetime.utcfromtimestamp(g['date'] / 1000).strftime('%Y-%m-%dT%H:%MZ'),
+            games[key] = {'kickoff': _utc(g['date'] / 1000).strftime('%Y-%m-%dT%H:%MZ'),
                           'away': PRO.get(g.get('awayProTeamId')), 'home': PRO.get(g.get('homeProTeamId'))}
     byes = sorted(PRO[t['id']] for t in (sched.get('settings') or {}).get('proTeams') or [] if t.get('byeWeek') == sp and t['id'])
 
@@ -154,7 +176,7 @@ def main():
                 if p['id'] not in fa:
                     extra = {'status': e.get('status')}
                     if e.get('waiverProcessDate'):
-                        extra['waiverClears'] = datetime.datetime.utcfromtimestamp(e['waiverProcessDate'] / 1000).strftime('%Y-%m-%dT%H:%MZ')
+                        extra['waiverClears'] = _utc(e['waiverProcessDate'] / 1000).strftime('%Y-%m-%dT%H:%MZ')
                     fa[p['id']] = player_row(p, sp, extra)
 
     # League transactions over the last two scoring periods
@@ -179,11 +201,15 @@ def main():
                       'team': tname(teams[i.get('toTeamId') if i.get('type') == 'ADD' else i.get('fromTeamId')])
                       if (i.get('toTeamId') if i.get('type') == 'ADD' else i.get('fromTeamId')) in teams else None}
                      for i in t.get('items') or [] if i.get('type') in ('ADD', 'DROP', 'TRADE')]
-            tx.append({'when': datetime.datetime.utcfromtimestamp((t.get('processDate') or t.get('proposedDate') or 0) / 1000).strftime('%Y-%m-%dT%H:%MZ'),
+            tx.append({'when': _utc((t.get('processDate') or t.get('proposedDate') or 0) / 1000).strftime('%Y-%m-%dT%H:%MZ'),
                        'type': t['type'], 'team': tname(teams[t['teamId']]) if t.get('teamId') in teams else None,
                        'bid': t.get('bidAmount'), 'items': items})
     tx.sort(key=lambda x: x['when'], reverse=True)
 
+    ids = [e['playerId'] for t in (me, teams.get(opp_id)) if t for e in (t.get('roster') or {}).get('entries') or []] + list(fa)
+    weekly_history(get, lg, sp, ids)
+    for pid, r in fa.items():
+        r['last3'] = [WEEKLY.get(pid, {}).get(w, r['last3'][j] if j < len(r['last3']) else None) for j, w in enumerate(range(max(1, sp - 3), sp))]
     my_roster = roster(me, sp)
     opp_roster = roster(teams[opp_id], sp) if opp_id else []
     top_fa = sorted(fa.values(), key=lambda r: (-(r['proj'] or 0)))
