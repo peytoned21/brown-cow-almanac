@@ -1,0 +1,49 @@
+name: Team scout
+
+# Peyton's daily team check: for each league, his roster, opponent, free agents, waivers, transactions, NFL
+# schedule and player news (pipeline/scout.py). Started by the daily "team scout" email task; the files go to the
+# `scout` branch, overwritten each run, so they add no history to main and don't rebuild the site.
+on:
+  workflow_dispatch:
+    inputs:
+      owner:
+        description: 'Manager whose team to scout'
+        default: 'peyton edwards'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: scout
+  cancel-in-progress: false
+
+jobs:
+  scout:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Scout
+        env:
+          ESPN_S2: ${{ secrets.ESPN_S2 }}
+          ESPN_SWID: ${{ secrets.ESPN_SWID }}
+        run: |
+          mkdir -p scout-out
+          for cfg in leagues/*.json; do
+            slug=$(python3 -c "import json; print(json.load(open('$cfg'))['site']['slug'])")
+            python3 pipeline/scout.py "$cfg" "scout-out/$slug.json" --owner "${{ inputs.owner || 'peyton edwards' }}" \
+              || echo "::warning::scout failed for $cfg"
+          done
+          ls scout-out/*.json
+      - name: Publish to the scout branch
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd scout-out
+          git init -q -b scout
+          git add -A
+          git -c user.name="brown-cow-bot" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" commit -q -m "Scout $(date -u +%Y-%m-%dT%H:%M) UTC"
+          git push -q -f "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" scout
