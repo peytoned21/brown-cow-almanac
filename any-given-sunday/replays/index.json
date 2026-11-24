@@ -1,6 +1,40 @@
 [
  {
   "y": 2026,
+  "wk": 11,
+  "file": "2026-w11.json",
+  "games": [
+   [
+    "edwards",
+    "shackleton"
+   ],
+   [
+    "sanghvi",
+    "viverito"
+   ],
+   [
+    "leone",
+    "schlossberg"
+   ],
+   [
+    "staehelin",
+    "burckle"
+   ],
+   [
+    "murphy",
+    "shankar"
+   ]
+  ],
+  "comeback": {
+   "winner": "shankar",
+   "loser": "murphy",
+   "low": 0.303,
+   "at": 29922900,
+   "when": "Sun 2:00pm"
+  }
+ },
+ {
+  "y": 2026,
   "wk": 10,
   "file": "2026-w10.json",
   "games": [
