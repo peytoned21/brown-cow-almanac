@@ -40,6 +40,11 @@ Then flag, in this order:
 - a starter who is DOUBTFUL → DO NOW; QUESTIONABLE → name a pivot (a bench player whose game is later, ideally)
 - a bench player projected clearly higher (≥ 2 points) than a starter he could replace
 - players whose games have already kicked off are locked (individual-game lock): don't suggest moving them.
+- Close calls (two players within 2 projected points for the same slot): don't decide from ESPN projections alone.
+  Do a quick search for current start/sit takes on both (e.g. Fantasy Life, Yahoo, SI, FantasyPros), and weigh
+  game totals and whether Peyton needs upside (big underdog) or safety (favorite). Read the article, not just a
+  headline. Name the sources and present it as a lean, not a DO NOW, unless the case is lopsided. These searches
+  count toward the 8.
 Superflex: the OP slot in Any Given Sunday takes a QB; always start two QBs there when possible.
 Show the recommended lineup in the email with flags; mark changes from the current lineup with flag "swap".
 
